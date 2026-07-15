@@ -1,25 +1,42 @@
-.container {
+.page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  background: var(--nx-bg);
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 80% at 20% 20%, rgba(99, 102, 241, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle 300px at 10% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+}
+
+.card {
+  width: 100%;
+  max-width: 480px;
+  padding: 44px !important;
   position: relative;
   z-index: 10;
 }
 
-.cardWrap {
-  width: 100%;
-  max-width: 480px;
-  padding: 44px 36px !important;
-  border-radius: var(--nx-radius-xl, 32px) !important;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
 .header {
   text-align: center;
+  margin-bottom: 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,107 +44,200 @@
 }
 
 .title {
-  font-size: 1.85rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .subtitle {
-  font-size: 0.95rem;
   color: var(--nx-fg-muted);
+  font-size: 0.95rem;
   line-height: 1.5;
+  max-width: 360px;
 }
 
+/* ── Form Elements ── */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  text-align: left;
+  gap: 7px;
 }
 
 .label {
-  font-size: 0.88rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--nx-fg);
 }
 
-.inputWrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
 .input {
-  width: 100%;
-  padding: 13px 18px;
-  border-radius: var(--nx-radius-md, 14px);
-  background: rgba(15, 23, 42, 0.7);
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: #fff;
   font-size: 0.95rem;
   font-family: inherit;
-  transition: all 0.2s ease;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .input:focus {
   outline: none;
   border-color: var(--nx-brand-400);
-  box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
 }
 
 .inputError {
   border-color: var(--nx-danger) !important;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.15) !important;
 }
 
-.errorText {
+.fieldError {
   font-size: 0.8rem;
   color: var(--nx-danger);
-  margin-top: 2px;
-}
-
-.alert {
-  padding: 12px 16px;
-  border-radius: var(--nx-radius-md);
-  font-size: 0.88rem;
-  font-weight: 600;
   display: flex;
   align-items: center;
+  gap: 5px;
+}
+
+/* ── Row for 2 inputs side by side ── */
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 420px) {
+  .row { grid-template-columns: 1fr; }
+  .card { padding: 28px !important; }
+}
+
+/* ── Alert boxes ── */
+.alert {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
   gap: 8px;
 }
 
 .alertDanger {
-  background: rgba(248, 113, 113, 0.15);
-  border: 1px solid rgba(248, 113, 113, 0.35);
-  color: var(--nx-danger);
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #fca5a5;
 }
 
 .alertSuccess {
   background: rgba(52, 211, 153, 0.15);
   border: 1px solid rgba(52, 211, 153, 0.35);
-  color: var(--nx-success);
+  color: #6ee7b7;
 }
 
+/* ── Role selector ── */
+.roleGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.roleBtn {
+  padding: 14px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  color: var(--nx-fg-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.roleBtn:hover {
+  border-color: var(--nx-brand-400);
+  background: rgba(99, 102, 241, 0.08);
+  color: #fff;
+}
+
+.roleBtnActive {
+  border-color: var(--nx-brand-400) !important;
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #fff !important;
+  box-shadow: 0 0 16px -4px rgba(99, 102, 241, 0.5);
+}
+
+.roleIcon {
+  font-size: 1.6rem;
+}
+
+.roleName {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+/* ── Divider ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--nx-fg-muted);
+  font-size: 0.82rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Footer link ── */
 .footer {
   text-align: center;
-  font-size: 0.9rem;
   color: var(--nx-fg-muted);
-  padding-top: 12px;
-  border-top: 1px solid var(--nx-border);
+  font-size: 0.9rem;
+  margin-top: 20px;
 }
 
-.link {
-  color: var(--nx-accent-cyan);
+.footerLink {
+  color: var(--nx-brand-400);
   font-weight: 600;
-  transition: opacity 0.2s;
+  text-decoration: none;
 }
 
-.link:hover {
-  opacity: 0.8;
+.footerLink:hover {
   text-decoration: underline;
+}
+
+/* ── Password strength ── */
+.strengthBar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.strengthFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease, background 0.3s ease;
 }

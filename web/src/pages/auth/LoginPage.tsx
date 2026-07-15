@@ -1,104 +1,100 @@
-import { useState, type FormEvent } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useMutation } from '@tanstack/react-query'
+import { useNavigate, Link } from 'react-router-dom'
 import { authApi } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
 import { AuthLayout } from './AuthLayout'
 import { Button } from '../../design'
 import styles from './AuthLayout.module.css'
 
+const schema = z.object({
+  email: z.string().email('Enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
+})
+
+type FormValues = z.infer<typeof schema>
+
 export function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
   const navigate = useNavigate()
-  const location = useLocation()
-  const login = useAuthStore((state) => state.login)
+  const login = useAuthStore((s) => s.login)
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard'
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    if (!email || !password) {
-      setError('Please provide both email and password.')
-      return
-    }
+  const mutation = useMutation({
+    mutationFn: (values: FormValues) => authApi.login(values),
+    onSuccess: (data) => {
+      login(data.user, data.token)
+      const role = data.user.role
+      navigate(role === 'admin' ? '/admin' : role === 'instructor' ? '/instructor' : '/dashboard', { replace: true })
+    },
+  })
 
-    setLoading(true)
-    try {
-      const res = await authApi.login({ email, password })
-      login(res.user, res.token)
-      navigate(from, { replace: true })
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Invalid credentials')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const onSubmit = (values: FormValues) => mutation.mutate(values)
 
   return (
     <AuthLayout
-      badgeText="Welcome Back"
-      badgeTone="brand"
-      title="Access NEXUS AI"
-      subtitle="Sign in to resume your gamified AI learning journey"
-      footerText="Don't have an account yet?"
-      footerLinkText="Claim your Pro Pass"
+      title="Welcome Back"
+      subtitle="Sign in to your NEXUS AI account to continue learning"
+      badgeText="Secure Sign In"
+      footerText="Don't have an account?"
+      footerLinkText="Create one free"
       footerLinkTo="/auth/register"
     >
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {error && (
+      <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+        {mutation.isError && (
           <div className={`${styles.alert} ${styles.alertDanger}`}>
-            ⚠️ {error}
+            ⚠️ {mutation.error instanceof Error ? mutation.error.message : 'Sign in failed'}
           </div>
         )}
 
         <div className={styles.field}>
-          <label className={styles.label}>Email Address</label>
-          <div className={styles.inputWrap}>
-            <input
-              type="email"
-              required
-              className={styles.input}
-              placeholder="student@nexus.ai"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+          <label className={styles.label} htmlFor="login-email">Email Address</label>
+          <input
+            id="login-email"
+            type="email"
+            autoComplete="email"
+            className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
+            placeholder="you@example.com"
+            {...register('email')}
+          />
+          {errors.email && <span className={styles.fieldError}>⚠ {errors.email.message}</span>}
         </div>
 
         <div className={styles.field}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <label className={styles.label}>Password</label>
-            <Link to="/auth/forgot" className={styles.link} style={{ fontSize: '0.8rem' }}>
+          <label className={styles.label} htmlFor="login-password">
+            <span>Password</span>
+          </label>
+          <input
+            id="login-password"
+            type="password"
+            autoComplete="current-password"
+            className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
+            placeholder="••••••••••••"
+            {...register('password')}
+          />
+          {errors.password && <span className={styles.fieldError}>⚠ {errors.password.message}</span>}
+          <div style={{ textAlign: 'right', marginTop: '2px' }}>
+            <Link to="/auth/forgot" style={{ fontSize: '0.82rem', color: 'var(--nx-brand-400)', textDecoration: 'none', fontWeight: 600 }}>
               Forgot password?
             </Link>
           </div>
-          <div className={styles.inputWrap}>
-            <input
-              type="password"
-              required
-              className={styles.input}
-              placeholder="••••••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
         </div>
 
-        <div style={{ marginTop: '12px' }}>
-          <Button
-            magnetic
-            glow
-            type="submit"
-            disabled={loading}
-            style={{ width: '100%', padding: '14px', fontSize: '1rem' }}
-          >
-            {loading ? 'Authenticating...' : 'Sign In to Dashboard 🚀'}
-          </Button>
-        </div>
+        <Button
+          magnetic
+          glow
+          type="submit"
+          disabled={mutation.isPending}
+          style={{ width: '100%', padding: '14px', fontSize: '1rem', marginTop: '4px' }}
+        >
+          {mutation.isPending ? 'Signing in...' : 'Sign In ⚡'}
+        </Button>
       </form>
     </AuthLayout>
   )

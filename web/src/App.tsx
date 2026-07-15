@@ -13,6 +13,8 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { RequireAuth } from './components/auth/RequireAuth'
 import { StudentDashboard } from './pages/dashboard/StudentDashboard'
+import { InstructorDashboard } from './pages/dashboard/InstructorDashboard'
+import { AdminDashboard } from './pages/dashboard/AdminDashboard'
 
 function LandingShell() {
   useSmoothScroll()
@@ -43,6 +45,22 @@ export function App() {
           element={
             <RequireAuth allowedRoles={['student', 'instructor', 'admin']}>
               <StudentDashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/instructor"
+          element={
+            <RequireAuth allowedRoles={['instructor', 'admin']}>
+              <InstructorDashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth allowedRoles={['admin']}>
+              <AdminDashboard />
             </RequireAuth>
           }
         />

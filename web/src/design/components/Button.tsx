@@ -14,6 +14,8 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'ch
   magnetic?: boolean
   leftIcon?: ReactNode
   rightIcon?: ReactNode
+  glow?: boolean
+  tone?: 'brand' | 'neutral' | 'success' | 'danger' | string
 }
 
 /**
@@ -21,7 +23,7 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'ch
  * eases toward the cursor via a spring, part of the shared motion language.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'primary', size = 'md', magnetic = false, leftIcon, rightIcon, className, children, ...rest },
+  { variant = 'primary', size = 'md', magnetic = false, glow = false, tone, leftIcon, rightIcon, className, style, children, ...rest },
   ref,
 ) {
   const localRef = useRef<HTMLButtonElement>(null)
@@ -46,6 +48,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     y.set(0)
   }
 
+  const computedVariant = tone === 'neutral' ? 'ghost' : variant
+
   return (
     <motion.button
       ref={(node) => {
@@ -53,8 +57,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         if (typeof ref === 'function') ref(node)
         else if (ref) ref.current = node
       }}
-      className={clsx(styles.btn, styles[variant], styles[size], className)}
-      style={magnetic ? { x: springX, y: springY } : undefined}
+      className={clsx(styles.btn, styles[computedVariant], styles[size], className)}
+      style={{
+        ...(magnetic ? { x: springX, y: springY } : {}),
+        ...(glow ? { boxShadow: '0 0 35px -3px rgba(99, 102, 241, 0.65)' } : {}),
+        ...style,
+      }}
       onMouseMove={handleMove}
       onMouseLeave={reset}
       whileTap={{ scale: 0.96 }}

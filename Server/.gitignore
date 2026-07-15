@@ -1,5 +1,7 @@
-/node_modules
-/Courses
-/course-file
-
-/rest/.env
+node_modules
+dist
+course-file
+Courses
+.env
+rest/.env
+*.log

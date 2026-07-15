@@ -15,6 +15,8 @@ import { RequireAuth } from './components/auth/RequireAuth'
 import { StudentDashboard } from './pages/dashboard/StudentDashboard'
 import { InstructorDashboard } from './pages/dashboard/InstructorDashboard'
 import { AdminDashboard } from './pages/dashboard/AdminDashboard'
+import { CourseCatalogPage } from './pages/courses/CourseCatalogPage'
+import { CourseDetailPage } from './pages/courses/CourseDetailPage'
 
 function LandingShell() {
   useSmoothScroll()
@@ -36,6 +38,8 @@ export function App() {
       <Header />
       <Routes>
         <Route path="/" element={<LandingShell />} />
+        <Route path="/catalog" element={<CourseCatalogPage />} />
+        <Route path="/courses/:courseId" element={<CourseDetailPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/auth/forgot" element={<ForgotPasswordPage />} />

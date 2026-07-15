@@ -118,3 +118,74 @@ export const authApi = {
     return res.data
   },
 }
+
+export interface CourseView {
+  id?: string
+  _id?: string
+  name: string
+  description?: string
+  image?: string
+  backgroundColor?: string
+  status: 'published' | 'archived'
+  enrolled: boolean
+  privilege?: 'student' | 'instructor' | 'admin'
+  createdBy?: { _id: string; name: string; username: string; photo?: string }
+  modules?: Array<{
+    _id?: string
+    title: string
+    moduleItems: Array<{ _id?: string; title: string; type: 'video' | 'file'; url: string }>
+  }>
+}
+
+export interface DeadlineView {
+  title: string
+  deadline: string
+  type: 'Exam' | 'Assignment'
+  assessmentId: string
+  course: { name: string; id: string }
+}
+
+export const coursesApi = {
+  getAll: async (filter?: 'published' | 'archived'): Promise<CourseView[]> => {
+    const res = await api.get<CourseView[]>('/courses', { params: filter ? { filter } : {} })
+    return res.data
+  },
+
+  getOne: async (courseId: string): Promise<CourseView> => {
+    const res = await api.get<CourseView>(`/courses/${courseId}`)
+    return res.data
+  },
+
+  create: async (payload: { courseName: string; description?: string; image?: string }): Promise<CourseView[]> => {
+    const res = await api.post<CourseView[]>('/courses', payload)
+    return res.data
+  },
+
+  update: async (courseId: string, payload: Partial<CourseView>): Promise<CourseView> => {
+    const res = await api.put<CourseView>(`/courses/${courseId}`, payload)
+    return res.data
+  },
+
+  delete: async (courseId: string): Promise<{ message: string }> => {
+    const res = await api.delete<{ message: string }>(`/courses/${courseId}`)
+    return res.data
+  },
+
+  enroll: async (courseId: string): Promise<CourseView> => {
+    const res = await api.post<CourseView>(`/courses/${courseId}/enroll`)
+    return res.data
+  },
+
+  unEnroll: async (courseId: string): Promise<CourseView> => {
+    const res = await api.post<CourseView>(`/courses/${courseId}/un-enroll`)
+    return res.data
+  },
+}
+
+export const deadlinesApi = {
+  getDeadlines: async (): Promise<DeadlineView[]> => {
+    const res = await api.get<DeadlineView[]>('/deadlines')
+    return res.data
+  },
+}
+

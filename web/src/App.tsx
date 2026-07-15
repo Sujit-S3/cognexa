@@ -11,6 +11,8 @@ import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
+import { RequireAuth } from './components/auth/RequireAuth'
+import { StudentDashboard } from './pages/dashboard/StudentDashboard'
 
 function LandingShell() {
   useSmoothScroll()
@@ -36,6 +38,14 @@ export function App() {
         <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/auth/forgot" element={<ForgotPasswordPage />} />
         <Route path="/auth/reset/:token" element={<ResetPasswordPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth allowedRoles={['student', 'instructor', 'admin']}>
+              <StudentDashboard />
+            </RequireAuth>
+          }
+        />
       </Routes>
     </div>
   )

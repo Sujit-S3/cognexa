@@ -1,212 +1,265 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { GlassCard, Badge, Button, Reveal, RevealItem } from '../../design'
+import { GlassCard, Badge, Button } from '../../design'
 import styles from './QuizPage.module.css'
 
-interface QuizQuestion {
+// ── Question bank ───────────────────────────────────────────────────────────
+interface Question {
   id: number
   question: string
   options: string[]
   correctIndex: number
   explanation: string
+  points: number
 }
 
-const QUESTIONS: QuizQuestion[] = [
-  {
-    id: 1,
-    question: 'Why are inverse kinematics calculations typically offloaded or optimized using the Jacobian matrix in robotic control?',
-    options: [
-      'Because it eliminates the need for any joint sensors.',
-      'It linearly approximates velocity mapping between joint angles and end-effector coordinates.',
-      'It automatically increases battery capacity by 50%.',
-      'It prevents all network latency between the robot and server.',
-    ],
-    correctIndex: 1,
-    explanation: 'Correct! The Jacobian matrix linearizes the non-linear forward kinematics equation, allowing rapid iterative convergence toward target positions without freezing the main control loop.',
-  },
-  {
-    id: 2,
-    question: 'When implementing custom GLSL fragment shaders in Three.js, which built-in variable dictates the screen coordinate of the pixel being rendered?',
-    options: [
-      'gl_Position',
-      'gl_FragCoord',
-      'u_resolution',
-      'gl_VertexID',
-    ],
-    correctIndex: 1,
-    explanation: 'Spot on! gl_FragCoord contains the window-relative coordinates (x, y, z, 1/w) of the current fragment inside the GPU pipeline.',
-  },
-  {
-    id: 3,
-    question: 'How does TanStack Query optimize datafetching across our NEXUS AI React 19 components?',
-    options: [
-      'By replacing the entire Express backend with local JSON files.',
-      'By caching server state, deduplicating simultaneous requests, and providing instant optimistic updates.',
-      'By converting all TypeScript types into plain CSS variables.',
-      'By disabling all browser local storage.',
-    ],
-    correctIndex: 1,
-    explanation: 'Exactly! TanStack Query manages server state asynchronously with automatic stale-while-revalidate caching and deduplication.',
-  },
-]
+const QUIZ_BANK: Record<string, Question[]> = {
+  default: [
+    {
+      id: 1,
+      question: 'Which mathematical construct is used to compute inverse kinematics without gimbal lock?',
+      options: ['Euler Angles', 'Quaternion algebra', 'Rotation Matrices only', 'Linear Interpolation'],
+      correctIndex: 1,
+      explanation: 'Quaternions represent rotation in 4D space, avoiding the singularity (gimbal lock) inherent to 3D Euler angle representation.',
+      points: 35,
+    },
+    {
+      id: 2,
+      question: 'In GLSL, which built-in function returns the fractional part of a float for procedural shader patterns?',
+      options: ['floor()', 'mod()', 'fract()', 'clamp()'],
+      correctIndex: 2,
+      explanation: 'fract(x) returns x - floor(x), producing repeating [0,1) patterns essential for procedural textures and noise functions.',
+      points: 35,
+    },
+    {
+      id: 3,
+      question: 'What is the time complexity of the Bellman–Ford shortest path algorithm?',
+      options: ['O(V log V)', 'O(V + E)', 'O(V × E)', 'O(E log V)'],
+      correctIndex: 2,
+      explanation: 'Bellman–Ford runs V−1 edge relaxation passes, each taking O(E) time, giving O(V×E) overall — slower but handles negative edge weights.',
+      points: 30,
+    },
+  ],
+}
+
+const QUIZ_TITLE: Record<string, string> = {
+  'mock-2': 'WebGL Shader Midterm',
+}
+
+const TIMER_SECS = 300 // 5 minutes
+
+function fmtTime(s: number) {
+  const m = Math.floor(s / 60)
+  const sec = s % 60
+  return `${m}:${sec.toString().padStart(2, '0')}`
+}
 
 export function QuizPage() {
   const { assessmentId = 'mock-2' } = useParams<{ assessmentId: string }>()
+  const questions = QUIZ_BANK[assessmentId] ?? QUIZ_BANK.default
+  const title = QUIZ_TITLE[assessmentId] ?? `Quiz ${assessmentId}`
 
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [selectedOption, setSelectedOption] = useState<number | null>(null)
-  const [isAnswered, setIsAnswered] = useState(false)
-  const [score, setScore] = useState(0)
-  const [isFinished, setIsFinished] = useState(false)
+  const [current, setCurrent] = useState(0)
+  const [selected, setSelected] = useState<Record<number, number>>({})
+  const [revealed, setRevealed] = useState<Record<number, boolean>>({})
+  const [done, setDone] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(TIMER_SECS)
 
-  const currentQ = QUESTIONS[currentIndex] || QUESTIONS[0]
-  const totalQ = QUESTIONS.length
+  const q = questions[current]
+  const totalPoints = questions.reduce((a, q) => a + q.points, 0)
+  const earnedPoints = questions.reduce((sum, q, idx) => {
+    const pick = selected[idx]
+    return pick === q.correctIndex ? sum + q.points : sum
+  }, 0)
 
-  const handleSelectOption = (index: number) => {
-    if (isAnswered) return
-    setSelectedOption(index)
-    setIsAnswered(true)
-    if (index === currentQ.correctIndex) {
-      setScore((s) => s + 1)
-    }
+  const submit = useCallback(() => setDone(true), [])
+
+  // Timer countdown
+  useEffect(() => {
+    if (done) return
+    const id = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) { submit(); return 0 }
+        return t - 1
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [done, submit])
+
+  const handleSelect = (optIdx: number) => {
+    if (revealed[current]) return
+    setSelected((prev) => ({ ...prev, [current]: optIdx }))
   }
 
-  const handleNextQuestion = () => {
-    if (currentIndex + 1 < totalQ) {
-      setCurrentIndex((i) => i + 1)
-      setSelectedOption(null)
-      setIsAnswered(false)
-    } else {
-      setIsFinished(true)
-    }
+  const handleReveal = () => {
+    if (selected[current] === undefined) return
+    setRevealed((prev) => ({ ...prev, [current]: true }))
   }
 
-  const handleRestart = () => {
-    setCurrentIndex(0)
-    setSelectedOption(null)
-    setIsAnswered(false)
-    setScore(0)
-    setIsFinished(false)
-  }
+  const pct = Math.round((earnedPoints / totalPoints) * 100)
 
-  return (
-    <div className={styles.container}>
-      {/* Breadcrumb */}
-      <div className={styles.topBar}>
-        <div className={styles.breadcrumb}>
-          <Link to="/dashboard" className={styles.breadcrumbLink}>Dashboard</Link>
-          <span>/</span>
-          <span>Assessments</span>
-          <span>/</span>
-          <span style={{ color: '#fff', fontWeight: 700 }}>{assessmentId === 'mock-2' ? 'Midterm WebGL Shader Exam' : 'Interactive Quiz'}</span>
-        </div>
+  // ── Results ─────────────────────────────────────────────────────────────────
+  if (done) {
+    const grade = pct >= 85 ? 'A' : pct >= 70 ? 'B' : pct >= 55 ? 'C' : 'D'
+    const xp = pct >= 85 ? 300 : pct >= 70 ? 200 : pct >= 55 ? 100 : 50
+    return (
+      <div className={styles.container}>
+        <GlassCard elevation="raised" glow className={styles.resultsCard}>
+          <div style={{ fontSize: '4rem', margin: '0 auto 8px' }}>{pct >= 85 ? '🏆' : pct >= 70 ? '🎉' : '📚'}</div>
+          <Badge tone={pct >= 85 ? 'success' : pct >= 55 ? 'violet' : 'pink'} style={{ margin: '0 auto' }}>
+            Grade {grade} — {pct}%
+          </Badge>
+          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#fff', marginTop: '10px' }}>
+            {pct >= 85 ? 'Outstanding!' : pct >= 70 ? 'Well Done!' : pct >= 55 ? 'Good Effort!' : 'Keep Practicing!'}
+          </h2>
+          <p style={{ color: 'var(--nx-fg-muted)', marginBottom: '16px' }}>
+            You scored <strong style={{ color: '#fff' }}>{earnedPoints}/{totalPoints}</strong> on the {title}.
+          </p>
+          <div className={styles.xpBadge}>+{xp} XP Awarded 🚀</div>
 
-        <Badge tone="violet">
-          {isFinished ? 'EXAM COMPLETED 🎉' : `Question ${currentIndex + 1} of ${totalQ}`}
-        </Badge>
-      </div>
-
-      {isFinished ? (
-        <Reveal>
-          <RevealItem>
-            <GlassCard elevation="raised" glow className={styles.resultCard}>
-              <div style={{ width: '84px', height: '84px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.2)', border: '3px solid var(--nx-brand-400)', color: '#fff', fontSize: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                🏆
-              </div>
-              <div>
-                <Badge tone="success" style={{ marginBottom: '12px' }}>+300 XP Awarded 🌟</Badge>
-                <h1 style={{ fontSize: '2.4rem', fontWeight: 800, color: '#fff' }}>
-                  Score: {Math.round((score / totalQ) * 100)}% ({score} / {totalQ})
-                </h1>
-                <p style={{ color: 'var(--nx-fg-muted)', fontSize: '1.05rem', maxWidth: '500px', margin: '12px auto 0' }}>
-                  Incredible mastery! Your quiz performance has been recorded to your student transcript and contributed to your weekly leaderboard rank.
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', gap: '14px', marginTop: '12px' }}>
-                <Button variant="secondary" onClick={handleRestart}>
-                  Retake Quiz 🔄
-                </Button>
-                <Link to="/dashboard">
-                  <Button magnetic glow>
-                    Return to Dashboard ⚡
-                  </Button>
-                </Link>
-              </div>
-            </GlassCard>
-          </RevealItem>
-        </Reveal>
-      ) : (
-        <GlassCard elevation="raised" className={styles.quizCard}>
-          {/* Progress Header */}
-          <div>
-            <div className={styles.progressHeader}>
-              <span>⚡ Gamified Assessment Engine</span>
-              <span>{Math.round(((currentIndex) / totalQ) * 100)}% Completed</span>
-            </div>
-            <div className={styles.progressBar} style={{ marginTop: '10px' }}>
-              <div className={styles.progressFill} style={{ width: `${((currentIndex + (isAnswered ? 1 : 0)) / totalQ) * 100}%` }} />
-            </div>
-          </div>
-
-          <h2 className={styles.questionTitle}>{currentQ.question}</h2>
-
-          {/* Options Grid */}
-          <div className={styles.optionsGrid}>
-            {currentQ.options.map((opt, idx) => {
-              let btnClass = styles.optionBtn
-              if (isAnswered) {
-                if (idx === currentQ.correctIndex) {
-                  btnClass = `${styles.optionBtn} ${styles.optionCorrect}`
-                } else if (idx === selectedOption) {
-                  btnClass = `${styles.optionBtn} ${styles.optionWrong}`
-                }
-              } else if (idx === selectedOption) {
-                btnClass = `${styles.optionBtn} ${styles.optionSelected}`
-              }
-
+          {/* Per-question review */}
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
+            {questions.map((q, idx) => {
+              const pick = selected[idx]
+              const correct = pick === q.correctIndex
               return (
-                <button
-                  key={idx}
-                  className={btnClass}
-                  onClick={() => handleSelectOption(idx)}
-                  disabled={isAnswered}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 800 }}>
-                      {String.fromCharCode(65 + idx)}
-                    </span>
-                    <span>{opt}</span>
+                <GlassCard key={q.id} style={{ padding: '16px 20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem' }}>Q{idx + 1}: {q.question}</span>
+                    <Badge tone={correct ? 'success' : 'pink'}>{correct ? `+${q.points} pts` : '0 pts'}</Badge>
                   </div>
-                  {isAnswered && idx === currentQ.correctIndex && <span>✓ Correct</span>}
-                  {isAnswered && idx === selectedOption && idx !== currentQ.correctIndex && <span>✕ Incorrect</span>}
-                </button>
+                  <div style={{ fontSize: '0.83rem', color: 'var(--nx-fg-muted)' }}>
+                    <span style={{ color: correct ? '#34d399' : '#f43f5e' }}>
+                      Your answer: {pick !== undefined ? q.options[pick] : '(skipped)'}
+                    </span>
+                  </div>
+                  {!correct && (
+                    <div style={{ fontSize: '0.82rem', color: 'var(--nx-success)', marginTop: '4px' }}>
+                      ✓ Correct: {q.options[q.correctIndex]}
+                    </div>
+                  )}
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '6px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '6px' }}>
+                    💡 {q.explanation}
+                  </div>
+                </GlassCard>
               )
             })}
           </div>
 
-          {/* Explanation Box when Answered */}
-          {isAnswered && (
-            <Reveal>
-              <RevealItem>
-                <div className={styles.explanationBox}>
-                  <div style={{ fontWeight: 800, color: '#fff', marginBottom: '4px' }}>💡 AI Architect Explanation:</div>
-                  <div>{currentQ.explanation}</div>
-                </div>
-              </RevealItem>
-            </Reveal>
-          )}
-
-          {/* Next Button */}
-          {isAnswered && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-              <Button magnetic glow onClick={handleNextQuestion} style={{ padding: '14px 28px', fontSize: '1rem' }}>
-                {currentIndex + 1 < totalQ ? 'Next Question →' : 'View Final Score 🏆'}
-              </Button>
-            </div>
-          )}
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            <Button variant="secondary" onClick={() => { setCurrent(0); setSelected({}); setRevealed({}); setDone(false); setTimeLeft(TIMER_SECS) }}>
+              Retry Quiz
+            </Button>
+            <Link to="/dashboard">
+              <Button magnetic glow>Back to Dashboard ⚡</Button>
+            </Link>
+          </div>
         </GlassCard>
-      )}
+      </div>
+    )
+  }
+
+  // ── Quiz engine ─────────────────────────────────────────────────────────────
+  const progress = ((current + 1) / questions.length) * 100
+  const isAnswered = selected[current] !== undefined
+  const isRevealedNow = revealed[current]
+  const isCorrect = selected[current] === q.correctIndex
+
+  return (
+    <div className={styles.container}>
+      {/* Header bar */}
+      <div className={styles.quizHeader}>
+        <div>
+          <h1 className={styles.quizTitle}>{title}</h1>
+          <div style={{ fontSize: '0.84rem', color: 'var(--nx-fg-muted)' }}>
+            Question {current + 1} of {questions.length}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <Badge
+            tone={timeLeft < 60 ? 'pink' : 'cyan'}
+            style={{ fontFamily: 'var(--nx-font-mono, monospace)', fontSize: '1rem', padding: '6px 14px' }}
+          >
+            ⏱ {fmtTime(timeLeft)}
+          </Badge>
+          <Button variant="secondary" size="sm" onClick={submit}>Submit Now</Button>
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div className={styles.progressBar}>
+        <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+      </div>
+
+      {/* Question */}
+      <GlassCard elevation="raised" glow className={styles.questionCard}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <Badge tone="violet">Q{current + 1}</Badge>
+          <Badge tone="brand">{q.points} pts</Badge>
+        </div>
+
+        <h2 className={styles.questionText}>{q.question}</h2>
+
+        <div className={styles.optionsList}>
+          {q.options.map((opt, idx) => {
+            let tone = ''
+            if (isRevealedNow) {
+              if (idx === q.correctIndex) tone = styles.optionCorrect
+              else if (idx === selected[current]) tone = styles.optionWrong
+            } else if (selected[current] === idx) {
+              tone = styles.optionSelected
+            }
+            return (
+              <button
+                key={idx}
+                className={`${styles.option} ${tone}`}
+                onClick={() => handleSelect(idx)}
+                disabled={isRevealedNow}
+              >
+                <span className={styles.optionLabel}>{String.fromCharCode(65 + idx)}</span>
+                {opt}
+              </button>
+            )
+          })}
+        </div>
+
+        {isRevealedNow && (
+          <div className={`${styles.explanation} ${isCorrect ? styles.explanationGood : styles.explanationBad}`}>
+            {isCorrect ? '✓ Correct!' : '✗ Incorrect'} — {q.explanation}
+          </div>
+        )}
+
+        <div className={styles.quizFooter}>
+          <Button variant="secondary" disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>← Previous</Button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {!isRevealedNow && isAnswered && (
+              <Button variant="ghost" onClick={handleReveal} style={{ color: 'var(--nx-accent-cyan)' }}>
+                Check Answer 💡
+              </Button>
+            )}
+            {current < questions.length - 1 ? (
+              <Button magnetic glow onClick={() => setCurrent((c) => c + 1)}>
+                Next Question →
+              </Button>
+            ) : (
+              <Button magnetic glow onClick={submit}>Finish Quiz 🏆</Button>
+            )}
+          </div>
+        </div>
+      </GlassCard>
+
+      {/* Mini progress map */}
+      <div className={styles.dotMap}>
+        {questions.map((_, idx) => (
+          <button
+            key={idx}
+            className={`${styles.dot} ${idx === current ? styles.dotCurrent : ''} ${selected[idx] !== undefined ? (selected[idx] === questions[idx].correctIndex && revealed[idx] ? styles.dotCorrect : revealed[idx] ? styles.dotWrong : styles.dotAnswered) : ''}`}
+            onClick={() => setCurrent(idx)}
+          >
+            {idx + 1}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

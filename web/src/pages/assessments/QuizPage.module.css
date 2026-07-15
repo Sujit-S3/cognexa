@@ -1,140 +1,192 @@
 .container {
-  padding: 40px 24px 80px 24px;
-  max-width: 1000px;
+  padding: 28px 24px 80px;
+  max-width: 880px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  position: relative;
-  z-index: 10;
+  gap: 20px;
 }
 
-.topBar {
+/* Header */
+.quizHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 14px;
 }
 
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
-  color: var(--nx-fg-muted);
-}
-
-.breadcrumbLink {
-  color: var(--nx-fg-muted);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.breadcrumbLink:hover {
+.quizTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
   color: #fff;
 }
 
-.quizCard {
-  padding: 36px !important;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.progressHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #fff;
-}
-
+/* Progress bar */
 .progressBar {
-  width: 100%;
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.12);
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.08);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--nx-brand-400), var(--nx-accent-cyan));
-  box-shadow: 0 0 12px var(--nx-brand-400);
+  border-radius: 3px;
+  background: var(--nx-gradient-brand);
   transition: width 0.4s ease;
 }
 
-.questionTitle {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.35;
+/* Question card */
+.questionCard {
+  padding: 34px !important;
 }
 
-.optionsGrid {
+.questionText {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.4;
+  margin-bottom: 24px;
+}
+
+.optionsList {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
-.optionBtn {
-  width: 100%;
-  padding: 18px 22px;
-  border-radius: var(--nx-radius-lg);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #fff;
-  font-size: 1.02rem;
-  font-weight: 600;
-  text-align: left;
+.option {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  color: var(--nx-fg-muted);
+  font-size: 0.95rem;
+  font-family: inherit;
+  text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s;
+  font-weight: 600;
 }
 
-.optionBtn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+.option:hover:not(:disabled) {
+  background: rgba(99,102,241,0.1);
   border-color: var(--nx-brand-400);
+  color: #fff;
+}
+
+.option:disabled { cursor: default; }
+
+.optionLabel {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.6);
+  flex-shrink: 0;
 }
 
 .optionSelected {
-  background: rgba(99, 102, 241, 0.2) !important;
+  background: rgba(99,102,241,0.18) !important;
   border-color: var(--nx-brand-400) !important;
-  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.5);
+  color: #fff !important;
 }
 
 .optionCorrect {
-  background: rgba(52, 211, 153, 0.22) !important;
-  border-color: var(--nx-success) !important;
-  color: var(--nx-success) !important;
+  background: rgba(52,211,153,0.15) !important;
+  border-color: #34d399 !important;
+  color: #6ee7b7 !important;
 }
 
 .optionWrong {
-  background: rgba(244, 63, 94, 0.22) !important;
-  border-color: var(--nx-danger) !important;
-  color: var(--nx-danger) !important;
+  background: rgba(244,63,94,0.1) !important;
+  border-color: #f43f5e !important;
+  color: #fca5a5 !important;
 }
 
-.explanationBox {
-  padding: 18px 22px;
-  border-radius: var(--nx-radius-md);
-  background: rgba(15, 23, 42, 0.8);
-  border-left: 4px solid var(--nx-brand-400);
-  font-size: 0.94rem;
-  line-height: 1.6;
-  color: var(--nx-fg);
+/* Explanation */
+.explanation {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  font-weight: 500;
 }
 
-.resultCard {
-  padding: 48px !important;
+.explanationGood {
+  background: rgba(52,211,153,0.12);
+  border: 1px solid rgba(52,211,153,0.25);
+  color: #6ee7b7;
+}
+
+.explanationBad {
+  background: rgba(244,63,94,0.1);
+  border: 1px solid rgba(244,63,94,0.25);
+  color: #fca5a5;
+}
+
+.quizFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Dot navigation */
+.dotMap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.45);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.dot:hover { background: rgba(99,102,241,0.18); color: #fff; }
+.dotCurrent { border-color: var(--nx-brand-400) !important; color: #fff !important; box-shadow: 0 0 10px rgba(99,102,241,0.5); }
+.dotAnswered { background: rgba(99,102,241,0.15) !important; color: var(--nx-brand-400) !important; }
+.dotCorrect { background: rgba(52,211,153,0.2) !important; border-color: #34d399 !important; color: #34d399 !important; }
+.dotWrong { background: rgba(244,63,94,0.15) !important; border-color: #f43f5e !important; color: #f43f5e !important; }
+
+/* Results */
+.resultsCard {
+  padding: 40px !important;
+  max-width: 680px;
+  margin: 0 auto;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 12px;
+}
+
+.xpBadge {
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: rgba(99,102,241,0.2);
+  border: 1px solid rgba(99,102,241,0.4);
+  color: var(--nx-brand-400);
+  font-size: 0.88rem;
+  font-weight: 700;
 }

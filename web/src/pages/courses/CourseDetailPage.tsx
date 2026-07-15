@@ -216,7 +216,12 @@ export function CourseDetailPage() {
                               <span style={{ fontSize: '1.1rem' }}>{item.type === 'video' ? '📺' : '📄'}</span>
                               <span>{item.title}</span>
                             </div>
-                            <Button variant="ghost" size="sm" style={{ color: 'var(--nx-accent-cyan)', fontWeight: 700 }}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/courses/${courseId}/learn/${item._id || 'lec-' + (itemIdx + 1)}`)}
+                              style={{ color: 'var(--nx-accent-cyan)', fontWeight: 700 }}
+                            >
                               {item.type === 'video' ? 'Watch Video →' : 'View File →'}
                             </Button>
                           </div>

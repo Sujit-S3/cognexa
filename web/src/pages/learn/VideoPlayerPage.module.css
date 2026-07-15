@@ -1,0 +1,265 @@
+.container {
+  padding: 24px 24px 80px 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: relative;
+  z-index: 10;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--nx-fg-muted);
+}
+
+.breadcrumbLink {
+  color: var(--nx-fg-muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.breadcrumbLink:hover {
+  color: #fff;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.playerSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.viewportCard {
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: var(--nx-radius-xl, 24px) !important;
+  background: #000 !important;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.videoContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1e1b4b, #0f172a 80%);
+  position: relative;
+}
+
+.simulationCanvas {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.25), transparent 70%);
+}
+
+.playOverlay {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 0 35px rgba(99, 102, 241, 0.8);
+  transition: transform 0.2s;
+}
+
+.playOverlay:hover {
+  transform: scale(1.1);
+}
+
+.controlsBar {
+  padding: 16px 20px;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scrubber {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  position: relative;
+}
+
+.scrubberFill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--nx-brand-400), var(--nx-accent-cyan));
+}
+
+.buttonsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ctrlGroup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.ctrlIconBtn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.speedChip {
+  padding: 4px 10px;
+  border-radius: var(--nx-radius-sm);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tabsRow {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 24px;
+  padding-bottom: 12px;
+}
+
+.tabBtn {
+  background: none;
+  border: none;
+  color: var(--nx-fg-muted);
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.tabBtnActive {
+  color: #fff;
+}
+
+.tabBtnActive::after {
+  content: '';
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--nx-brand-400);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.playlist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.playlistItem {
+  padding: 14px 16px;
+  border-radius: var(--nx-radius-md, 14px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.playlistItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.playlistItemActive {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: var(--nx-brand-400);
+}
+
+.notesArea {
+  width: 100%;
+  min-height: 180px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-family: var(--nx-font-mono, monospace);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.notesArea:focus {
+  outline: none;
+  border-color: var(--nx-brand-400);
+}

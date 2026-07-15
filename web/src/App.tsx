@@ -17,6 +17,7 @@ import { InstructorDashboard } from './pages/dashboard/InstructorDashboard'
 import { AdminDashboard } from './pages/dashboard/AdminDashboard'
 import { CourseCatalogPage } from './pages/courses/CourseCatalogPage'
 import { CourseDetailPage } from './pages/courses/CourseDetailPage'
+import { VideoPlayerPage } from './pages/learn/VideoPlayerPage'
 
 function LandingShell() {
   useSmoothScroll()
@@ -40,6 +41,14 @@ export function App() {
         <Route path="/" element={<LandingShell />} />
         <Route path="/catalog" element={<CourseCatalogPage />} />
         <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+        <Route
+          path="/courses/:courseId/learn/:itemId"
+          element={
+            <RequireAuth allowedRoles={['student', 'instructor', 'admin']}>
+              <VideoPlayerPage />
+            </RequireAuth>
+          }
+        />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
         <Route path="/auth/forgot" element={<ForgotPasswordPage />} />

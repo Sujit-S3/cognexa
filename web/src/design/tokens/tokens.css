@@ -1,0 +1,152 @@
+/*
+ * NEXUS AI — Design Tokens
+ * ------------------------------------------------------------------
+ * The single source of truth for the visual language. Everything (glass
+ * surfaces, motion, typography, spacing) references these custom properties,
+ * so retheming = editing this file. A future light theme overrides the same
+ * names under [data-theme='light'].
+ */
+
+:root {
+  /* ---- Color: brand ramp (indigo → violet → cyan aurora) ---- */
+  --nx-brand-50: #eef2ff;
+  --nx-brand-100: #e0e7ff;
+  --nx-brand-200: #c7d2fe;
+  --nx-brand-300: #a5b4fc;
+  --nx-brand-400: #818cf8;
+  --nx-brand-500: #6366f1;
+  --nx-brand-600: #4f46e5;
+  --nx-brand-700: #4338ca;
+  --nx-accent-cyan: #22d3ee;
+  --nx-accent-violet: #a855f7;
+  --nx-accent-pink: #ec4899;
+
+  /* ---- Color: semantic ---- */
+  --nx-success: #34d399;
+  --nx-warning: #fbbf24;
+  --nx-danger: #f87171;
+  --nx-info: var(--nx-accent-cyan);
+
+  /* ---- Surface / background (dark theme = default) ---- */
+  --nx-bg-base: #05060f;
+  --nx-bg-raised: #0a0c1b;
+  --nx-bg-sunken: #030409;
+  --nx-fg: #f5f7ff;
+  --nx-fg-muted: #a6adc8;
+  --nx-fg-subtle: #6b7194;
+  --nx-border: rgba(255, 255, 255, 0.08);
+  --nx-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* ---- Glass system ---- */
+  --nx-glass-bg: rgba(255, 255, 255, 0.04);
+  --nx-glass-bg-strong: rgba(255, 255, 255, 0.08);
+  --nx-glass-border: rgba(255, 255, 255, 0.12);
+  --nx-glass-highlight: rgba(255, 255, 255, 0.25);
+  --nx-glass-shadow: rgba(2, 4, 12, 0.6);
+
+  /* ---- Blur tokens ---- */
+  --nx-blur-sm: 6px;
+  --nx-blur-md: 14px;
+  --nx-blur-lg: 28px;
+  --nx-blur-xl: 48px;
+
+  /* ---- Typography ---- */
+  --nx-font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --nx-font-display: 'Sora', 'Inter', system-ui, sans-serif;
+  --nx-font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Fluid type scale (clamp = responsive without breakpoints) */
+  --nx-text-xs: clamp(0.72rem, 0.7rem + 0.1vw, 0.78rem);
+  --nx-text-sm: clamp(0.82rem, 0.8rem + 0.12vw, 0.9rem);
+  --nx-text-base: clamp(0.95rem, 0.9rem + 0.2vw, 1.05rem);
+  --nx-text-lg: clamp(1.1rem, 1rem + 0.4vw, 1.3rem);
+  --nx-text-xl: clamp(1.35rem, 1.2rem + 0.7vw, 1.7rem);
+  --nx-text-2xl: clamp(1.8rem, 1.5rem + 1.4vw, 2.6rem);
+  --nx-text-3xl: clamp(2.4rem, 1.8rem + 3vw, 4rem);
+  --nx-text-hero: clamp(3rem, 2rem + 6vw, 7rem);
+
+  --nx-leading-tight: 1.08;
+  --nx-leading-snug: 1.3;
+  --nx-leading-normal: 1.6;
+  --nx-tracking-tight: -0.03em;
+  --nx-tracking-wide: 0.12em;
+
+  /* ---- Spacing scale (4px base) ---- */
+  --nx-space-1: 0.25rem;
+  --nx-space-2: 0.5rem;
+  --nx-space-3: 0.75rem;
+  --nx-space-4: 1rem;
+  --nx-space-5: 1.5rem;
+  --nx-space-6: 2rem;
+  --nx-space-7: 3rem;
+  --nx-space-8: 4rem;
+  --nx-space-9: 6rem;
+  --nx-space-10: 8rem;
+
+  /* ---- Radius ---- */
+  --nx-radius-sm: 8px;
+  --nx-radius-md: 14px;
+  --nx-radius-lg: 22px;
+  --nx-radius-xl: 32px;
+  --nx-radius-full: 999px;
+
+  /* ---- Elevation / shadow ---- */
+  --nx-shadow-sm: 0 1px 2px rgba(2, 4, 12, 0.4);
+  --nx-shadow-md: 0 8px 24px -6px rgba(2, 4, 12, 0.5);
+  --nx-shadow-lg: 0 24px 60px -12px rgba(2, 4, 12, 0.65);
+  --nx-shadow-glow: 0 0 40px -4px rgba(99, 102, 241, 0.45);
+  --nx-shadow-glow-cyan: 0 0 40px -4px rgba(34, 211, 238, 0.4);
+
+  /* ---- Motion tokens ---- */
+  --nx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --nx-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --nx-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --nx-dur-fast: 0.18s;
+  --nx-dur-base: 0.32s;
+  --nx-dur-slow: 0.6s;
+  --nx-dur-slower: 1.1s;
+
+  /* ---- Gradients / aurora ---- */
+  --nx-gradient-brand: linear-gradient(135deg, var(--nx-brand-500), var(--nx-accent-violet));
+  --nx-gradient-aurora: linear-gradient(
+    120deg,
+    var(--nx-brand-500) 0%,
+    var(--nx-accent-violet) 40%,
+    var(--nx-accent-cyan) 100%
+  );
+  --nx-gradient-text: linear-gradient(120deg, #ffffff 0%, var(--nx-brand-200) 50%, var(--nx-accent-cyan) 100%);
+
+  /* ---- Z-index scale ---- */
+  --nx-z-base: 1;
+  --nx-z-raised: 10;
+  --nx-z-sticky: 100;
+  --nx-z-overlay: 1000;
+  --nx-z-toast: 2000;
+}
+
+/* Future light theme — overrides only what changes; motion/space/radius are shared. */
+[data-theme='light'] {
+  --nx-bg-base: #f6f7fb;
+  --nx-bg-raised: #ffffff;
+  --nx-bg-sunken: #eceef6;
+  --nx-fg: #10132a;
+  --nx-fg-muted: #4a5170;
+  --nx-fg-subtle: #7a80a0;
+  --nx-border: rgba(16, 19, 42, 0.1);
+  --nx-border-strong: rgba(16, 19, 42, 0.18);
+  --nx-glass-bg: rgba(255, 255, 255, 0.6);
+  --nx-glass-bg-strong: rgba(255, 255, 255, 0.8);
+  --nx-glass-border: rgba(16, 19, 42, 0.12);
+  --nx-glass-highlight: rgba(255, 255, 255, 0.9);
+  --nx-glass-shadow: rgba(16, 19, 42, 0.14);
+}
+
+/* Respect users who ask for less motion — reduces (never fully kills) animation. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --nx-dur-fast: 0.001s;
+    --nx-dur-base: 0.001s;
+    --nx-dur-slow: 0.001s;
+    --nx-dur-slower: 0.001s;
+  }
+}

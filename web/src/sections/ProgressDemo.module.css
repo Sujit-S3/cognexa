@@ -1,0 +1,291 @@
+.section {
+  position: relative;
+  padding: 110px 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+  z-index: 10;
+}
+
+.header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 56px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.title {
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  font-weight: 800;
+  line-height: 1.12;
+  color: var(--nx-fg, #fff);
+}
+
+.subtitle {
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  line-height: 1.6;
+  color: var(--nx-fg-muted, #94a3b8);
+}
+
+.demoContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 32px;
+  align-items: center;
+}
+
+.cardLeft, .cardRight {
+  padding: 36px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  border-radius: var(--nx-radius-xl, 32px) !important;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.studentInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatarWrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--nx-brand-400, #818cf8);
+  box-shadow: 0 0 20px -2px rgba(99, 102, 241, 0.5);
+  background: var(--nx-bg-sunken);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.studentName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--nx-fg, #fff);
+}
+
+.studentLevel {
+  font-size: 0.88rem;
+  color: var(--nx-accent-cyan, #22d3ee);
+  font-weight: 600;
+}
+
+.streakBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+  padding: 8px 16px;
+  border-radius: var(--nx-radius-full, 999px);
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 0 25px -4px rgba(251, 191, 36, 0.3);
+}
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.progressLabel {
+  color: var(--nx-fg, #fff);
+}
+
+.progressValue {
+  color: var(--nx-accent-violet, #a855f7);
+}
+
+.progressBarWrap {
+  width: 100%;
+  height: 14px;
+  background: var(--nx-bg-sunken, #030409);
+  border-radius: var(--nx-radius-full, 999px);
+  overflow: hidden;
+  padding: 2px;
+  border: 1px solid var(--nx-border, rgba(255, 255, 255, 0.08));
+}
+
+.progressBarFill {
+  height: 100%;
+  background: var(--nx-gradient-aurora, linear-gradient(120deg, #6366f1, #a855f7, #22d3ee));
+  border-radius: var(--nx-radius-full, 999px);
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heatmapTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--nx-fg-muted, #a6adc8);
+}
+
+.heatmapGrid {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: 6px;
+}
+
+.heatmapBox {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.heatmapActive {
+  background: var(--nx-brand-500, #6366f1);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.heatmapBoost {
+  background: var(--nx-accent-cyan, #22d3ee);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.7);
+}
+
+.questSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.questTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--nx-fg, #fff);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.questList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.questItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-radius: var(--nx-radius-lg, 22px);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--nx-border, rgba(255, 255, 255, 0.08));
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.questItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--nx-brand-400, #818cf8);
+  transform: translateX(4px);
+}
+
+.questItemDone {
+  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.questLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid var(--nx-fg-muted, #a6adc8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.checkboxDone {
+  background: var(--nx-success, #34d399);
+  border-color: var(--nx-success, #34d399);
+}
+
+.questText {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--nx-fg, #fff);
+}
+
+.questTextDone {
+  text-decoration: line-through;
+  color: var(--nx-fg-muted, #a6adc8);
+}
+
+.questReward {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--nx-accent-cyan, #22d3ee);
+  background: rgba(34, 211, 238, 0.12);
+  padding: 4px 10px;
+  border-radius: var(--nx-radius-sm);
+}
+
+.boosterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-radius: var(--nx-radius-lg);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.boosterText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.boosterTitle {
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.boosterSub {
+  font-size: 0.82rem;
+  color: var(--nx-fg-muted);
+}

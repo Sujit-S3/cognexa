@@ -1,0 +1,44 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nx-space-2);
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--nx-radius-full);
+  font-size: var(--nx-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--nx-tracking-wide);
+  text-transform: uppercase;
+  border: 1px solid var(--nx-glass-border);
+  backdrop-filter: blur(var(--nx-blur-sm));
+  -webkit-backdrop-filter: blur(var(--nx-blur-sm));
+}
+
+.brand {
+  color: var(--nx-brand-200);
+  background: color-mix(in srgb, var(--nx-brand-500) 16%, transparent);
+  border-color: color-mix(in srgb, var(--nx-brand-400) 40%, transparent);
+}
+.cyan {
+  color: var(--nx-accent-cyan);
+  background: color-mix(in srgb, var(--nx-accent-cyan) 14%, transparent);
+  border-color: color-mix(in srgb, var(--nx-accent-cyan) 38%, transparent);
+}
+.violet {
+  color: #d8b4fe;
+  background: color-mix(in srgb, var(--nx-accent-violet) 16%, transparent);
+  border-color: color-mix(in srgb, var(--nx-accent-violet) 40%, transparent);
+}
+.success {
+  color: var(--nx-success);
+  background: color-mix(in srgb, var(--nx-success) 14%, transparent);
+  border-color: color-mix(in srgb, var(--nx-success) 38%, transparent);
+}
+.neutral {
+  color: var(--nx-fg-muted);
+  background: var(--nx-glass-bg);
+}
+.pink {
+  color: var(--nx-accent-pink);
+  background: color-mix(in srgb, var(--nx-accent-pink) 16%, transparent);
+  border-color: color-mix(in srgb, var(--nx-accent-pink) 40%, transparent);
+}

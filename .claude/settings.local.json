@@ -6,7 +6,25 @@
       "Bash(npm -v)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Read(//c/tmp/**)",
+      "Bash(git -C /tmp status)",
+      "Bash(grep -v '\\\\.dll$')",
+      "Bash(npx tsc *)",
+      "Bash(npm install *)",
+      "Bash(sed -i \"s|import { assertCourseRole } from '../../utils/courseAccess'|import { assertCourseRole } from '../../utils/courseAccess'\\\\nimport { requireParam } from '../../utils/httpParams'|\" src/modules/courses/moduleItems.controller.ts)",
+      "Bash(sed -i \"s/\\\\.id\\(req\\\\.params\\\\.moduleId\\)/.id\\(requireParam\\(req, 'moduleId'\\)\\)/g; s/\\\\.id\\(req\\\\.params\\\\.id\\)/.id\\(requireParam\\(req, 'id'\\)\\)/g\" src/modules/courses/moduleItems.controller.ts)",
+      "Bash(sed -i \"s|import { sendPasswordResetEmail, sendWelcomeEmail } from '../../services/email.service'|import { sendPasswordResetEmail, sendWelcomeEmail } from '../../services/email.service'\\\\nimport { requireParam } from '../../utils/httpParams'|\" src/modules/auth/auth.controller.ts)",
+      "Bash(sed -i \"s/hashToken\\(req\\\\.params\\\\.token\\)/hashToken\\(requireParam\\(req, 'token'\\)\\)/g\" src/modules/auth/auth.controller.ts)",
+      "Bash(npx eslint *)",
+      "Bash(echo \"RAW EXIT=$?\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('files linted:',j.length,'| total warnings:',j.reduce\\(\\(a,f\\)=>a+f.warningCount,0\\),'| errors:',j.reduce\\(\\(a,f\\)=>a+f.errorCount,0\\)\\)}\\)\")",
+      "Bash(npm run *)",
+      "Bash(echo \"TC=$?\")",
+      "Bash(echo \"LINT=$?\")",
+      "Bash(echo \"BUILD=$?\")",
+      "Bash(npm test *)",
+      "Bash(echo \"TEST=$?\")"
     ]
   }
 }

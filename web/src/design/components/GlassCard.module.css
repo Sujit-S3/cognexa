@@ -1,0 +1,98 @@
+.card {
+  position: relative;
+  border-radius: var(--nx-radius-lg);
+  border: 1px solid var(--nx-glass-border);
+  background: var(--nx-glass-bg);
+  backdrop-filter: blur(var(--nx-blur-md)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--nx-blur-md)) saturate(140%);
+  overflow: hidden;
+  transition:
+    border-color var(--nx-dur-base) var(--nx-ease-out),
+    box-shadow var(--nx-dur-base) var(--nx-ease-out),
+    background var(--nx-dur-base) var(--nx-ease-out);
+}
+
+/* Top light edge — the signature glass highlight. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(160deg, var(--nx-glass-highlight), transparent 40%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  padding: var(--nx-space-5);
+}
+
+/* ---- intensity ---- */
+.intensity-subtle {
+  background: color-mix(in srgb, var(--nx-glass-bg) 60%, transparent);
+  backdrop-filter: blur(var(--nx-blur-sm)) saturate(120%);
+}
+.intensity-strong {
+  background: var(--nx-glass-bg-strong);
+  backdrop-filter: blur(var(--nx-blur-lg)) saturate(160%);
+}
+
+/* ---- elevation ---- */
+.elev-flat {
+  box-shadow: var(--nx-shadow-sm);
+}
+.elev-raised {
+  box-shadow: var(--nx-shadow-md);
+}
+.elev-floating {
+  box-shadow: var(--nx-shadow-lg);
+}
+
+/* ---- glow border ---- */
+.glow {
+  box-shadow: var(--nx-shadow-md), var(--nx-shadow-glow);
+}
+.glow::before {
+  background: linear-gradient(160deg, var(--nx-brand-400), transparent 45%, var(--nx-accent-cyan));
+  opacity: 0.5;
+}
+
+/* ---- interactive ---- */
+.interactive {
+  cursor: pointer;
+}
+.interactive:hover {
+  border-color: var(--nx-border-strong);
+  box-shadow: var(--nx-shadow-lg), var(--nx-shadow-glow);
+}
+
+/* ---- reflective sheen (animated diagonal light sweep on hover) ---- */
+.reflective .sheen {
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 50%;
+  height: 100%;
+  z-index: 0;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.14) 45%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 60%
+  );
+  transform: skewX(-18deg);
+  transition: left var(--nx-dur-slower) var(--nx-ease-out);
+  pointer-events: none;
+}
+.reflective:hover .sheen {
+  left: 120%;
+}

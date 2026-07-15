@@ -1,0 +1,190 @@
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  padding: var(--nx-space-9) var(--nx-space-6) var(--nx-space-7);
+}
+
+.spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Faint perspective grid floor. */
+.grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--nx-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nx-border) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 75%);
+  opacity: 0.5;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: var(--nx-space-7);
+  align-items: center;
+}
+
+.copy {
+  max-width: 34rem;
+}
+
+.pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--nx-success);
+  box-shadow: 0 0 10px var(--nx-success);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.title {
+  font-size: var(--nx-text-hero);
+  margin: var(--nx-space-4) 0 var(--nx-space-5);
+  font-weight: 800;
+}
+
+.subtitle {
+  color: var(--nx-fg-muted);
+  font-size: var(--nx-text-lg);
+  max-width: 30rem;
+  margin-bottom: var(--nx-space-6);
+}
+
+.actions {
+  display: flex;
+  gap: var(--nx-space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--nx-space-7);
+}
+
+.stats {
+  display: flex;
+  gap: var(--nx-space-6);
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+.statValue {
+  font-family: var(--nx-font-display);
+  font-size: var(--nx-text-2xl);
+  font-weight: 700;
+  line-height: 1;
+}
+.statLabel {
+  color: var(--nx-fg-subtle);
+  font-size: var(--nx-text-sm);
+  margin-top: var(--nx-space-1);
+}
+
+/* ---- orb ---- */
+.orbWrap {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+.orbGlow {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.5), transparent 65%);
+  filter: blur(50px);
+  z-index: 0;
+}
+.orbFallback {
+  position: absolute;
+  inset: 20%;
+  border-radius: 50%;
+  background: var(--nx-gradient-aurora);
+  filter: blur(30px);
+  opacity: 0.6;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.floatCard {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--nx-space-2);
+  padding: var(--nx-space-3) var(--nx-space-4);
+  border-radius: var(--nx-radius-md);
+  background: var(--nx-glass-bg-strong);
+  border: 1px solid var(--nx-glass-border);
+  backdrop-filter: blur(var(--nx-blur-lg));
+  -webkit-backdrop-filter: blur(var(--nx-blur-lg));
+  box-shadow: var(--nx-shadow-lg);
+  white-space: nowrap;
+}
+.floatValue {
+  font-size: var(--nx-text-sm);
+  font-weight: 600;
+  color: var(--nx-fg);
+}
+
+/* ---- scroll hint ---- */
+.scrollHint {
+  position: absolute;
+  bottom: var(--nx-space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--nx-space-2);
+  color: var(--nx-fg-subtle);
+  font-size: var(--nx-text-xs);
+  letter-spacing: var(--nx-tracking-wide);
+  text-transform: uppercase;
+}
+.scrollDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--nx-brand-400);
+  box-shadow: 0 0 10px var(--nx-brand-400);
+}
+
+@media (max-width: 900px) {
+  .inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .copy {
+    margin-inline: auto;
+  }
+  .actions,
+  .stats {
+    justify-content: center;
+  }
+  .orbWrap {
+    max-width: 380px;
+    order: -1;
+  }
+}

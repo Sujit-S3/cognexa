@@ -1,0 +1,106 @@
+/* NEXUS AI — global base layer. Imports tokens first so vars are available. */
+@import './design/tokens/tokens.css';
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--nx-font-sans);
+  font-size: var(--nx-text-base);
+  line-height: var(--nx-leading-normal);
+  color: var(--nx-fg);
+  background: var(--nx-bg-base);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Ambient aurora backdrop — fixed, GPU-friendly radial gradients, behind everything. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60vw 60vw at 12% -10%, rgba(99, 102, 241, 0.18), transparent 60%),
+    radial-gradient(50vw 50vw at 100% 0%, rgba(168, 85, 247, 0.14), transparent 55%),
+    radial-gradient(60vw 40vw at 50% 120%, rgba(34, 211, 238, 0.1), transparent 60%);
+}
+
+#root {
+  position: relative;
+  z-index: var(--nx-z-base);
+  isolation: isolate;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--nx-font-display);
+  line-height: var(--nx-leading-tight);
+  letter-spacing: var(--nx-tracking-tight);
+  font-weight: 700;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--nx-brand-500);
+  color: #fff;
+}
+
+/* Custom scrollbar tuned to the dark theme. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--nx-bg-sunken);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--nx-border-strong);
+  border-radius: var(--nx-radius-full);
+  border: 2px solid var(--nx-bg-sunken);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nx-brand-500);
+}
+
+/* Utility: gradient clipped to text. */
+.nx-gradient-text {
+  background: var(--nx-gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Accessibility: visible focus ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--nx-brand-400);
+  outline-offset: 3px;
+  border-radius: var(--nx-radius-sm);
+}

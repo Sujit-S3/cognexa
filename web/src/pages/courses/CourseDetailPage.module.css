@@ -1,35 +1,33 @@
 .container {
-  padding: 40px 24px 80px 24px;
+  padding: 32px 24px 80px;
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 36px;
-  position: relative;
-  z-index: 10;
+  gap: 32px;
 }
 
 .hero {
-  padding: 42px !important;
-  border-radius: var(--nx-radius-xl, 32px) !important;
+  padding: 40px !important;
+  border-radius: 28px !important;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 32px;
   flex-wrap: wrap;
-  background: linear-gradient(135deg, rgba(30, 27, 75, 0.75), rgba(15, 23, 42, 0.9)) !important;
+  background: linear-gradient(135deg, rgba(30,27,75,0.8), rgba(15,23,42,0.9)) !important;
 }
 
 .heroText {
   flex: 1;
-  min-width: 320px;
+  min-width: 280px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 800;
   color: #fff;
   line-height: 1.25;
@@ -37,18 +35,19 @@
 
 .desc {
   color: var(--nx-fg-muted);
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   line-height: 1.6;
 }
 
-.heroCard {
-  min-width: 320px;
-  padding: 28px !important;
+.heroSide {
+  min-width: 280px;
+  max-width: 320px;
+  padding: 24px !important;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  gap: 14px;
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
 }
 
 .gridTwo {
@@ -58,39 +57,33 @@
 }
 
 @media (max-width: 960px) {
-  .gridTwo {
-    grid-template-columns: 1fr;
-  }
+  .gridTwo { grid-template-columns: 1fr; }
 }
 
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .sectionTitle {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
-.syllabusList {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.moduleCard {
-  padding: 22px 26px !important;
+.syllabus {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: all 0.2s ease;
+}
+
+.moduleCard {
+  padding: 20px 24px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .moduleTop {
@@ -101,42 +94,40 @@
 }
 
 .moduleTitle {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .itemsList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.07);
 }
 
 .itemRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  transition: background 0.2s;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.18s;
 }
 
-.itemRow:hover {
-  background: rgba(255, 255, 255, 0.07);
-}
+.itemRow:hover { background: rgba(255,255,255,0.07); }
 
 .itemLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: #fff;
-  font-size: 0.94rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }

@@ -50,6 +50,9 @@ import { VideoPlayerPage } from './pages/learn/VideoPlayerPage'
 import { AssignmentPage } from './pages/assessments/AssignmentPage'
 import { QuizPage } from './pages/assessments/QuizPage'
 
+// ── AI pages ──
+import { AITutorPage } from './pages/ai/AITutorPage'
+
 // ── Landing shell with smooth scroll ──
 function LandingShell() {
   useSmoothScroll()
@@ -137,6 +140,9 @@ export function App() {
             </RequireAuth>
           }
         />
+
+        {/* AI Tutor */}
+        <Route path="/ai" element={<AITutorPage />} />
 
         {/* Admin */}
         <Route

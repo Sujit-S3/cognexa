@@ -18,6 +18,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard',    icon: '⚡', to: '/dashboard',  roles: ['student'] },
   { label: 'My Courses',   icon: '📚', to: '/catalog',    roles: ['student', 'instructor'] },
+  { label: 'AI Tutor',     icon: '🤖', to: '/ai',         roles: ['student', 'instructor', 'admin'] },
   { label: 'Assessments',  icon: '📝', to: '/assessments/quizzes/mock-2', roles: ['student'] },
   { label: 'Certificates', icon: '🏆', to: '/dashboard',  roles: ['student'] },
   { label: 'Portal',       icon: '🎯', to: '/instructor',  roles: ['instructor'] },

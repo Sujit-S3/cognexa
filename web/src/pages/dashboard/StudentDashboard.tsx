@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { coursesApi, deadlinesApi, type CourseView, type DeadlineView } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
 import { GlassCard, Badge, Button, Reveal, RevealItem } from '../../design'
+import { CertificateModal } from '../../components/certificates/CertificateModal'
 import styles from './StudentDashboard.module.css'
 import aiRoboticsImg from '../../assets/ai_robotics.png'
 import webMasteryImg from '../../assets/web_mastery.png'
@@ -17,6 +18,7 @@ interface DailyQuest {
 
 export function StudentDashboard() {
   const { user } = useAuthStore()
+  const [selectedCertCourse, setSelectedCertCourse] = useState<string | null>(null)
 
   const { data: courses = [], isLoading: coursesLoading } = useQuery<CourseView[]>({
     queryKey: ['courses'],
@@ -220,11 +222,20 @@ export function StudentDashboard() {
                       <div className={styles.progressBar}>
                         <div className={styles.progressFill} style={{ width: '68%' }} />
                       </div>
-                      <Link to={`/courses/${courseId}`} style={{ marginTop: '8px' }}>
-                        <Button magnetic glow style={{ width: '100%', padding: '11px', fontSize: '0.9rem' }}>
-                          Continue Learning ⚡
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <Link to={`/courses/${courseId}`} style={{ flex: 1 }}>
+                          <Button magnetic glow style={{ width: '100%', padding: '10px', fontSize: '0.86rem' }}>
+                            Continue ⚡
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="secondary"
+                          onClick={() => setSelectedCertCourse(course.name)}
+                          style={{ padding: '10px 14px', fontSize: '0.84rem' }}
+                        >
+                          Certificate 🏆
                         </Button>
-                      </Link>
+                      </div>
                     </div>
                   </GlassCard>
                 )
@@ -337,6 +348,11 @@ export function StudentDashboard() {
           </div>
         </div>
       </div>
+      <CertificateModal
+        isOpen={Boolean(selectedCertCourse)}
+        onClose={() => setSelectedCertCourse(null)}
+        courseName={selectedCertCourse || undefined}
+      />
     </div>
   )
 }

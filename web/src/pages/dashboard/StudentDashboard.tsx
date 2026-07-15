@@ -310,20 +310,26 @@ export function StudentDashboard() {
                     : 'Upcoming'
 
                   return (
-                    <GlassCard key={index} className={styles.deadlineItem}>
-                      <div className={styles.deadlineLeft}>
-                        <div className={styles.deadlineIcon}>
-                          {item.type === 'Exam' ? '📝' : '💻'}
+                    <Link
+                      key={index}
+                      to={item.type === 'Exam' ? '/assessments/quizzes/mock-2' : '/assessments/assignments/mock-1'}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <GlassCard className={styles.deadlineItem}>
+                        <div className={styles.deadlineLeft}>
+                          <div className={styles.deadlineIcon}>
+                            {item.type === 'Exam' ? '📝' : '💻'}
+                          </div>
+                          <div>
+                            <div className={styles.deadlineTitle}>{item.title}</div>
+                            <div className={styles.deadlineCourse}>{item.course?.name || 'Course Assignment'}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className={styles.deadlineTitle}>{item.title}</div>
-                          <div className={styles.deadlineCourse}>{item.course?.name || 'Course Assignment'}</div>
-                        </div>
-                      </div>
-                      <Badge tone={item.type === 'Exam' ? 'pink' : 'violet'}>
-                        Due: {formattedDate}
-                      </Badge>
-                    </GlassCard>
+                        <Badge tone={item.type === 'Exam' ? 'pink' : 'violet'}>
+                          Due: {formattedDate}
+                        </Badge>
+                      </GlassCard>
+                    </Link>
                   )
                 })}
               </div>

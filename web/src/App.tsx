@@ -18,6 +18,8 @@ import { AdminDashboard } from './pages/dashboard/AdminDashboard'
 import { CourseCatalogPage } from './pages/courses/CourseCatalogPage'
 import { CourseDetailPage } from './pages/courses/CourseDetailPage'
 import { VideoPlayerPage } from './pages/learn/VideoPlayerPage'
+import { AssignmentPage } from './pages/assessments/AssignmentPage'
+import { QuizPage } from './pages/assessments/QuizPage'
 
 function LandingShell() {
   useSmoothScroll()
@@ -46,6 +48,22 @@ export function App() {
           element={
             <RequireAuth allowedRoles={['student', 'instructor', 'admin']}>
               <VideoPlayerPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/assessments/assignments/:assessmentId"
+          element={
+            <RequireAuth allowedRoles={['student', 'instructor', 'admin']}>
+              <AssignmentPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/assessments/quizzes/:assessmentId"
+          element={
+            <RequireAuth allowedRoles={['student', 'instructor', 'admin']}>
+              <QuizPage />
             </RequireAuth>
           }
         />

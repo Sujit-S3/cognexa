@@ -1,0 +1,140 @@
+.container {
+  padding: 40px 24px 80px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  position: relative;
+  z-index: 10;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--nx-fg-muted);
+}
+
+.breadcrumbLink {
+  color: var(--nx-fg-muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.breadcrumbLink:hover {
+  color: #fff;
+}
+
+.quizCard {
+  padding: 36px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--nx-brand-400), var(--nx-accent-cyan));
+  box-shadow: 0 0 12px var(--nx-brand-400);
+  transition: width 0.4s ease;
+}
+
+.questionTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.35;
+}
+
+.optionsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.optionBtn {
+  width: 100%;
+  padding: 18px 22px;
+  border-radius: var(--nx-radius-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 600;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.optionBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--nx-brand-400);
+}
+
+.optionSelected {
+  background: rgba(99, 102, 241, 0.2) !important;
+  border-color: var(--nx-brand-400) !important;
+  box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.5);
+}
+
+.optionCorrect {
+  background: rgba(52, 211, 153, 0.22) !important;
+  border-color: var(--nx-success) !important;
+  color: var(--nx-success) !important;
+}
+
+.optionWrong {
+  background: rgba(244, 63, 94, 0.22) !important;
+  border-color: var(--nx-danger) !important;
+  color: var(--nx-danger) !important;
+}
+
+.explanationBox {
+  padding: 18px 22px;
+  border-radius: var(--nx-radius-md);
+  background: rgba(15, 23, 42, 0.8);
+  border-left: 4px solid var(--nx-brand-400);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--nx-fg);
+}
+
+.resultCard {
+  padding: 48px !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}

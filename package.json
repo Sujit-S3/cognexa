@@ -39,5 +39,13 @@
     "web/src/**/*.{ts,tsx,css}": "prettier --write",
     "Server/src/**/*.ts": "prettier --write",
     "docs/**/*.{md,yml,yaml}": "prettier --write"
+  },
+  "pnpm": {
+    "overrides": {
+      "tar": ">=7.4.12"
+    }
+  },
+  "overrides": {
+    "tar": ">=7.4.12"
   }
 }

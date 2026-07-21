@@ -6,6 +6,7 @@ RUN corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY Server/package.json Server/package.json
+COPY web/package.json web/package.json
 RUN pnpm install --frozen-lockfile --filter cognexa-server...
 
 COPY Server Server

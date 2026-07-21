@@ -54,17 +54,23 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 11.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - uses: azure/setup-kubectl@v4
         with:
           version: v1.31.0
-      - name: Render and validate staging manifests
-        run: |
-          kubectl kustomize deploy/k8s/overlays/staging > "${RUNNER_TEMP}/staging.yaml"
-          kubectl apply --dry-run=client --validate=false -f "${RUNNER_TEMP}/staging.yaml"
-      - name: Render and validate production manifests
-        run: |
-          kubectl kustomize deploy/k8s/overlays/production > "${RUNNER_TEMP}/production.yaml"
-          kubectl apply --dry-run=client --validate=false -f "${RUNNER_TEMP}/production.yaml"
+      - name: Validate YAML structure and base manifests
+        run: node scripts/validate-infrastructure.mjs
+      - name: Render staging manifests
+        run: kubectl kustomize deploy/k8s/overlays/staging > "${RUNNER_TEMP}/staging.yaml"
+      - name: Render production manifests
+        run: kubectl kustomize deploy/k8s/overlays/production > "${RUNNER_TEMP}/production.yaml"
 
   containers:
     needs: quality

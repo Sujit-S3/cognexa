@@ -12,6 +12,7 @@ resources:
   - autoscaling.yaml
   - availability.yaml
   - network-policy.yaml
-commonLabels:
-  app.kubernetes.io/part-of: cognexa
-  app.kubernetes.io/managed-by: kustomize
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: cognexa
+      app.kubernetes.io/managed-by: kustomize

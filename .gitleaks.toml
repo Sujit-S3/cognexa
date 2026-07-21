@@ -1,0 +1,19 @@
+title = "Cognexa Gitleaks Configuration"
+
+[allowlist]
+description = "Allowlist for example configs, test fixtures, and CI dummy values"
+paths = [
+  '''\.env\.example$''',
+  '''config/environments/.*\.example$''',
+  '''deploy/k8s/.*\.example\.yaml$''',
+  '''\.github/workflows/.*\.yml$''',
+  '''Server/src/__tests__/.*\.ts$''',
+  '''web/src/test/.*\.ts$'''
+]
+regexes = [
+  '''test-secret-key-.*''',
+  '''replace-with-.*''',
+  '''SET_IN_SECRET_MANAGER''',
+  '''mongodb://localhost:27017/.*''',
+  '''redis://localhost:6379.*'''
+]

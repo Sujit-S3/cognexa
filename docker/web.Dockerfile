@@ -14,7 +14,7 @@ ARG VITE_API_URL=/api/v1
 ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm --filter web build
 
-FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS runtime
 USER root
 RUN apk update && apk upgrade --no-cache
 ARG APP_VERSION=0.1.0

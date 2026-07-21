@@ -1,323 +1,359 @@
-import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { coursesApi, type CourseView } from '../../services/api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  Archive,
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  Clock3,
+  Coins,
+  FileCheck2,
+  GraduationCap,
+  Plus,
+  RotateCcw,
+  Sparkles,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { instructorApi, type CourseStatus } from '../../services/api'
+import { Badge, Button, GlassCard, Reveal, RevealItem } from '../../design'
 import { useAuthStore } from '../../stores/authStore'
-import { GlassCard, Badge, Button, Reveal, RevealItem } from '../../design'
 import styles from './InstructorDashboard.module.css'
-import aiRoboticsImg from '../../assets/ai_robotics.png'
-import webMasteryImg from '../../assets/web_mastery.png'
 
-interface GradingSubmission {
-  id: string
-  studentName: string
-  assignmentTitle: string
-  submittedAt: string
-  status: 'Pending Review' | 'Graded'
-  grade?: string
+const statusTone: Record<CourseStatus, 'neutral' | 'cyan' | 'success' | 'violet'> = {
+  draft: 'neutral',
+  review: 'cyan',
+  published: 'success',
+  archived: 'violet',
+}
+
+function formatDate(value?: string) {
+  if (!value) return 'Recently'
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(value)
+  )
 }
 
 export function InstructorDashboard() {
   const { user } = useAuthStore()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
-
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [newCourseName, setNewCourseName] = useState('')
-  const [newCourseDesc, setNewCourseDesc] = useState('')
-
-  const { data: courses = [], isLoading: coursesLoading } = useQuery<CourseView[]>({
-    queryKey: ['courses'],
-    queryFn: () => coursesApi.getAll(),
+  const dashboard = useQuery({
+    queryKey: ['instructor', 'dashboard'],
+    queryFn: instructorApi.getDashboard,
   })
 
-  const createCourseMutation = useMutation({
-    mutationFn: (payload: { courseName: string; description?: string }) => coursesApi.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses'] })
-      setShowCreateModal(false)
-      setNewCourseName('')
-      setNewCourseDesc('')
+  const createCourse = useMutation({
+    mutationFn: () => instructorApi.createDraft(),
+    onSuccess: (course) => {
+      void queryClient.invalidateQueries({ queryKey: ['instructor', 'dashboard'] })
+      navigate(`/instructor/courses/${course._id ?? course.id}/edit`)
     },
   })
 
-  const toggleStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'published' | 'archived' }) =>
-      coursesApi.update(id, { status }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses'] })
+  const archiveCourse = useMutation({
+    mutationFn: ({ courseId, status }: { courseId: string; status: CourseStatus }) =>
+      instructorApi.transitionStatus(courseId, status),
+    onMutate: async ({ courseId, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['instructor', 'dashboard'] })
+      const previous = queryClient.getQueryData(['instructor', 'dashboard'])
+      queryClient.setQueryData(['instructor', 'dashboard'], (current: typeof dashboard.data) =>
+        current
+          ? {
+              ...current,
+              courses: current.courses.map((course) =>
+                (course._id ?? course.id) === courseId ? { ...course, status } : course
+              ),
+            }
+          : current
+      )
+      return { previous }
     },
+    onError: (_error, _variables, context) =>
+      queryClient.setQueryData(['instructor', 'dashboard'], context?.previous),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: ['instructor', 'dashboard'] }),
   })
 
-  // Courses created by this instructor or fallback demo courses
-  const instructorCourses = courses.filter((c) => c.privilege === 'instructor' || c.privilege === 'admin' || user?.role === 'instructor')
-  const displayCourses =
-    instructorCourses.length > 0
-      ? instructorCourses
-      : [
-          {
-            _id: 'demo-ai',
-            name: 'AI & Robotics — Neural Control Systems',
-            description: 'Comprehensive reinforcement learning curriculum with interactive Python & WebGL labs.',
-            image: aiRoboticsImg,
-            backgroundColor: '#6366f1',
-            status: 'published' as const,
-            enrolled: true,
-            privilege: 'instructor' as const,
-            modules: [{ title: 'Module 1: Kinematics', moduleItems: [] }, { title: 'Module 2: Neural Control', moduleItems: [] }],
-          },
-          {
-            _id: 'demo-web',
-            name: 'Web Mastery — 3D WebGL & React 19',
-            description: 'Advanced frontend architecture teaching shaders, Three.js canvas physics, and custom tokens.',
-            image: webMasteryImg,
-            backgroundColor: '#ec4899',
-            status: 'published' as const,
-            enrolled: true,
-            privilege: 'instructor' as const,
-            modules: [{ title: 'Module 1: Foundations', moduleItems: [] }],
-          },
-        ]
-
-  const [submissions, setSubmissions] = useState<GradingSubmission[]>([
-    { id: 'sub-1', studentName: 'Elena Rostova', assignmentTitle: 'Inverse Kinematics Lab 3', submittedAt: '2 hours ago', status: 'Pending Review' },
-    { id: 'sub-2', studentName: 'Marcus Vance', assignmentTitle: 'Custom GLSL Fragment Shader', submittedAt: '5 hours ago', status: 'Pending Review' },
-    { id: 'sub-3', studentName: 'Aria Chen', assignmentTitle: 'React 19 Server Actions Quiz', submittedAt: '1 day ago', status: 'Graded', grade: '98 / 100' },
-  ])
-
-  const handleGradeSubmission = (id: string) => {
-    setSubmissions((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: 'Graded', grade: '95 / 100 🌟' } : s))
+  if (dashboard.isLoading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.skeletonHeader} />
+        <div className={styles.skeletonGrid}>
+          {Array.from({ length: 4 }, (_, index) => (
+            <span key={index} />
+          ))}
+        </div>
+        <div className={styles.skeletonPanel} role="status">
+          Loading instructor analytics…
+        </div>
+      </div>
     )
   }
 
-  const handleCreateSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    if (!newCourseName.trim()) return
-    createCourseMutation.mutate({ courseName: newCourseName, description: newCourseDesc })
+  if (dashboard.isError || !dashboard.data) {
+    return (
+      <div className={styles.container}>
+        <GlassCard className={styles.errorState}>
+          <h1>Instructor workspace unavailable</h1>
+          <p>{dashboard.error?.message ?? 'The workspace could not be loaded.'}</p>
+          <Button type="button" onClick={() => void dashboard.refetch()}>
+            Try again
+          </Button>
+        </GlassCard>
+      </div>
+    )
   }
+
+  const data = dashboard.data
+  const metrics = [
+    {
+      label: 'Managed courses',
+      value: data.summary.courseCount,
+      detail: `${data.summary.publishedCourseCount} published`,
+      icon: BookOpen,
+    },
+    {
+      label: 'Enrolled learners',
+      value: data.summary.totalStudents,
+      detail: 'Across your courses',
+      icon: Users,
+    },
+    {
+      label: 'Completion rate',
+      value: `${data.summary.completionRate}%`,
+      detail: 'Achievement-based',
+      icon: CheckCircle2,
+    },
+    {
+      label: 'Pending submissions',
+      value: data.summary.pendingSubmissions,
+      detail: 'Awaiting review',
+      icon: FileCheck2,
+    },
+  ]
 
   return (
     <div className={styles.container}>
-      {/* Header Banner */}
       <GlassCard elevation="raised" glow className={styles.headerBanner}>
         <div>
-          <Badge tone="violet" style={{ marginBottom: '10px' }}>👨‍🏫 Instructor Control Center</Badge>
-          <h1 className={styles.title}>Instructor Portal</h1>
-          <p className={styles.subtitle}>
-            Manage your courses, review student lab submissions, and publish interactive 3D curriculum.
-          </p>
+          <Badge tone="violet">
+            <Sparkles size={13} /> Instructor workspace
+          </Badge>
+          <h1>Welcome back, {user?.name?.split(' ')[0] ?? 'Instructor'}.</h1>
+          <p>Create courses, shape curriculum, publish confidently, and monitor learner outcomes.</p>
         </div>
-        <div>
-          <Button magnetic glow onClick={() => setShowCreateModal(true)} style={{ padding: '14px 24px', fontSize: '1rem' }}>
-            + Create New Course ⚡
-          </Button>
-        </div>
+        <Button
+          magnetic
+          glow
+          leftIcon={<Plus size={18} />}
+          disabled={createCourse.isPending}
+          onClick={() => createCourse.mutate()}
+        >
+          {createCourse.isPending ? 'Creating draft…' : 'Create course'}
+        </Button>
       </GlassCard>
-
-      {/* Metrics Grid */}
-      <Reveal className={styles.statsGrid}>
-        <RevealItem>
-          <GlassCard className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span>Active Courses</span>
-              <span>📚</span>
-            </div>
-            <div className={styles.statValue}>{displayCourses.length}</div>
-          </GlassCard>
-        </RevealItem>
-
-        <RevealItem>
-          <GlassCard className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span>Total Enrolled Students</span>
-              <span>👥</span>
-            </div>
-            <div className={styles.statValue}>1,428</div>
-          </GlassCard>
-        </RevealItem>
-
-        <RevealItem>
-          <GlassCard className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span>Pending Submissions</span>
-              <span>📝</span>
-            </div>
-            <div className={styles.statValue}>
-              {submissions.filter((s) => s.status === 'Pending Review').length}
-            </div>
-          </GlassCard>
-        </RevealItem>
-
-        <RevealItem>
-          <GlassCard className={styles.statCard}>
-            <div className={styles.statHeader}>
-              <span>Average Student Rating</span>
-              <span>⭐</span>
-            </div>
-            <div className={styles.statValue}>4.9 / 5.0</div>
-          </GlassCard>
-        </RevealItem>
-      </Reveal>
-
-      {/* Courses Section */}
-      <div>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>
-            <span>🛠️ My Managed Courses</span>
-          </h2>
-        </div>
-
-        {coursesLoading ? (
-          <div style={{ padding: '40px', color: 'var(--nx-fg-muted)' }}>Loading instructor curriculum...</div>
-        ) : (
-          <div className={styles.coursesGrid}>
-            {displayCourses.map((course) => {
-              const courseId = course._id || course.id || 'demo'
-              return (
-                <GlassCard key={courseId} className={styles.courseCard}>
-                  <div className={styles.courseTop}>
-                    <div>
-                      <Badge tone={course.status === 'published' ? 'success' : 'neutral'} style={{ marginBottom: '8px' }}>
-                        {course.status.toUpperCase()}
-                      </Badge>
-                      <h3 className={styles.courseName}>{course.name}</h3>
-                      <p className={styles.courseDesc}>{course.description || 'No description provided.'}</p>
-                    </div>
-                    <div
-                      style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '12px',
-                        background: course.backgroundColor || '#6366f1',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '1.25rem',
-                        flexShrink: 0,
-                      }}
-                    >
-                      🎓
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--nx-fg-muted)', marginBottom: '12px' }}>
-                      Curriculum: <strong>{course.modules?.length || 2} Modules</strong>
-                    </div>
-                    <div className={styles.actionsRow}>
-                      <Link to={`/courses/${courseId}`} style={{ flex: 1 }}>
-                        <Button variant="secondary" size="sm" style={{ width: '100%' }}>
-                          Curriculum & Modules
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          toggleStatusMutation.mutate({
-                            id: courseId,
-                            status: course.status === 'published' ? 'archived' : 'published',
-                          })
-                        }
-                      >
-                        {course.status === 'published' ? 'Archive' : 'Publish'}
-                      </Button>
-                    </div>
-                  </div>
-                </GlassCard>
-              )
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Student Grading Queue */}
-      <div>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>
-            <span>📋 Student Grading & Review Queue</span>
-          </h2>
-          <Badge tone="cyan">{submissions.filter((s) => s.status === 'Pending Review').length} Action Required</Badge>
-        </div>
-
-        <div className={styles.gradingList}>
-          {submissions.map((sub) => (
-            <GlassCard key={sub.id} className={styles.gradingItem}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
-                  🧑‍💻
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>{sub.studentName}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--nx-fg-muted)' }}>{sub.assignmentTitle} • {sub.submittedAt}</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                {sub.status === 'Pending Review' ? (
-                  <>
-                    <Badge tone="brand">Pending Review</Badge>
-                    <Button magnetic glow size="sm" onClick={() => handleGradeSubmission(sub.id)}>
-                      Review & Award Grade (95%)
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Badge tone="success">{sub.grade}</Badge>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--nx-success)', fontWeight: 600 }}>Completed ✓</span>
-                  </>
-                )}
-              </div>
-            </GlassCard>
-          ))}
-        </div>
-      </div>
-
-      {/* Create Course Modal */}
-      {showCreateModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowCreateModal(false)}>
-          <GlassCard elevation="raised" glow className={styles.modalCard} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', marginBottom: '6px' }}>Create New Course</h2>
-            <p style={{ color: 'var(--nx-fg-muted)', fontSize: '0.9rem', marginBottom: '22px' }}>
-              Initialize a new interactive course curriculum inside NEXUS AI.
-            </p>
-
-            <form onSubmit={handleCreateSubmit}>
-              <div className={styles.formField}>
-                <label className={styles.label}>Course Title</label>
-                <input
-                  type="text"
-                  required
-                  className={styles.input}
-                  placeholder="e.g. Quantum Computing & WebGL Shaders"
-                  value={newCourseName}
-                  onChange={(e) => setNewCourseName(e.target.value)}
-                />
-              </div>
-
-              <div className={styles.formField}>
-                <label className={styles.label}>Description</label>
-                <textarea
-                  rows={3}
-                  className={styles.input}
-                  placeholder="Provide a brief summary of what students will master..."
-                  value={newCourseDesc}
-                  onChange={(e) => setNewCourseDesc(e.target.value)}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
-                <Button variant="ghost" type="button" onClick={() => setShowCreateModal(false)}>
-                  Cancel
-                </Button>
-                <Button magnetic glow type="submit" disabled={createCourseMutation.isPending}>
-                  {createCourseMutation.isPending ? 'Creating...' : 'Initialize Course 🚀'}
-                </Button>
-              </div>
-            </form>
-          </GlassCard>
+      {createCourse.isError && (
+        <div className={styles.inlineError} role="alert">
+          {createCourse.error.message}
         </div>
       )}
+
+      <Reveal className={styles.statsGrid}>
+        {metrics.map((metric) => {
+          const Icon = metric.icon
+          return (
+            <RevealItem key={metric.label}>
+              <GlassCard className={styles.statCard}>
+                <div className={styles.statIcon}>
+                  <Icon size={19} />
+                </div>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </GlassCard>
+            </RevealItem>
+          )
+        })}
+      </Reveal>
+
+      <div className={styles.contentGrid}>
+        <section className={styles.primaryColumn} aria-labelledby="managed-courses-heading">
+          <div className={styles.sectionHeader}>
+            <div>
+              <Badge tone="cyan">Course management</Badge>
+              <h2 id="managed-courses-heading">Your courses</h2>
+            </div>
+            <span>{data.courses.length} total</span>
+          </div>
+          {data.courses.length === 0 ? (
+            <GlassCard className={styles.emptyState}>
+              <GraduationCap size={32} />
+              <h3>Your first course starts here</h3>
+              <p>Create a persisted draft, then build every detail from the workspace.</p>
+              <Button type="button" onClick={() => createCourse.mutate()}>
+                Create first course
+              </Button>
+            </GlassCard>
+          ) : (
+            <div className={styles.coursesGrid}>
+              {data.courses.map((course) => {
+                const id = course._id ?? course.id ?? ''
+                const analytics = course.analytics
+                return (
+                  <GlassCard key={id} interactive className={styles.courseCard}>
+                    <div className={styles.courseVisual}>
+                      {course.thumbnail?.url || course.image ? (
+                        <img src={course.thumbnail?.url ?? course.image} alt="" />
+                      ) : (
+                        <BookOpen size={24} />
+                      )}
+                    </div>
+                    <div className={styles.courseBody}>
+                      <div className={styles.courseTop}>
+                        <Badge tone={statusTone[course.status]}>{course.status}</Badge>
+                        <span>
+                          {course.updatedAt
+                            ? `Updated ${new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(course.updatedAt))}`
+                            : 'New draft'}
+                        </span>
+                      </div>
+                      <h3>{course.name}</h3>
+                      <p>{course.description || 'Add a course description in the setup wizard.'}</p>
+                      <div className={styles.courseMetrics}>
+                        <span>
+                          <Users size={14} /> {analytics?.studentCount ?? 0}
+                        </span>
+                        <span>
+                          <BookOpen size={14} /> {analytics?.lessonCount ?? 0} lessons
+                        </span>
+                        <span>
+                          <TrendingUp size={14} /> {analytics?.completionRate ?? 0}% complete
+                        </span>
+                      </div>
+                      <div className={styles.courseActions}>
+                        <Link to={`/instructor/courses/${id}/edit`}>
+                          Open builder <ArrowRight size={15} />
+                        </Link>
+                        <button
+                          type="button"
+                          disabled={archiveCourse.isPending}
+                          onClick={() =>
+                            archiveCourse.mutate({
+                              courseId: id,
+                              status: course.status === 'archived' ? 'draft' : 'archived',
+                            })
+                          }
+                        >
+                          {course.status === 'archived' ? (
+                            <>
+                              <RotateCcw size={15} /> Restore
+                            </>
+                          ) : (
+                            <>
+                              <Archive size={15} /> Archive
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </GlassCard>
+                )
+              })}
+            </div>
+          )}
+        </section>
+
+        <aside className={styles.sideColumn}>
+          <GlassCard className={styles.revenueCard}>
+            <div>
+              <span>Revenue</span>
+              <Coins size={20} />
+            </div>
+            <strong>—</strong>
+            <p>Connect a payment provider to activate revenue analytics.</p>
+            <Badge tone="neutral">Not configured</Badge>
+          </GlassCard>
+          <GlassCard className={styles.activityCard}>
+            <div className={styles.cardHeading}>
+              <h2>Recent activity</h2>
+              <Clock3 size={18} />
+            </div>
+            {data.recentActivity.length === 0 ? (
+              <p className={styles.muted}>Submission activity will appear here.</p>
+            ) : (
+              <ul>
+                {data.recentActivity.slice(0, 6).map((activity) => (
+                  <li key={activity.id}>
+                    <span>{activity.studentName.slice(0, 1).toUpperCase()}</span>
+                    <div>
+                      <strong>{activity.studentName}</strong>
+                      <p>Submitted {activity.assessmentTitle}</p>
+                      <small>{formatDate(activity.occurredAt)}</small>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassCard>
+        </aside>
+      </div>
+
+      <div className={styles.analyticsGrid}>
+        <GlassCard className={styles.analyticsPanel}>
+          <div className={styles.cardHeading}>
+            <h2>Top performing courses</h2>
+            <TrendingUp size={18} />
+          </div>
+          {data.topCourses.length === 0 ? (
+            <p className={styles.muted}>Publish and enroll learners to see course performance.</p>
+          ) : (
+            <div className={styles.performanceList}>
+              {data.topCourses.map((course, index) => (
+                <div key={course.id}>
+                  <span>{index + 1}</span>
+                  <div>
+                    <strong>{course.name}</strong>
+                    <small>
+                      {course.studentCount} learners · {course.lessonCount} lessons
+                    </small>
+                  </div>
+                  <b>{course.completionRate}%</b>
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
+        <GlassCard className={styles.analyticsPanel}>
+          <div className={styles.cardHeading}>
+            <h2>Recent learners</h2>
+            <Users size={18} />
+          </div>
+          {data.students.length === 0 ? (
+            <p className={styles.muted}>Enrolled learners will appear here.</p>
+          ) : (
+            <div className={styles.studentList}>
+              {data.students.slice(0, 7).map((student) => (
+                <div key={`${student.id}-${student.course.id}`}>
+                  <div className={styles.avatar}>
+                    {student.photo ? (
+                      <img src={student.photo} alt="" />
+                    ) : (
+                      student.name.slice(0, 1).toUpperCase()
+                    )}
+                  </div>
+                  <span>
+                    <strong>{student.name}</strong>
+                    <small>{student.course.name}</small>
+                  </span>
+                  <Badge tone={student.completed ? 'success' : 'neutral'}>
+                    {student.completed ? 'Completed' : 'Learning'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </GlassCard>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 /*
- * NEXUS AI — Design Tokens
+ * Cognexa — Design Tokens
  * ------------------------------------------------------------------
  * The single source of truth for the visual language. Everything (glass
  * surfaces, motion, typography, spacing) references these custom properties,
@@ -14,11 +14,11 @@
   --nx-brand-200: #c7d2fe;
   --nx-brand-300: #a5b4fc;
   --nx-brand-400: #818cf8;
-  --nx-brand-500: #6366f1;
-  --nx-brand-600: #4f46e5;
+  --nx-brand-500: #4f46e5;
+  --nx-brand-600: #4338ca;
   --nx-brand-700: #4338ca;
-  --nx-accent-cyan: #22d3ee;
-  --nx-accent-violet: #a855f7;
+  --nx-accent-cyan: #06b6d4;
+  --nx-accent-violet: #8b5cf6;
   --nx-accent-pink: #ec4899;
 
   /* ---- Color: semantic ---- */
@@ -28,12 +28,12 @@
   --nx-info: var(--nx-accent-cyan);
 
   /* ---- Surface / background (dark theme = default) ---- */
-  --nx-bg-base: #05060f;
+  --nx-bg-base: #020617;
   --nx-bg-raised: #0a0c1b;
   --nx-bg-sunken: #030409;
-  --nx-fg: #f5f7ff;
-  --nx-fg-muted: #a6adc8;
-  --nx-fg-subtle: #6b7194;
+  --nx-fg: #f8fafc;
+  --nx-fg-muted: #cbd5e1;
+  --nx-fg-subtle: #737ba0;
   --nx-border: rgba(255, 255, 255, 0.08);
   --nx-border-strong: rgba(255, 255, 255, 0.16);
 
@@ -51,9 +51,9 @@
   --nx-blur-xl: 48px;
 
   /* ---- Typography ---- */
-  --nx-font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --nx-font-display: 'Sora', 'Inter', system-ui, sans-serif;
-  --nx-font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --nx-font-sans: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --nx-font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --nx-font-mono: 'Cascadia Code', 'SFMono-Regular', Consolas, ui-monospace, monospace;
 
   /* Fluid type scale (clamp = responsive without breakpoints) */
   --nx-text-xs: clamp(0.72rem, 0.7rem + 0.1vw, 0.78rem);
@@ -114,7 +114,12 @@
     var(--nx-accent-violet) 40%,
     var(--nx-accent-cyan) 100%
   );
-  --nx-gradient-text: linear-gradient(120deg, #ffffff 0%, var(--nx-brand-200) 50%, var(--nx-accent-cyan) 100%);
+  --nx-gradient-text: linear-gradient(
+    120deg,
+    #ffffff 0%,
+    var(--nx-brand-200) 50%,
+    var(--nx-accent-cyan) 100%
+  );
 
   /* ---- Z-index scale ---- */
   --nx-z-base: 1;
@@ -126,7 +131,7 @@
 
 /* Future light theme — overrides only what changes; motion/space/radius are shared. */
 [data-theme='light'] {
-  --nx-bg-base: #f6f7fb;
+  --nx-bg-base: #f8fafc;
   --nx-bg-raised: #ffffff;
   --nx-bg-sunken: #eceef6;
   --nx-fg: #10132a;

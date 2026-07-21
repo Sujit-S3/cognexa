@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /instructor
+Disallow: /admin
+Disallow: /ai
+
+Sitemap: https://cognexa.app/sitemap.xml

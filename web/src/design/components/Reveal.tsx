@@ -33,7 +33,15 @@ export function Reveal({ children, stagger = false, className, style, delay = 0 
 }
 
 /** A single staggered child; place inside a <Reveal stagger>. */
-export function RevealItem({ children, className, style }: { children: ReactNode; className?: string; style?: React.CSSProperties }) {
+export function RevealItem({
+  children,
+  className,
+  style,
+}: {
+  children: ReactNode
+  className?: string
+  style?: React.CSSProperties
+}) {
   return (
     <motion.div className={className} style={style} variants={revealVariants}>
       {children}

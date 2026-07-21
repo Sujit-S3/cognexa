@@ -43,13 +43,16 @@ export async function runAutoGrading(courseId: string, assessmentId: string): Pr
               questionText: question?.question_text ?? '',
               modelAnswer: question?.ans ?? '',
               studentAnswer: answer.studentAnswer,
-              maxScore: question?.points ?? 0
+              maxScore: question?.points ?? 0,
             }
           })
         )
       } else {
         const pdfFile = submission.files.find((file) => file.url.toLowerCase().endsWith('.pdf'))
-        results = await aiService.gradeWrittenSubmission({ modelAnswer: '', studentAnswerUrl: pdfFile?.url ?? '' })
+        results = await aiService.gradeWrittenSubmission({
+          modelAnswer: '',
+          studentAnswerUrl: pdfFile?.url ?? '',
+        })
       }
 
       submission.answers.forEach((answer, index) => {

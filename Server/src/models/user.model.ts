@@ -47,8 +47,8 @@ const userSchema = new Schema<UserAttrs, UserModel, UserMethods>({
     lowercase: true,
     validate: {
       validator: (value: string) => validator.isEmail(value),
-      message: 'Email is invalid'
-    }
+      message: 'Email is invalid',
+    },
   },
   photo: { type: String, default: 'https://www.w3schools.com/howto/img_avatar.png' },
   password: {
@@ -58,8 +58,8 @@ const userSchema = new Schema<UserAttrs, UserModel, UserMethods>({
     trim: true,
     validate: {
       validator: (value: string) => !value.toLowerCase().includes('password'),
-      message: 'Password cannot contain "password"'
-    }
+      message: 'Password cannot contain "password"',
+    },
   },
   passwordChangedAt: { type: Date, default: Date.now, select: false },
   passwordResetToken: { type: String, select: false },
@@ -72,13 +72,13 @@ const userSchema = new Schema<UserAttrs, UserModel, UserMethods>({
     required: [true, 'User phone number required'],
     validate: {
       validator: (value: string) => /\d{3}-\d{3}-\d{4}/.test(value),
-      message: (props: { value: string }) => `${props.value} is not a valid phone number!`
-    }
+      message: (props: { value: string }) => `${props.value} is not a valid phone number!`,
+    },
   },
   invalidatedTokens: [String],
   role: { type: String, enum: ['admin', 'student', 'instructor'], default: 'student' },
   enrollments: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
-  isEmailRegistered: { type: Boolean, default: false }
+  isEmailRegistered: { type: Boolean, default: false },
 })
 
 userSchema.index({ name: 1, username: 1 })
@@ -88,7 +88,7 @@ userSchema.virtual('followersCount', {
   ref: 'Follow',
   foreignField: 'follows',
   localField: '_id',
-  count: true
+  count: true,
 })
 userSchema.virtual('follows', { ref: 'Follow', foreignField: 'user', localField: '_id' })
 userSchema.virtual('followCount', { ref: 'Follow', foreignField: 'user', localField: '_id', count: true })
@@ -97,7 +97,7 @@ userSchema.virtual('articlesCount', {
   ref: 'Article',
   foreignField: 'authorPersonId',
   localField: '_id',
-  count: true
+  count: true,
 })
 
 userSchema.set('toJSON', {
@@ -109,14 +109,15 @@ userSchema.set('toJSON', {
     delete ret.invalidatedTokens
     delete ret.passwordResetToken
     delete ret.passwordResetValidity
+    delete ret.passwordChangedAt
     delete ret.__v
     return ret
-  }
+  },
 })
 
 userSchema.methods.generateAuthToken = async function (this: UserDocument) {
-  return jwt.sign({ _id: this._id.toString() }, env.SECRET_KEY, {
-    expiresIn: env.JWT_EXPIRES_IN_SECONDS
+  return jwt.sign({ sub: this._id.toString(), type: 'access' }, env.SECRET_KEY, {
+    expiresIn: env.JWT_EXPIRES_IN_SECONDS,
   })
 }
 
@@ -133,6 +134,7 @@ userSchema.statics.findByCredentials = async function (email: string, password: 
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10)
+    if (!this.isNew) this.passwordChangedAt = new Date(Date.now() - 1000)
   }
   next()
 })

@@ -5,8 +5,8 @@ import { coursesApi, type CourseView } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
 import { GlassCard, Badge, Button, Reveal, RevealItem } from '../../design'
 import styles from './CourseCatalogPage.module.css'
-import aiRoboticsImg from '../../assets/ai_robotics.png'
-import webMasteryImg from '../../assets/web_mastery.png'
+import aiRoboticsImg from '../../assets/ai_robotics.webp'
+import webMasteryImg from '../../assets/web_mastery.webp'
 
 // ── Static fallback courses shown when backend returns empty ──────────────────
 const DEMO_COURSES: CourseView[] = [
@@ -19,7 +19,10 @@ const DEMO_COURSES: CourseView[] = [
     backgroundColor: '#6366f1',
     status: 'published',
     enrolled: false,
-    modules: [{ title: 'Module 1: Kinematics', moduleItems: [] }, { title: 'Module 2: Neural Control', moduleItems: [] }],
+    modules: [
+      { title: 'Module 1: Kinematics', moduleItems: [] },
+      { title: 'Module 2: Neural Control', moduleItems: [] },
+    ],
   },
   {
     _id: 'demo-web',
@@ -30,7 +33,10 @@ const DEMO_COURSES: CourseView[] = [
     backgroundColor: '#ec4899',
     status: 'published',
     enrolled: false,
-    modules: [{ title: 'Module 1: Foundations', moduleItems: [] }, { title: 'Module 2: Shaders', moduleItems: [] }],
+    modules: [
+      { title: 'Module 1: Foundations', moduleItems: [] },
+      { title: 'Module 2: Shaders', moduleItems: [] },
+    ],
   },
   {
     _id: 'demo-sys',
@@ -60,9 +66,12 @@ function matchesCategory(course: CourseView, cat: string): boolean {
   if (cat === 'All') return true
   const n = course.name.toLowerCase()
   if (cat === 'AI & Robotics') return n.includes('ai') || n.includes('robotic') || n.includes('neural')
-  if (cat === 'WebGL & Graphics') return n.includes('web') || n.includes('3d') || n.includes('shader') || n.includes('webgl')
-  if (cat === 'System Architecture') return n.includes('system') || n.includes('cloud') || n.includes('distributed')
-  if (cat === 'Data Science') return n.includes('data') || n.includes('science') || n.includes('bioinformatics') || n.includes('omics')
+  if (cat === 'WebGL & Graphics')
+    return n.includes('web') || n.includes('3d') || n.includes('shader') || n.includes('webgl')
+  if (cat === 'System Architecture')
+    return n.includes('system') || n.includes('cloud') || n.includes('distributed')
+  if (cat === 'Data Science')
+    return n.includes('data') || n.includes('science') || n.includes('bioinformatics') || n.includes('omics')
   return true
 }
 
@@ -96,9 +105,18 @@ export function CourseCatalogPage() {
   }, [courses, search, category])
 
   const handleAction = (courseId: string, enrolled: boolean) => {
-    if (!isAuthenticated) { navigate('/auth/login'); return }
-    if (enrolled) { navigate(`/courses/${courseId}`); return }
-    if (courseId.startsWith('demo-')) { navigate(`/courses/${courseId}`); return }
+    if (!isAuthenticated) {
+      navigate('/auth/login')
+      return
+    }
+    if (enrolled) {
+      navigate(`/courses/${courseId}`)
+      return
+    }
+    if (courseId.startsWith('demo-')) {
+      navigate(`/courses/${courseId}`)
+      return
+    }
     enrollMutation.mutate(courseId)
   }
 
@@ -110,7 +128,7 @@ export function CourseCatalogPage() {
         <h1 className={styles.title}>Explore Next-Gen AI &amp; Tech Courses</h1>
         <p className={styles.subtitle}>
           Immerse yourself in world-class courses designed by industry architects. Build live projects,
-          complete gamified quests, and level up your mastery.
+          complete guided learning goals, and build lasting mastery.
         </p>
       </GlassCard>
 
@@ -126,7 +144,10 @@ export function CourseCatalogPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
           {search && (
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--nx-fg-muted)' }} onClick={() => setSearch('')}>
+            <button
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--nx-fg-muted)' }}
+              onClick={() => setSearch('')}
+            >
               ✕
             </button>
           )}
@@ -147,13 +168,25 @@ export function CourseCatalogPage() {
       {/* Grid */}
       {isLoading ? (
         <div style={{ padding: '60px', textAlign: 'center', color: 'var(--nx-fg-muted)' }}>
-          Loading courses from NEXUS AI…
+          Loading courses from Cognexa…
         </div>
       ) : displayCourses.length === 0 ? (
         <GlassCard style={{ padding: '60px', textAlign: 'center' }}>
-          <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>No matching courses</h3>
-          <p style={{ color: 'var(--nx-fg-muted)', marginBottom: '20px' }}>Try a different search or category.</p>
-          <Button variant="secondary" onClick={() => { setSearch(''); setCategory('All') }}>Reset Filters</Button>
+          <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
+            No matching courses
+          </h3>
+          <p style={{ color: 'var(--nx-fg-muted)', marginBottom: '20px' }}>
+            Try a different search or category.
+          </p>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setSearch('')
+              setCategory('All')
+            }}
+          >
+            Reset Filters
+          </Button>
         </GlassCard>
       ) : (
         <Reveal className={styles.grid}>
@@ -162,9 +195,7 @@ export function CourseCatalogPage() {
             return (
               <RevealItem key={id}>
                 <GlassCard className={styles.card}>
-                  {course.image && (
-                    <img src={course.image} alt={course.name} className={styles.cardImage} />
-                  )}
+                  {course.image && <img src={course.image} alt={course.name} className={styles.cardImage} />}
                   {!course.image && (
                     <div
                       className={styles.cardColorBg}
@@ -178,7 +209,9 @@ export function CourseCatalogPage() {
                       {course.enrolled ? 'ENROLLED ✓' : `${course.modules?.length ?? 2} Modules`}
                     </Badge>
                     <h3 className={styles.cardTitle}>{course.name}</h3>
-                    <p className={styles.cardDesc}>{course.description ?? 'Hands-on interactive learning curriculum.'}</p>
+                    <p className={styles.cardDesc}>
+                      {course.description ?? 'Hands-on interactive learning curriculum.'}
+                    </p>
                   </div>
                   <div className={styles.cardFooter}>
                     <div className={styles.metaRow}>
@@ -187,7 +220,10 @@ export function CourseCatalogPage() {
                     </div>
                     <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
                       <Link to={`/courses/${id}`} style={{ flex: 1 }}>
-                        <Button variant="secondary" style={{ width: '100%', padding: '11px', fontSize: '0.9rem' }}>
+                        <Button
+                          variant="secondary"
+                          style={{ width: '100%', padding: '11px', fontSize: '0.9rem' }}
+                        >
                           View Details
                         </Button>
                       </Link>

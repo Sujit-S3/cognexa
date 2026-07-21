@@ -1,0 +1,13 @@
+.git
+.github
+.claude
+node_modules
+**/node_modules
+**/dist
+**/coverage
+Client
+*.log
+.env
+**/.env
+**/.env.*
+!**/.env.example

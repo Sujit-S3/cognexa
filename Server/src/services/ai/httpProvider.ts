@@ -7,7 +7,9 @@ import {
   GradeQuestionResult,
   PlagiarismCheckInput,
   PlagiarismMatch,
-  RecommendationInput
+  RecommendationInput,
+  TutorCompletionInput,
+  TutorCompletionResult,
 } from './types'
 
 // Calls an external AI/ML service over HTTP, configured via AI_SERVICE_URL/AI_SERVICE_API_KEY.
@@ -15,7 +17,7 @@ import {
 const client = axios.create({
   baseURL: env.AI_SERVICE_URL,
   timeout: 15_000,
-  headers: env.AI_SERVICE_API_KEY ? { Authorization: `Bearer ${env.AI_SERVICE_API_KEY}` } : undefined
+  headers: env.AI_SERVICE_API_KEY ? { Authorization: `Bearer ${env.AI_SERVICE_API_KEY}` } : undefined,
 })
 
 export const httpAiProvider: AiServiceProvider = {
@@ -47,5 +49,10 @@ export const httpAiProvider: AiServiceProvider = {
   async getRecommendedContentIds(input: RecommendationInput): Promise<number[]> {
     const { data } = await client.get<number[]>(`/recommend/${input.userCode}/${input.limit}/${input.offset}`)
     return data
-  }
+  },
+
+  async completeTutor(input: TutorCompletionInput): Promise<TutorCompletionResult> {
+    const { data } = await client.post<Omit<TutorCompletionResult, 'provider'>>('/chat/complete', input)
+    return { ...data, provider: 'http' }
+  },
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../../services/api'
@@ -32,7 +32,9 @@ type FormValues = z.infer<typeof schema>
 
 function passwordStrength(pw: string): { label: string; pct: number; color: string } {
   if (!pw) return { label: '', pct: 0, color: 'transparent' }
-  const score = [pw.length >= 8, /[A-Z]/.test(pw), /[0-9]/.test(pw), /[^a-zA-Z0-9]/.test(pw)].filter(Boolean).length
+  const score = [pw.length >= 8, /[A-Z]/.test(pw), /[0-9]/.test(pw), /[^a-zA-Z0-9]/.test(pw)].filter(
+    Boolean
+  ).length
   if (score <= 1) return { label: 'Weak', pct: 25, color: '#f43f5e' }
   if (score === 2) return { label: 'Fair', pct: 50, color: '#fb923c' }
   if (score === 3) return { label: 'Good', pct: 75, color: '#facc15' }
@@ -76,7 +78,7 @@ export function RegisterPage() {
   return (
     <AuthLayout
       title="Create Account"
-      subtitle="Join thousands of learners on NEXUS AI"
+      subtitle="Join Cognexa and connect with knowledge that moves you forward"
       badgeText="Free Registration"
       badgeTone="success"
       footerText="Already have an account?"
@@ -116,7 +118,9 @@ export function RegisterPage() {
 
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="reg-name">Full Name</label>
+            <label className={styles.label} htmlFor="reg-name">
+              Full Name
+            </label>
             <input
               id="reg-name"
               className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
@@ -126,7 +130,9 @@ export function RegisterPage() {
             {errors.name && <span className={styles.fieldError}>⚠ {errors.name.message}</span>}
           </div>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="reg-username">Username</label>
+            <label className={styles.label} htmlFor="reg-username">
+              Username
+            </label>
             <input
               id="reg-username"
               className={`${styles.input} ${errors.username ? styles.inputError : ''}`}
@@ -138,7 +144,9 @@ export function RegisterPage() {
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="reg-email">Email Address</label>
+          <label className={styles.label} htmlFor="reg-email">
+            Email Address
+          </label>
           <input
             id="reg-email"
             type="email"
@@ -151,7 +159,9 @@ export function RegisterPage() {
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="reg-mobile">Mobile Number</label>
+          <label className={styles.label} htmlFor="reg-mobile">
+            Mobile Number
+          </label>
           <input
             id="reg-mobile"
             type="tel"
@@ -164,7 +174,9 @@ export function RegisterPage() {
 
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="reg-pw">Password</label>
+            <label className={styles.label} htmlFor="reg-pw">
+              Password
+            </label>
             <input
               id="reg-pw"
               type="password"
@@ -184,7 +196,9 @@ export function RegisterPage() {
             {errors.password && <span className={styles.fieldError}>⚠ {errors.password.message}</span>}
           </div>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="reg-pwc">Confirm</label>
+            <label className={styles.label} htmlFor="reg-pwc">
+              Confirm
+            </label>
             <input
               id="reg-pwc"
               type="password"
@@ -193,7 +207,9 @@ export function RegisterPage() {
               placeholder="••••••••"
               {...register('passwordConfirm')}
             />
-            {errors.passwordConfirm && <span className={styles.fieldError}>⚠ {errors.passwordConfirm.message}</span>}
+            {errors.passwordConfirm && (
+              <span className={styles.fieldError}>⚠ {errors.passwordConfirm.message}</span>
+            )}
           </div>
         </div>
 

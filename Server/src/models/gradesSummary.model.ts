@@ -19,7 +19,7 @@ const gradeSchema = new Schema<GradeAttrs>({
   maxScore: { type: Number, required: true },
   weight: { type: Number, required: true },
   title: { type: String, required: true },
-  gradedAt: { type: Date, required: true }
+  gradedAt: { type: Date, required: true },
 })
 gradeSchema.set('toJSON', { virtuals: true, transform: toJsonTransform })
 gradeSchema.set('toObject', { virtuals: true, transform: toJsonTransform })
@@ -31,7 +31,7 @@ export interface StudentGradesAttrs {
 
 const studentGradesSchema = new Schema<StudentGradesAttrs>({
   student: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  grades: [gradeSchema]
+  grades: [gradeSchema],
 })
 
 function sumWeighted(grades: Types.DocumentArray<GradeAttrs>, filterType?: string): number {
@@ -92,7 +92,7 @@ export interface GradesSummaryModelType extends Model<GradesSummaryAttrs> {
 
 const gradesSummarySchema = new Schema<GradesSummaryAttrs, GradesSummaryModelType>({
   course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
-  studentGrades: [studentGradesSchema]
+  studentGrades: [studentGradesSchema],
 })
 gradesSummarySchema.set('toJSON', { virtuals: true, transform: toJsonTransform })
 gradesSummarySchema.set('toObject', { virtuals: true, transform: toJsonTransform })
@@ -121,7 +121,7 @@ gradesSummarySchema.statics.updateOrCreate = async function (
     maxScore: assessment.maxScore,
     type: assessment.type,
     title: assessment.title,
-    gradedAt: new Date()
+    gradedAt: new Date(),
   }
 
   if (!grade) {
@@ -166,7 +166,7 @@ gradesSummarySchema.statics.getGradesByUser = async function (courseId: string) 
       user: userGrade.student._id,
       course: json.course.id,
       score: userGrade.totalScore,
-      gradeLetter: userGrade.grade
+      gradeLetter: userGrade.grade,
     })
   }
 

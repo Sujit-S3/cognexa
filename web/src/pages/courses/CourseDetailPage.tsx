@@ -5,8 +5,8 @@ import { coursesApi, type CourseView } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
 import { GlassCard, Badge, Button, Reveal, RevealItem } from '../../design'
 import styles from './CourseDetailPage.module.css'
-import aiRoboticsImg from '../../assets/ai_robotics.png'
-import webMasteryImg from '../../assets/web_mastery.png'
+import aiRoboticsImg from '../../assets/ai_robotics.webp'
+import webMasteryImg from '../../assets/web_mastery.webp'
 
 // Demo fallback for when no backend data is available
 const DEMO: Record<string, CourseView> = {
@@ -97,11 +97,13 @@ export function CourseDetailPage() {
 
   const course: CourseView = fetchedCourse ?? DEMO[courseId] ?? DEMO['demo-ai']
 
-  const toggleModule = (idx: number) =>
-    setExpandedModules((prev) => ({ ...prev, [idx]: !prev[idx] }))
+  const toggleModule = (idx: number) => setExpandedModules((prev) => ({ ...prev, [idx]: !prev[idx] }))
 
   const handleEnroll = () => {
-    if (!isAuthenticated) { navigate('/auth/login'); return }
+    if (!isAuthenticated) {
+      navigate('/auth/login')
+      return
+    }
     if (course.enrolled) {
       if (!isDemo) unEnrollMutation.mutate()
     } else {
@@ -111,9 +113,7 @@ export function CourseDetailPage() {
 
   if (isLoading) {
     return (
-      <div style={{ padding: '80px', textAlign: 'center', color: 'var(--nx-fg-muted)' }}>
-        Loading course…
-      </div>
+      <div style={{ padding: '80px', textAlign: 'center', color: 'var(--nx-fg-muted)' }}>Loading course…</div>
     )
   }
 
@@ -138,14 +138,22 @@ export function CourseDetailPage() {
         </div>
 
         <GlassCard className={styles.heroSide}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.88rem' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontSize: '0.88rem',
+            }}
+          >
             <span style={{ color: 'var(--nx-fg-muted)' }}>Access</span>
             <Badge tone={course.enrolled ? 'success' : 'brand'}>
               {course.enrolled ? 'Active' : 'Free Enrollment'}
             </Badge>
           </div>
           <Button
-            magnetic glow
+            magnetic
+            glow
             tone={course.enrolled ? 'success' : 'brand'}
             onClick={handleEnroll}
             disabled={enrollMutation.isPending || unEnrollMutation.isPending}
@@ -200,7 +208,10 @@ export function CourseDetailPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                if (!isAuthenticated) { navigate('/auth/login'); return }
+                                if (!isAuthenticated) {
+                                  navigate('/auth/login')
+                                  return
+                                }
                                 navigate(`/courses/${courseId}/learn/${item._id ?? 'lec-' + (itemIdx + 1)}`)
                               }}
                               style={{ color: 'var(--nx-accent-cyan)', fontWeight: 700, fontSize: '0.84rem' }}
@@ -224,7 +235,17 @@ export function CourseDetailPage() {
             <h3 className={styles.sectionTitle} style={{ fontSize: '1.15rem', marginBottom: '14px' }}>
               🎯 What You Will Master
             </h3>
-            <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9rem', color: '#fff' }}>
+            <ul
+              style={{
+                listStyle: 'none',
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                fontSize: '0.9rem',
+                color: '#fff',
+              }}
+            >
               {[
                 'Build production-ready, scalable architectures from scratch',
                 'Write clean, type-safe TypeScript and GLSL shader code',
@@ -242,13 +263,28 @@ export function CourseDetailPage() {
             <h3 className={styles.sectionTitle} style={{ fontSize: '1.15rem', marginBottom: '14px' }}>
               💬 Student Feedback
             </h3>
-            <div style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.85rem' }}>
+            <div
+              style={{
+                padding: '14px',
+                borderRadius: '14px',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: '6px',
+                  fontSize: '0.85rem',
+                }}
+              >
                 <strong style={{ color: '#fff' }}>Alex R.</strong>
                 <span style={{ color: 'var(--nx-accent-cyan)' }}>⭐⭐⭐⭐⭐</span>
               </div>
               <p style={{ fontSize: '0.86rem', color: 'var(--nx-fg-muted)', lineHeight: 1.5 }}>
-                "Best online course I've taken. The interactive labs and instant grading make learning so much faster!"
+                "Best online course I've taken. The interactive labs and instant grading make learning so much
+                faster!"
               </p>
             </div>
           </GlassCard>

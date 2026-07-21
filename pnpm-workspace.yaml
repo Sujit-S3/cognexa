@@ -1,0 +1,15 @@
+packages:
+  - web
+  - Server
+  - packages/*
+
+injectWorkspacePackages: true
+
+allowBuilds:
+  esbuild: true
+  # OpenTelemetry uses the runtime JS implementation; its optional generator hook is not needed.
+  protobufjs: false
+  sharp: true
+
+catalog:
+  typescript: ^5.9.3

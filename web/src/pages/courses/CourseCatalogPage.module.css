@@ -15,7 +15,7 @@
   align-items: center;
   text-align: center;
   gap: 14px;
-  background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,27,75,0.7)) !important;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 27, 75, 0.7)) !important;
 }
 
 .title {
@@ -46,8 +46,8 @@
   gap: 10px;
   padding: 10px 16px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   flex: 1;
   max-width: 440px;
   min-width: 200px;
@@ -63,7 +63,9 @@
   min-width: 0;
 }
 
-.searchInput:focus { outline: none; }
+.searchInput:focus {
+  outline: none;
+}
 
 .categories {
   display: flex;
@@ -77,20 +79,23 @@
   border-radius: 999px;
   font-size: 0.86rem;
   font-weight: 600;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
   color: var(--nx-fg-muted);
   cursor: pointer;
   transition: all 0.18s;
 }
 
-.catBtn:hover { background: rgba(255,255,255,0.09); color: #fff; }
+.catBtn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+}
 
 .catBtnActive {
   background: var(--nx-gradient-brand) !important;
   border-color: transparent !important;
   color: #fff !important;
-  box-shadow: 0 0 18px -4px rgba(99,102,241,0.6);
+  box-shadow: 0 0 18px -4px rgba(99, 102, 241, 0.6);
 }
 
 .grid {
@@ -155,5 +160,5 @@
   font-size: 0.83rem;
   color: var(--nx-fg-muted);
   padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }

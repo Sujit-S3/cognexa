@@ -19,7 +19,7 @@ const questionSchema = new Schema<QuestionAttrs>(
     question_number: { type: Number, required: true },
     points: { type: Number, required: true },
     question_text: { type: String, required: true },
-    auto_graded: { type: Boolean, default: false }
+    auto_graded: { type: Boolean, default: false },
   },
   options
 )
@@ -33,7 +33,7 @@ const choiceQuestionSchema = new Schema(
   {
     choices: [{ type: String, required: true }],
     ans: { type: String, required: true },
-    text_match: { type: Boolean, default: false }
+    text_match: { type: Boolean, default: false },
   },
   options
 )
@@ -44,11 +44,11 @@ const writtenQuestionSchema = new Schema(
       {
         key_word: { type: String, required: true },
         weight: { type: Number, required: true },
-        _id: false
-      }
+        _id: false,
+      },
     ],
     ans: { type: String, required: true },
-    text_match: { type: Boolean, default: false }
+    text_match: { type: Boolean, default: false },
   },
   options
 )

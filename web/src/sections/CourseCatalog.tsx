@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { GlassCard, Reveal, RevealItem, Badge, Button } from '../design'
 import styles from './CourseCatalog.module.css'
-import aiRoboticsImg from '../assets/ai_robotics.png'
-import webMasteryImg from '../assets/web_mastery.png'
+import aiRoboticsImg from '../assets/ai_robotics.webp'
+import webMasteryImg from '../assets/web_mastery.webp'
 
 interface Course {
   id: string
@@ -73,7 +73,7 @@ const courses: Course[] = [
     id: 'quantum-cs',
     title: 'Quantum Computing & Algorithms Sandbox',
     category: 'Space & Deep Tech',
-    desc: 'Explore quantum gates, superposition, and entanglement through gamified interactive circuit simulators.',
+    desc: 'Explore quantum gates, superposition, and entanglement through interactive circuit simulators.',
     level: 'Intermediate',
     rating: '4.7',
     students: '1,120',
@@ -101,9 +101,7 @@ export function CourseCatalog() {
   const [activeCategory, setActiveCategory] = useState('All Courses')
 
   const filteredCourses =
-    activeCategory === 'All Courses'
-      ? courses
-      : courses.filter((c) => c.category === activeCategory)
+    activeCategory === 'All Courses' ? courses : courses.filter((c) => c.category === activeCategory)
 
   return (
     <section className={styles.section} id="catalog">
@@ -113,7 +111,7 @@ export function CourseCatalog() {
           Explore the <span className="nx-gradient-text">Course Catalog</span>
         </h2>
         <p className={styles.subtitle}>
-          Every course is packed with live coding sandboxes, AI tutor assistance, and gamified XP progression.
+          Every course combines practical learning environments, AI tutor assistance, and measurable mastery.
           Choose your track and start leveling up today.
         </p>
       </Reveal>
@@ -143,7 +141,8 @@ export function CourseCatalog() {
                     style={{
                       width: '100%',
                       height: '100%',
-                      background: 'radial-gradient(circle at 70% 30%, rgba(168,85,247,0.3), rgba(99,102,241,0.1))',
+                      background:
+                        'radial-gradient(circle at 70% 30%, rgba(168,85,247,0.3), rgba(99,102,241,0.1))',
                     }}
                   />
                 )}

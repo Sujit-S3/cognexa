@@ -8,14 +8,19 @@ import {
   recoverSchema,
   registerSchema,
   resetPasswordSchema,
-  updateUserSchema
+  updateUserSchema,
 } from './auth.validation'
 
 export const authRouter = Router()
 
 authRouter.post('/register', authRateLimiter, validate({ body: registerSchema }), authController.register)
 authRouter.post('/login', authRateLimiter, validate({ body: loginSchema }), authController.login)
-authRouter.post('/logout', authenticate, authController.logout)
+authRouter.get('/session', authController.sessionStatus)
+authRouter.post('/refresh', authRateLimiter, authController.refresh)
+authRouter.post('/logout', authController.logout)
+authRouter.post('/logout-all', authenticate, authController.logoutAll)
+authRouter.get('/sessions', authenticate, authController.listSessions)
+authRouter.delete('/sessions/:sessionId', authenticate, authController.revokeSession)
 authRouter.post(
   '/recover',
   authRateLimiter,

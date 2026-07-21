@@ -36,7 +36,8 @@
   align-items: center;
 }
 
-.cardLeft, .cardRight {
+.cardLeft,
+.cardRight {
   padding: 36px !important;
   display: flex;
   flex-direction: column;

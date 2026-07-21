@@ -14,7 +14,12 @@
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.1) 60%, rgba(5, 6, 15, 0.8)) !important;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(99, 102, 241, 0.25),
+    rgba(168, 85, 247, 0.1) 60%,
+    rgba(5, 6, 15, 0.8)
+  ) !important;
   border: 1px solid rgba(168, 85, 247, 0.4) !important;
   box-shadow: 0 0 80px -10px rgba(99, 102, 241, 0.4) !important;
 }
@@ -105,8 +110,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+  }
 }
 
 .footer {

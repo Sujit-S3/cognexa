@@ -1,5 +1,5 @@
 /**
- * NEXUS AI Design System — public API.
+ * Cognexa Design System — public API.
  * Import UI primitives, tokens, and providers from a single entry point.
  */
 export { GlassCard } from './components/GlassCard'
@@ -11,6 +11,5 @@ export { Reveal, RevealItem } from './components/Reveal'
 
 export { ThemeProvider, useTheme } from './providers/ThemeProvider'
 export type { Theme } from './providers/ThemeProvider'
-export { useSmoothScroll } from './providers/useSmoothScroll'
 
 export * as tokens from './tokens'

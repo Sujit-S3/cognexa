@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cognexa-migrate
+  namespace: cognexa
+  labels:
+    app.kubernetes.io/name: cognexa-migrate
+    app.kubernetes.io/part-of: cognexa
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cognexa-migrate
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: migrate
+          image: SERVER_IMAGE
+          command: ['node', 'dist/operations/migrate.js', 'up']
+          envFrom:
+            - configMapRef:
+                name: cognexa-server-config
+            - secretRef:
+                name: cognexa-runtime
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ['ALL']
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

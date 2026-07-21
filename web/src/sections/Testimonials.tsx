@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { GlassCard, Reveal, RevealItem, Badge } from '../design'
 import styles from './Testimonials.module.css'
-import studentAvatarImg from '../assets/student_avatar.png'
+import studentAvatarImg from '../assets/student_avatar.webp'
 
 interface Testimonial {
   id: string
@@ -15,7 +15,8 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     id: '1',
-    quote: 'NEXUS AI turned the hardest concepts in PyTorch and Neural Controllers into a game. The 24/7 AI Tutor explained matrix transformations in exactly the way my brain needed. I landed my AI engineering offer at Stripe after completing the robotics track!',
+    quote:
+      'Cognexa turned the hardest concepts in PyTorch and neural control into a structured learning path. The AI Tutor explained matrix transformations in a way that finally clicked for me.',
     name: 'Sarah Jenkins',
     role: 'AI Engineer @ Stripe (Career Switcher)',
     category: 'Career Switchers',
@@ -23,7 +24,8 @@ const testimonials: Testimonial[] = [
   },
   {
     id: '2',
-    quote: 'The gamified XP system is dangerously addictive. I maintained a 42-day study streak and built two production 3D web apps with Three.js. This feels like what education should have been for the last decade.',
+    quote:
+      'The progress system helped me maintain a 42-day study streak while building two production 3D web applications. Every milestone made the next step clear.',
     name: 'Marcus Thorne',
     role: 'CS Senior @ Stanford University',
     category: 'CS Students',
@@ -31,7 +33,8 @@ const testimonials: Testimonial[] = [
   },
   {
     id: '3',
-    quote: 'As a self-taught founder, I needed to learn full-stack architecture fast without drowning in boring lecture videos. The auto-generated quizzes and instant code review saved me hundreds of hours during our MVP launch.',
+    quote:
+      'As a self-taught founder, I needed to learn full-stack architecture fast without drowning in boring lecture videos. The auto-generated quizzes and instant code review saved me hundreds of hours during our MVP launch.',
     name: 'Elena Rostova',
     role: 'Founder & Tech Lead @ OrbitAI',
     category: 'Founders',
@@ -45,19 +48,18 @@ export function Testimonials() {
   const [activeTab, setActiveTab] = useState('All Stories')
 
   const filtered =
-    activeTab === 'All Stories'
-      ? testimonials
-      : testimonials.filter((t) => t.category === activeTab)
+    activeTab === 'All Stories' ? testimonials : testimonials.filter((t) => t.category === activeTab)
 
   return (
     <section className={styles.section} id="testimonials">
       <Reveal className={styles.header}>
         <Badge tone="pink">Student Success Stories</Badge>
         <h2 className={styles.title}>
-          Loved by over <span className="nx-gradient-text">15,000+ Students</span>
+          Built for <span className="nx-gradient-text">ambitious learners and educators</span>
         </h2>
         <p className={styles.subtitle}>
-          Discover how NEXUS AI is helping engineers, researchers, and creators master the future of technology faster than ever before.
+          Discover how Cognexa helps engineers, researchers, and creators build durable knowledge through
+          technology faster than ever before.
         </p>
       </Reveal>
 
@@ -79,7 +81,11 @@ export function Testimonials() {
           <RevealItem key={item.id}>
             <GlassCard interactive reflective elevation="floating" className={styles.card}>
               <div className={styles.starsRow}>
-                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
               </div>
 
               <p className={styles.quote}>&ldquo;{item.quote}&rdquo;</p>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useParams, useNavigate } from 'react-router-dom'
 import { authApi } from '../../services/api'
@@ -32,7 +32,11 @@ export function ResetPasswordPage() {
   } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
   // Validate token on mount
-  const { data: tokenCheck, isLoading: verifying, isError: tokenInvalid } = useQuery({
+  const {
+    data: tokenCheck,
+    isLoading: verifying,
+    isError: tokenInvalid,
+  } = useQuery({
     queryKey: ['resetToken', token],
     queryFn: () => authApi.verifyResetToken(token),
     enabled: Boolean(token),
@@ -107,7 +111,9 @@ export function ResetPasswordPage() {
         {!mutation.isSuccess && (
           <>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="rst-pw">New Password</label>
+              <label className={styles.label} htmlFor="rst-pw">
+                New Password
+              </label>
               <input
                 id="rst-pw"
                 type="password"
@@ -120,7 +126,9 @@ export function ResetPasswordPage() {
             </div>
 
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="rst-pwc">Confirm New Password</label>
+              <label className={styles.label} htmlFor="rst-pwc">
+                Confirm New Password
+              </label>
               <input
                 id="rst-pwc"
                 type="password"
@@ -129,7 +137,9 @@ export function ResetPasswordPage() {
                 placeholder="••••••••••••"
                 {...register('passwordConfirm')}
               />
-              {errors.passwordConfirm && <span className={styles.fieldError}>⚠ {errors.passwordConfirm.message}</span>}
+              {errors.passwordConfirm && (
+                <span className={styles.fieldError}>⚠ {errors.passwordConfirm.message}</span>
+              )}
             </div>
 
             <Button

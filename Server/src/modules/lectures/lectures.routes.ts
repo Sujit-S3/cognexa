@@ -4,7 +4,7 @@ import * as lectures from './lectures.controller'
 
 export const lectureRouter = Router({ mergeParams: true })
 
-lectureRouter.get('/', lectures.getAllVideos)
-lectureRouter.get('/:moduleItemId/comments', lectures.getAllComments)
+lectureRouter.get('/', authenticate, lectures.getAllVideos)
+lectureRouter.get('/:moduleItemId/comments', authenticate, lectures.getAllComments)
 lectureRouter.post('/:moduleItemId/comments', authenticate, lectures.createComment)
 lectureRouter.delete('/:moduleItemId/comments/:commentId', authenticate, lectures.deleteComment)

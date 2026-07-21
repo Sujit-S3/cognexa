@@ -1,7 +1,5 @@
-/* NEXUS AI — global base layer. Imports tokens first so vars are available. */
+/* Cognexa — global base layer. Imports tokens first so vars are available. */
 @import './design/tokens/tokens.css';
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *,
 *::before,
@@ -26,6 +24,28 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
+}
+
+/* Let the browser defer layout/paint for long landing sections until they approach the viewport.
+   Off-screen content remains in the DOM and accessibility tree, with an intrinsic size preventing jumps. */
+@supports (content-visibility: auto) {
+  .nx-shell > section:not(:first-child) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 900px;
+  }
+}
+
+.nx-section-skeleton {
+  min-height: 900px;
+  background: linear-gradient(110deg, transparent 35%, rgba(99, 102, 241, 0.06) 50%, transparent 65%);
+  background-size: 220% 100%;
+  animation: nx-section-shimmer 1.8s linear infinite;
+}
+
+@keyframes nx-section-shimmer {
+  to {
+    background-position-x: -220%;
+  }
 }
 
 /* Ambient aurora backdrop — fixed, GPU-friendly radial gradients, behind everything. */
@@ -67,6 +87,84 @@ button {
   cursor: pointer;
 }
 
+.nx-skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: calc(var(--nx-z-toast) + 1);
+  transform: translateY(-160%);
+  padding: 10px 16px;
+  border-radius: var(--nx-radius-sm);
+  background: var(--nx-fg);
+  color: var(--nx-bg-base);
+  font-weight: 700;
+  transition: transform var(--nx-dur-fast) var(--nx-ease-out);
+}
+
+.nx-skip-link:focus {
+  transform: translateY(0);
+}
+
+.nx-page-loading,
+.nx-error-state,
+.nx-not-found {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--nx-space-4);
+  padding: var(--nx-space-6);
+  text-align: center;
+}
+
+.nx-page-loading {
+  color: var(--nx-fg-muted);
+}
+
+.nx-page-loading__mark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  color: white;
+  font-family: var(--nx-font-display);
+  font-weight: 800;
+  background: var(--nx-gradient-brand);
+  box-shadow: var(--nx-shadow-glow);
+  animation: nx-pulse 1.2s var(--nx-ease-in-out) infinite alternate;
+}
+
+.nx-error-state p,
+.nx-not-found p {
+  max-width: 36rem;
+  color: var(--nx-fg-muted);
+}
+
+.nx-error-state button,
+.nx-not-found a {
+  border: 0;
+  border-radius: var(--nx-radius-md);
+  padding: 12px 18px;
+  background: var(--nx-gradient-brand);
+  color: white;
+  font-weight: 700;
+}
+
+.nx-error-state__eyebrow,
+.nx-not-found__code {
+  color: var(--nx-brand-300);
+  font-weight: 800;
+  letter-spacing: var(--nx-tracking-wide);
+}
+
+@keyframes nx-pulse {
+  to {
+    transform: translateY(-4px);
+    filter: brightness(1.15);
+  }
+}
+
 ::selection {
   background: var(--nx-brand-500);
   color: #fff;
@@ -96,6 +194,19 @@ button {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Accessibility: visible focus ring for keyboard users. */

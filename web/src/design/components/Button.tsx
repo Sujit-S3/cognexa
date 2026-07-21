@@ -23,8 +23,20 @@ export interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref' | 'ch
  * eases toward the cursor via a spring, part of the shared motion language.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'primary', size = 'md', magnetic = false, glow = false, tone, leftIcon, rightIcon, className, style, children, ...rest },
-  ref,
+  {
+    variant = 'primary',
+    size = 'md',
+    magnetic = false,
+    glow = false,
+    tone,
+    leftIcon,
+    rightIcon,
+    className,
+    style,
+    children,
+    ...rest
+  },
+  ref
 ) {
   const localRef = useRef<HTMLButtonElement>(null)
   const x = useMotionValue(0)

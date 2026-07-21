@@ -44,9 +44,7 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
   appendMessage: (threadId, message) => {
     set((s) => ({
       threads: s.threads.map((t) =>
-        t.id === threadId
-          ? { ...t, messages: [...t.messages, message], updatedAt: Date.now() }
-          : t
+        t.id === threadId ? { ...t, messages: [...t.messages, message], updatedAt: Date.now() } : t
       ),
     }))
   },

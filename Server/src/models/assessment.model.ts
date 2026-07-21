@@ -36,34 +36,34 @@ const assessmentSchema = new Schema<AssessmentAttrs>(
     submissionType: { type: String, enum: ['online', 'written'], required: true },
     course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
     visiblity: { type: String, enum: ['published', 'unpublished'], default: 'published' },
-    questions: [{ type: Schema.Types.ObjectId, ref: 'Question' }]
+    questions: [{ type: Schema.Types.ObjectId, ref: 'Question' }],
   },
   { ...options, timestamps: true }
 )
 
-assessmentSchema
-  .virtual('status')
-  .get(function (this: HydratedDocument<AssessmentAttrs & { openAt?: Date; closeAt?: Date }>) {
-    if (this.openAt && Date.now() < this.openAt.getTime()) {
-      return {
-        code: 'willOpen',
-        message: `assessment will open at ${DateTime.fromJSDate(this.openAt).toLocaleString(DateTime.DATETIME_FULL)}`
-      }
+assessmentSchema.virtual('status').get(function (
+  this: HydratedDocument<AssessmentAttrs & { openAt?: Date; closeAt?: Date }>
+) {
+  if (this.openAt && Date.now() < this.openAt.getTime()) {
+    return {
+      code: 'willOpen',
+      message: `assessment will open at ${DateTime.fromJSDate(this.openAt).toLocaleString(DateTime.DATETIME_FULL)}`,
     }
-    if (this.closeAt && this.closeAt.getTime() < Date.now()) {
-      return {
-        code: 'closed',
-        message: `assessment closed at ${DateTime.fromJSDate(this.closeAt).toLocaleString(DateTime.DATETIME_FULL)}`
-      }
+  }
+  if (this.closeAt && this.closeAt.getTime() < Date.now()) {
+    return {
+      code: 'closed',
+      message: `assessment closed at ${DateTime.fromJSDate(this.closeAt).toLocaleString(DateTime.DATETIME_FULL)}`,
     }
-    if (this.closeAt && Date.now() < this.closeAt.getTime()) {
-      return {
-        code: 'open',
-        message: `assessment will close at ${DateTime.fromJSDate(this.closeAt).toLocaleString(DateTime.DATETIME_FULL)}`
-      }
+  }
+  if (this.closeAt && Date.now() < this.closeAt.getTime()) {
+    return {
+      code: 'open',
+      message: `assessment will close at ${DateTime.fromJSDate(this.closeAt).toLocaleString(DateTime.DATETIME_FULL)}`,
     }
-    return { code: 'open', message: 'assessment is open' }
-  })
+  }
+  return { code: 'open', message: 'assessment is open' }
+})
 
 assessmentSchema.set('toJSON', { virtuals: true, transform: idTransform })
 
@@ -71,7 +71,7 @@ export const Assessment = mongoose.model('Assessment', assessmentSchema)
 
 const examSchema = new Schema({
   openAt: { type: Date, required: true },
-  closeAt: { type: Date, required: true }
+  closeAt: { type: Date, required: true },
 })
 
 examSchema.virtual('timeLimit').get(function (this: { closeAt: Date; openAt: Date }) {
@@ -85,7 +85,7 @@ examSchema.set('toJSON', { virtuals: true })
 export const Exam = Assessment.discriminator('Exam', examSchema)
 
 const assignmentSchema = new Schema({
-  dueDate: { type: Date, required: true }
+  dueDate: { type: Date, required: true },
 })
 assignmentSchema.set('toJSON', { virtuals: true })
 

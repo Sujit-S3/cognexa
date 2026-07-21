@@ -45,18 +45,18 @@ const submissionSchema = new Schema<SubmissionAttrs>({
       plagarismFileStatus: {
         type: String,
         enum: ['processing', 'unCalculated', 'none', 'med', 'high', 'veryHigh'],
-        default: 'unCalculated'
+        default: 'unCalculated',
       },
       plagiarisedFrom: { type: String },
-      text: { type: String, default: '' }
-    }
+      text: { type: String, default: '' },
+    },
   ],
   course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
   assessment: { type: Schema.Types.ObjectId, ref: 'Assessment', required: true },
   plagarismStatus: {
     type: String,
     enum: ['processing', 'unCalculated', 'none', 'med', 'high', 'veryHigh'],
-    default: 'unCalculated'
+    default: 'unCalculated',
   },
   autoGradingStatus: { type: String, enum: ['processing', 'unGraded', 'Graded'], default: 'unGraded' },
   student: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -71,9 +71,9 @@ const submissionSchema = new Schema<SubmissionAttrs>({
       _id: false,
       originQuestion: { type: Schema.Types.ObjectId, ref: 'Question', required: true },
       studentAnswer: { type: String, required: true },
-      score: { type: Number }
-    }
-  ]
+      score: { type: Number },
+    },
+  ],
 })
 
 submissionSchema.pre('deleteMany', async function (next) {
@@ -88,25 +88,25 @@ submissionSchema.pre('deleteMany', async function (next) {
   next()
 })
 
-submissionSchema
-  .virtual('status')
-  .get(function (this: HydratedDocument<SubmissionAttrs & { assessment: { type?: string; dueDate?: Date } }>) {
-    if (!this.assessment || this.assessment.type === 'Exam') return undefined
-    if (!this.submittedAt || !this.assessment.dueDate) return undefined
+submissionSchema.virtual('status').get(function (
+  this: HydratedDocument<SubmissionAttrs & { assessment: { type?: string; dueDate?: Date } }>
+) {
+  if (!this.assessment || this.assessment.type === 'Exam') return undefined
+  if (!this.submittedAt || !this.assessment.dueDate) return undefined
 
-    const timeDifference = this.submittedAt.getTime() - this.assessment.dueDate.getTime()
+  const timeDifference = this.submittedAt.getTime() - this.assessment.dueDate.getTime()
 
-    if (timeDifference <= 0) {
-      return {
-        code: 'onTime',
-        message: `by ${Duration.fromMillis(Math.abs(timeDifference)).toFormat('hh:mm')} hours & minutes`
-      }
-    }
+  if (timeDifference <= 0) {
     return {
-      code: 'late',
-      message: `by ${Duration.fromMillis(timeDifference).toFormat('hh:mm')} hours & minutes`
+      code: 'onTime',
+      message: `by ${Duration.fromMillis(Math.abs(timeDifference)).toFormat('hh:mm')} hours & minutes`,
     }
-  })
+  }
+  return {
+    code: 'late',
+    message: `by ${Duration.fromMillis(timeDifference).toFormat('hh:mm')} hours & minutes`,
+  }
+})
 
 submissionSchema.set('toJSON', { virtuals: true, transform: idTransform })
 

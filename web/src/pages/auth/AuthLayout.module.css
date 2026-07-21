@@ -22,8 +22,7 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(circle 300px at 10% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle 300px at 10% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
 }
 
 .card {
@@ -32,6 +31,13 @@
   padding: 44px !important;
   position: relative;
   z-index: 10;
+}
+
+.brandHome {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--nx-space-5);
+  text-decoration: none;
 }
 
 .header {
@@ -86,7 +92,9 @@
   font-size: 0.95rem;
   font-family: inherit;
   width: 100%;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .input::placeholder {
@@ -120,8 +128,12 @@
 }
 
 @media (max-width: 420px) {
-  .row { grid-template-columns: 1fr; }
-  .card { padding: 28px !important; }
+  .row {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 28px !important;
+  }
 }
 
 /* ── Alert boxes ── */
@@ -231,7 +243,7 @@
 .strengthBar {
   height: 4px;
   border-radius: 2px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
   margin-top: 4px;
 }
@@ -239,5 +251,7 @@
 .strengthFill {
   height: 100%;
   border-radius: 2px;
-  transition: width 0.3s ease, background 0.3s ease;
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
 }

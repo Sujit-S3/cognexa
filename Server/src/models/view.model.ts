@@ -12,7 +12,11 @@ const viewSchema = new Schema<ViewAttrs>(
   {
     personId: { type: Number, required: true },
     contentId: { type: Number, required: true },
-    eventType: { type: String, enum: ['FOLLOW', 'LIKE', 'COMMENT CREATED', 'BOOKMARK', 'VIEW'], required: true }
+    eventType: {
+      type: String,
+      enum: ['FOLLOW', 'LIKE', 'COMMENT CREATED', 'BOOKMARK', 'VIEW'],
+      required: true,
+    },
   },
   { timestamps: true }
 )

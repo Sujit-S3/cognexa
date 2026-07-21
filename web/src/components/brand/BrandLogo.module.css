@@ -1,0 +1,54 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--nx-fg);
+  font-family: var(--nx-font-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.mark {
+  position: relative;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.68rem;
+  background: linear-gradient(145deg, #4f46e5 5%, #8b5cf6 55%, #06b6d4 120%);
+  box-shadow: 0 0.55rem 1.5rem -0.75rem rgba(79, 70, 229, 0.9);
+}
+
+.mark::before {
+  position: absolute;
+  inset: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: calc(0.68rem - 2px);
+  content: '';
+}
+
+.core {
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 700;
+  transform: translateX(-0.03em);
+}
+
+.node {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 0.27rem;
+  height: 0.27rem;
+  border-radius: 50%;
+  background: #67e8f9;
+  box-shadow: 0 0 0.55rem #06b6d4;
+}
+
+.wordmark {
+  font-size: 1.25rem;
+}

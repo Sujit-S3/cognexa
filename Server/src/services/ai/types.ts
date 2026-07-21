@@ -1,4 +1,4 @@
-// Pluggable AI service contract. Every AI-touching feature in NEXUS AI (auto-grading, plagiarism
+// Pluggable AI service contract. Every AI-touching feature in Cognexa (auto-grading, plagiarism
 // detection, cheating-detection alerts, content recommendations, and — from Phase 4 onward — the
 // tutor/quiz-generator/flashcards/etc. surfaces) goes through this interface. The real ML models
 // live outside this repo (see README); providers below let us swap between a safe mock and a real
@@ -33,10 +33,31 @@ export interface RecommendationInput {
   offset: number
 }
 
+export interface TutorMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
+export interface TutorCompletionInput {
+  messages: TutorMessage[]
+  context?: string
+  maxTokens?: number
+  temperature?: number
+}
+
+export interface TutorCompletionResult {
+  content: string
+  provider: 'mock' | 'http'
+  tokensUsed?: number
+}
+
 export interface AiServiceProvider {
   name: 'mock' | 'http'
   gradeOnlineSubmission(answers: GradeQuestionInput[]): Promise<GradeQuestionResult[]>
-  gradeWrittenSubmission(input: { modelAnswer: string; studentAnswerUrl: string }): Promise<GradeQuestionResult[]>
+  gradeWrittenSubmission(input: {
+    modelAnswer: string
+    studentAnswerUrl: string
+  }): Promise<GradeQuestionResult[]>
   checkPlagiarism(inputs: PlagiarismCheckInput[]): Promise<PlagiarismMatch[]>
   reportCheatingSignal(input: {
     userId: string
@@ -45,4 +66,5 @@ export interface AiServiceProvider {
     instructorEmails: string[]
   }): Promise<void>
   getRecommendedContentIds(input: RecommendationInput): Promise<number[]>
+  completeTutor(input: TutorCompletionInput): Promise<TutorCompletionResult>
 }

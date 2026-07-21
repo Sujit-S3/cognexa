@@ -1,0 +1,937 @@
+openapi: 3.1.0
+info:
+  title: Cognexa API
+  version: 1.0.0
+  description: |
+    Canonical HTTP contract for the supported Cognexa TypeScript API.
+    Unversioned root aliases are deprecated and sunset on 2026-12-31.
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development
+  - url: https://api.cognexa.app/api/v1
+    description: Production
+tags:
+  - name: Platform
+  - name: Authentication
+  - name: Courses
+  - name: Curriculum
+  - name: Instructor
+  - name: Uploads
+  - name: AI
+security:
+  - bearerAuth: []
+
+paths:
+  /health/live:
+    servers:
+      - url: http://localhost:4000
+        description: Local API origin
+      - url: https://api.cognexa.app
+        description: Production API origin
+    get:
+      tags: [Platform]
+      security: []
+      summary: Check whether the API process is alive
+      responses:
+        '200':
+          description: Process is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, version, commit, uptimeSeconds]
+                properties:
+                  status: { type: string, const: ok }
+                  service: { type: string, const: cognexa-server }
+                  version: { type: string }
+                  commit: { type: string }
+                  uptimeSeconds: { type: integer, minimum: 0 }
+
+  /health/startup:
+    servers:
+      - url: http://localhost:4000
+      - url: https://api.cognexa.app
+    get:
+      tags: [Platform]
+      security: []
+      summary: Check whether application startup completed
+      responses:
+        '200':
+          description: Application startup completed
+
+  /health/ready:
+    servers:
+      - url: http://localhost:4000
+      - url: https://api.cognexa.app
+    get:
+      tags: [Platform]
+      security: []
+      summary: Check required database and Redis dependencies
+      responses:
+        '200':
+          description: Required dependencies are ready
+        '503':
+          description: A required dependency is unavailable
+
+  /health/dependencies:
+    servers:
+      - url: http://localhost:4000
+      - url: https://api.cognexa.app
+    get:
+      tags: [Platform]
+      security: []
+      summary: Inspect provider-neutral dependency status
+      responses:
+        '200':
+          description: Required dependencies are ready; optional dependencies may be degraded
+        '503':
+          description: A required dependency is unavailable
+
+  /config:
+    get:
+      tags: [Platform]
+      security: []
+      summary: Get public runtime configuration and feature flags
+      responses:
+        '200':
+          description: Public configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, environment, features]
+                properties:
+                  version: { type: string }
+                  environment: { type: string, enum: [development, test, preview, staging, production] }
+                  features:
+                    type: object
+                    additionalProperties: { type: boolean }
+
+  /auth/register:
+    post:
+      tags: [Authentication]
+      security: []
+      summary: Register a learner or instructor and create a device session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/AuthSuccess' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      security: []
+      summary: Authenticate and create a rotating device session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 1, writeOnly: true }
+      responses:
+        '200': { $ref: '#/components/responses/AuthSuccess' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      security:
+        - refreshCookie: []
+      summary: Rotate the refresh session and issue a new access token
+      responses:
+        '200': { $ref: '#/components/responses/AuthSuccess' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /auth/session:
+    get:
+      tags: [Authentication]
+      security: []
+      summary: Check whether the browser sent a durable refresh session cookie
+      responses:
+        '200':
+          description: Cookie-presence hint; it does not prove the session is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [hasSession]
+                properties:
+                  hasSession: { type: boolean }
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      security:
+        - refreshCookie: []
+      summary: Revoke the current refresh session
+      responses:
+        '200':
+          description: Session revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties: { message: { type: string } }
+
+  /auth/logout-all:
+    post:
+      tags: [Authentication]
+      summary: Revoke every device session for the current user
+      responses:
+        '200':
+          description: Sessions revoked
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/sessions:
+    get:
+      tags: [Authentication]
+      summary: List active device sessions
+      responses:
+        '200':
+          description: Active sessions ordered by recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DeviceSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/sessions/{sessionId}:
+    delete:
+      tags: [Authentication]
+      summary: Revoke one owned device session
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '204': { description: Session revoked }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /auth/recover:
+    post:
+      tags: [Authentication]
+      security: []
+      summary: Request password recovery without account enumeration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties: { email: { type: string, format: email } }
+      responses:
+        '200':
+          description: Identical response whether the account exists or not
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /auth/reset/{token}:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, minLength: 32 }
+    get:
+      tags: [Authentication]
+      security: []
+      summary: Verify a password reset token
+      responses:
+        '200':
+          description: Token is valid
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Authentication]
+      security: []
+      summary: Reset the password and revoke existing device sessions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string, minLength: 8, writeOnly: true }
+      responses:
+        '200': { description: Password updated }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get the current user
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [Authentication]
+      summary: Update allowlisted profile fields
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1 }
+                email: { type: string, format: email }
+                photo: { type: string, format: uri }
+                mobile: { type: string, pattern: '^\\d{3}-\\d{3}-\\d{4}$' }
+                password: { type: string, minLength: 8, writeOnly: true }
+      responses:
+        '200': { $ref: '#/components/responses/AuthSuccess' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Authentication]
+      summary: Delete the current account
+      responses:
+        '200': { description: Account deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /courses:
+    get:
+      tags: [Courses]
+      security: []
+      summary: List public courses or the authenticated user's course views
+      parameters:
+        - name: filter
+          in: query
+          schema: { $ref: '#/components/schemas/CourseStatus' }
+      responses:
+        '200':
+          description: Course views; private enrollment data is removed for anonymous callers
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Course' }
+    post:
+      tags: [Courses]
+      summary: Create a course and enroll the creator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [courseName]
+              properties:
+                courseName: { type: string, minLength: 1 }
+                description: { type: string }
+                image: { type: string, format: uri }
+      responses:
+        '201':
+          description: Updated course collection
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /courses/{courseId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      tags: [Courses]
+      security: []
+      summary: Get a published public course or an authenticated course view
+      responses:
+        '200':
+          description: Course
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Course' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Courses]
+      summary: Update a course as its instructor or an administrator
+      responses:
+        '200': { description: Updated course }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Courses]
+      summary: Delete a course as its instructor or an administrator
+      responses:
+        '204': { description: Course deleted }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /courses/{courseId}/enroll:
+    post:
+      tags: [Courses]
+      summary: Enroll the current user; managers may enroll another user
+      parameters:
+        - $ref: '#/components/parameters/CourseId'
+      responses:
+        '200': { description: Updated course collection }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /courses/{courseId}/un-enroll:
+    post:
+      tags: [Courses]
+      summary: Unenroll the current user; managers may unenroll another user
+      parameters:
+        - $ref: '#/components/parameters/CourseId'
+      responses:
+        '200': { description: Updated course collection }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /courses/{courseId}/modules:
+    get:
+      tags: [Curriculum]
+      security: []
+      summary: List curriculum modules
+      parameters:
+        - $ref: '#/components/parameters/CourseId'
+      responses:
+        '200': { description: Modules }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Curriculum]
+      summary: Add a module as an instructor or administrator
+      parameters:
+        - $ref: '#/components/parameters/CourseId'
+      responses:
+        '201': { description: Module created }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /courses/{courseId}/lectures:
+    get:
+      tags: [Curriculum]
+      summary: List course video metadata for an enrolled learner or course manager
+      parameters:
+        - $ref: '#/components/parameters/CourseId'
+      responses:
+        '200': { description: Video metadata }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /instructor/dashboard:
+    get:
+      tags: [Instructor]
+      summary: Get ownership-scoped instructor course, learner, completion, and submission analytics
+      responses:
+        '200':
+          description: Instructor dashboard; revenue is null until commerce is configured
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InstructorDashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /instructor/courses:
+    post:
+      tags: [Instructor]
+      summary: Create a persisted course draft owned by the current instructor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name: { type: string, minLength: 1, maxLength: 160, default: Untitled course }
+      responses:
+        '201':
+          description: Created draft workspace
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseWorkspace' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /instructor/courses/{courseId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      tags: [Instructor]
+      summary: Get the complete ownership-authorized course authoring workspace
+      responses:
+        '200':
+          description: Full workspace, including private draft content and assessment answers
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseWorkspace' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Instructor]
+      summary: Atomically autosave setup, curriculum, and builder assessments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CourseWorkspaceInput' }
+      responses:
+        '200':
+          description: Saved workspace with incremented draftVersion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseWorkspace' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /instructor/courses/{courseId}/status:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    post:
+      tags: [Instructor]
+      summary: Move a course through its server-enforced publishing workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [status]
+              properties:
+                status: { $ref: '#/components/schemas/CourseStatus' }
+                reviewNotes: { type: string, maxLength: 5000 }
+      responses:
+        '200':
+          description: Updated workspace; review and publication require a complete readiness report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseWorkspace' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /uploads/cloudinary/signature:
+    post:
+      tags: [Uploads]
+      summary: Create an ownership-authorized signed direct-upload request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [courseId, purpose, resourceType, originalName]
+              properties:
+                courseId: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+                purpose:
+                  type: string
+                  enum: [thumbnail, banner, lesson-video, lesson-file, assignment-file]
+                resourceType: { type: string, enum: [image, video, raw] }
+                originalName: { type: string, minLength: 1, maxLength: 255 }
+      responses:
+        '200':
+          description: Short-lived signature metadata; never contains the Cloudinary API secret
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CloudinaryUploadSignature' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { description: Course media provider is not configured }
+
+  /deadlines:
+    get:
+      tags: [Courses]
+      summary: List deadlines for the current user's courses
+      responses:
+        '200': { description: Deadlines }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /ai/complete:
+    post:
+      tags: [AI]
+      summary: Generate a bounded tutor response through the server-side provider gateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AICompletionRequest' }
+      responses:
+        '200':
+          description: AI completion
+          headers:
+            Cache-Control:
+              schema: { type: string, const: no-store }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AICompletionResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Short-lived access token held in browser memory only.
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: cognexa_refresh
+      description: Opaque rotating HttpOnly session credential.
+
+  parameters:
+    CourseId:
+      name: courseId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+
+  responses:
+    AuthSuccess:
+      description: User and short-lived access token; refresh cookie is set by the server
+      headers:
+        Set-Cookie:
+          schema: { type: string }
+          description: HttpOnly, SameSite=Lax, production Secure refresh credential.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [user, token]
+            properties:
+              user: { $ref: '#/components/schemas/User' }
+              token: { type: string, writeOnly: true }
+    BadRequest:
+      description: Invalid request
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthorized:
+      description: Authentication required or session expired
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: Authenticated but not authorized
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Resource not found
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Conflict:
+      description: Unique or state conflict
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    ValidationError:
+      description: Request validation failed
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    RateLimited:
+      description: Request quota exceeded
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        details: {}
+        requestId: { type: string }
+
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [username, name, email, mobile, password, passwordConfirm]
+      properties:
+        username: { type: string, minLength: 3, maxLength: 30 }
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        mobile: { type: string, pattern: '^\\d{3}-\\d{3}-\\d{4}$' }
+        password: { type: string, minLength: 8, writeOnly: true }
+        passwordConfirm: { type: string, minLength: 8, writeOnly: true }
+        role: { type: string, enum: [student, instructor], default: student }
+
+    User:
+      type: object
+      required: [id, username, name, email, role, isActive]
+      properties:
+        id: { type: string }
+        username: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        photo: { type: string, format: uri }
+        role: { type: string, enum: [student, instructor, admin] }
+        isActive: { type: boolean }
+        lastSeenAt: { type: string, format: date-time }
+        enrollments:
+          type: array
+          items: { type: string }
+
+    DeviceSession:
+      type: object
+      required: [id, lastSeenAt, expiresAt, current]
+      properties:
+        id: { type: string }
+        userAgent: { type: string }
+        lastSeenAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        current: { type: boolean }
+
+    Course:
+      type: object
+      required: [id, name, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        image: { type: string, format: uri }
+        backgroundColor: { type: string }
+        status: { $ref: '#/components/schemas/CourseStatus' }
+        enrolled: { type: boolean }
+        privilege: { type: string, enum: [student, instructor, admin] }
+        createdBy:
+          type: object
+          properties:
+            id: { type: string }
+            name: { type: string }
+            username: { type: string }
+            photo: { type: string, format: uri }
+
+    CourseStatus:
+      type: string
+      enum: [draft, review, published, archived]
+
+    UploadedAsset:
+      type: object
+      additionalProperties: false
+      required: [url]
+      properties:
+        url: { type: string, format: uri }
+        publicId: { type: string }
+        resourceType: { type: string, enum: [image, video, raw] }
+        format: { type: string }
+        bytes: { type: integer, minimum: 0 }
+        originalName: { type: string }
+        thumbnailUrl: { type: string, format: uri }
+
+    CourseLesson:
+      type: object
+      additionalProperties: false
+      required: [title, type, order, isPreview]
+      properties:
+        id: { type: string }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        type:
+          type: string
+          enum: [video, pdf, markdown, rich_text, external_url, youtube, live_session, file]
+        order: { type: integer, minimum: 0 }
+        description: { type: string, maxLength: 2000 }
+        url: { type: string, format: uri }
+        content: { type: string, maxLength: 100000 }
+        durationMinutes: { type: integer, minimum: 0 }
+        isPreview: { type: boolean }
+        asset: { $ref: '#/components/schemas/UploadedAsset' }
+
+    CourseModule:
+      type: object
+      additionalProperties: false
+      required: [title, order, moduleItems]
+      properties:
+        id: { type: string }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, maxLength: 2000 }
+        order: { type: integer, minimum: 0 }
+        moduleItems:
+          type: array
+          maxItems: 250
+          items: { $ref: '#/components/schemas/CourseLesson' }
+
+    BuilderQuestion:
+      type: object
+      additionalProperties: false
+      required: [prompt, type, options, correctAnswers, points]
+      properties:
+        id: { type: string }
+        prompt: { type: string, minLength: 1, maxLength: 10000 }
+        type: { type: string, enum: [mcq, multiple_select, true_false, fill_blank] }
+        options: { type: array, maxItems: 20, items: { type: string } }
+        correctAnswers: { type: array, maxItems: 20, items: { type: string } }
+        explanation: { type: string, maxLength: 10000 }
+        points: { type: integer, minimum: 1, maximum: 1000 }
+        pool: { type: string, maxLength: 120 }
+
+    BuilderAssessment:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          kind,
+          title,
+          order,
+          visibility,
+          questions,
+          randomizeQuestions,
+          randomizeAnswers,
+          passingScore,
+          attachments,
+          rubric,
+          submissionLimit,
+        ]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [quiz, assignment] }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        instructions: { type: string, maxLength: 100000 }
+        order: { type: integer, minimum: 0 }
+        visibility: { type: string, enum: [draft, published] }
+        questions: { type: array, maxItems: 500, items: { $ref: '#/components/schemas/BuilderQuestion' } }
+        randomizeQuestions: { type: boolean }
+        randomizeAnswers: { type: boolean }
+        passingScore: { type: number, minimum: 0, maximum: 100 }
+        timeLimitMinutes: { type: integer, minimum: 1, maximum: 1440 }
+        questionPoolSize: { type: integer, minimum: 1, maximum: 1000 }
+        dueDate: { type: string, format: date-time }
+        attachments: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/UploadedAsset' } }
+        rubric:
+          type: array
+          maxItems: 50
+          items:
+            type: object
+            required: [title, points]
+            properties:
+              id: { type: string }
+              title: { type: string }
+              description: { type: string }
+              points: { type: number, minimum: 0 }
+        submissionLimit: { type: integer, minimum: 1, maximum: 100 }
+
+    CourseWorkspaceInput:
+      type: object
+      additionalProperties: false
+      required: [name, tags, language, level, prerequisites, pricing, seo, modules, assessments]
+      properties:
+        draftVersion: { type: integer, minimum: 1 }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        subtitle: { type: string, maxLength: 240 }
+        description: { type: string, maxLength: 20000 }
+        image: { type: string, format: uri }
+        thumbnail: { $ref: '#/components/schemas/UploadedAsset' }
+        banner: { $ref: '#/components/schemas/UploadedAsset' }
+        category: { type: string, maxLength: 120 }
+        tags: { type: array, maxItems: 30, items: { type: string } }
+        language: { type: string }
+        level: { type: string, enum: [beginner, intermediate, advanced, all-levels] }
+        durationMinutes: { type: integer, minimum: 0 }
+        prerequisites: { type: array, maxItems: 50, items: { type: string } }
+        pricing:
+          type: object
+          additionalProperties: false
+          required: [model, amount, currency]
+          properties:
+            model: { type: string, enum: [free, paid] }
+            amount: { type: number, minimum: 0 }
+            currency: { type: string, minLength: 3, maxLength: 3 }
+        seo:
+          type: object
+          additionalProperties: false
+          properties:
+            title: { type: string, maxLength: 70 }
+            description: { type: string, maxLength: 170 }
+            slug: { type: string, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' }
+        modules: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/CourseModule' } }
+        assessments: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/BuilderAssessment' } }
+
+    CourseWorkspace:
+      allOf:
+        - $ref: '#/components/schemas/CourseWorkspaceInput'
+        - type: object
+          required: [id, status, draftVersion]
+          properties:
+            id: { type: string }
+            status: { $ref: '#/components/schemas/CourseStatus' }
+            reviewNotes: { type: string }
+            reviewSubmittedAt: { type: string, format: date-time }
+            publishedAt: { type: string, format: date-time }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+
+    InstructorDashboard:
+      type: object
+      required: [summary, courses, students, recentActivity, topCourses]
+      properties:
+        summary:
+          type: object
+          required:
+            [
+              courseCount,
+              publishedCourseCount,
+              totalStudents,
+              pendingSubmissions,
+              completionRate,
+              revenueStatus,
+            ]
+          properties:
+            courseCount: { type: integer, minimum: 0 }
+            publishedCourseCount: { type: integer, minimum: 0 }
+            totalStudents: { type: integer, minimum: 0 }
+            pendingSubmissions: { type: integer, minimum: 0 }
+            completionRate: { type: number, minimum: 0, maximum: 100 }
+            revenue: { type: [number, 'null'] }
+            revenueCurrency: { type: string }
+            revenueStatus: { type: string, const: not_configured }
+        courses: { type: array, items: { $ref: '#/components/schemas/Course' } }
+        students: { type: array, items: { type: object } }
+        recentActivity: { type: array, items: { type: object } }
+        topCourses: { type: array, items: { type: object } }
+
+    CloudinaryUploadSignature:
+      type: object
+      required: [uploadUrl, cloudName, apiKey, timestamp, signature, folder, resourceType]
+      properties:
+        uploadUrl: { type: string, format: uri }
+        cloudName: { type: string }
+        apiKey: { type: string }
+        timestamp: { type: integer }
+        signature: { type: string, writeOnly: true }
+        folder: { type: string }
+        resourceType: { type: string, enum: [image, video, raw] }
+
+    AICompletionRequest:
+      type: object
+      additionalProperties: false
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          minItems: 1
+          maxItems: 40
+          items:
+            type: object
+            additionalProperties: false
+            required: [role, content]
+            properties:
+              role: { type: string, enum: [system, user, assistant] }
+              content: { type: string, minLength: 1, maxLength: 12000 }
+        context: { type: string, maxLength: 20000 }
+        maxTokens: { type: integer, minimum: 64, maximum: 2048 }
+        temperature: { type: number, minimum: 0, maximum: 1 }
+
+    AICompletionResponse:
+      type: object
+      required: [content, provider]
+      properties:
+        content: { type: string }
+        provider: { type: string, enum: [mock, http] }
+        tokensUsed: { type: integer, minimum: 0 }

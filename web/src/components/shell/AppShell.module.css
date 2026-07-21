@@ -49,18 +49,6 @@
   white-space: nowrap;
 }
 
-.logoIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: var(--nx-gradient-brand);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 0.95rem;
-}
-
 /* Nav */
 .nav {
   display: flex;
@@ -190,7 +178,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .collapseBtn:hover {

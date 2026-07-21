@@ -1,0 +1,43 @@
+{
+  "name": "cognexa-platform",
+  "version": "0.1.0",
+  "description": "Premium AI-powered LMS connecting intelligent learning, course delivery, analytics, and collaboration.",
+  "private": true,
+  "packageManager": "pnpm@11.15.1",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "test:e2e": "pnpm --filter web test:e2e",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "quality": "prettier --check \"web/src/**/*.{ts,tsx,css}\" \"web/public/*.js\" \"Server/src/**/*.ts\" \"Server/*.ts\" \"scripts/**/*.mjs\" \"deploy/**/*.{yml,yaml,json}\" \"docs/**/*.{md,yml,yaml}\" \"*.{json,yml,yaml}\" \".github/**/*.yml\" && node scripts/validate-infrastructure.mjs && turbo run lint typecheck test build",
+    "format": "prettier --write \"web/src/**/*.{ts,tsx,css}\" \"web/public/*.js\" \"Server/src/**/*.ts\" \"Server/*.ts\" \"scripts/**/*.mjs\" \"deploy/**/*.{yml,yaml,json}\" \"docs/**/*.{md,yml,yaml}\" \"*.{json,yml,yaml}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"web/src/**/*.{ts,tsx,css}\" \"web/public/*.js\" \"Server/src/**/*.ts\" \"Server/*.ts\" \"scripts/**/*.mjs\" \"deploy/**/*.{yml,yaml,json}\" \"docs/**/*.{md,yml,yaml}\" \"*.{json,yml,yaml}\" \".github/**/*.yml\"",
+    "env:validate": "node scripts/validate-env.mjs",
+    "infra:validate": "node scripts/validate-infrastructure.mjs",
+    "db:migrate": "pnpm --filter cognexa-server db:migrate",
+    "db:migrate:status": "pnpm --filter cognexa-server db:migrate:status",
+    "db:migrate:validate": "pnpm --filter cognexa-server db:migrate:validate",
+    "db:backup": "node scripts/backup-mongodb.mjs",
+    "db:backup:verify": "node scripts/verify-mongodb-backup.mjs",
+    "security:audit": "pnpm audit --audit-level high",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "9.1.7",
+    "lint-staged": "17.1.0",
+    "prettier": "3.9.5",
+    "sharp": "0.35.3",
+    "turbo": "2.10.5",
+    "yaml": "2.8.3"
+  },
+  "lint-staged": {
+    "web/src/**/*.{ts,tsx,css}": "prettier --write",
+    "Server/src/**/*.ts": "prettier --write",
+    "docs/**/*.{md,yml,yaml}": "prettier --write"
+  }
+}

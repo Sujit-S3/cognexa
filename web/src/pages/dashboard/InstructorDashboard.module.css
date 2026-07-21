@@ -1,187 +1,400 @@
 .container {
-  padding: 40px 24px 80px 24px;
-  max-width: 1280px;
+  width: min(1440px, 100%);
   margin: 0 auto;
+  padding: 30px clamp(16px, 3vw, 42px) 80px;
   display: flex;
   flex-direction: column;
-  gap: 36px;
-  position: relative;
-  z-index: 10;
+  gap: 28px;
 }
-
 .headerBanner {
-  padding: 36px !important;
-  border-radius: var(--nx-radius-xl, 32px) !important;
+  padding: clamp(24px, 4vw, 42px) !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  flex-wrap: wrap;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(49, 46, 129, 0.55)) !important;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.85), rgba(8, 47, 73, 0.5)) !important;
 }
-
-.title {
-  font-size: 2.1rem;
-  font-weight: 800;
-  color: #fff;
+.headerBanner h1 {
+  margin: 12px 0 7px;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
 }
-
-.subtitle {
+.headerBanner p {
+  max-width: 690px;
   color: var(--nx-fg-muted);
-  font-size: 0.95rem;
-  margin-top: 6px;
 }
-
+.headerBanner [class*='badge'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
 }
-
 .statCard {
-  padding: 24px 22px !important;
+  position: relative;
+  min-height: 154px;
+  padding: 21px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.statCard > span {
+  color: var(--nx-fg-muted);
+  font-size: 0.82rem;
+}
+.statCard strong {
+  margin-top: 10px;
+  font-family: var(--nx-font-display);
+  font-size: 2rem;
+}
+.statCard small {
+  color: var(--nx-fg-subtle);
+}
+.statIcon {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(79, 70, 229, 0.14);
+  color: var(--nx-brand-300);
+}
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(290px, 0.65fr);
+  gap: 22px;
+  align-items: start;
+}
+.primaryColumn {
+  min-width: 0;
+}
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sectionHeader,
+.cardHeading,
+.courseTop,
+.courseMetrics,
+.courseActions,
+.revenueCard > div {
+  display: flex;
+  align-items: center;
+}
+.sectionHeader {
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+.sectionHeader h2 {
+  margin-top: 7px;
+}
+.sectionHeader > span {
+  color: var(--nx-fg-subtle);
+  font-size: 0.8rem;
+}
+.coursesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+.courseCard {
+  padding: 0 !important;
+  overflow: hidden;
+}
+.courseVisual {
+  height: 112px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.28), rgba(6, 182, 212, 0.1));
+  color: var(--nx-brand-200);
+}
+.courseVisual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.courseBody {
+  padding: 18px;
+}
+.courseTop {
+  justify-content: space-between;
+  gap: 8px;
+}
+.courseTop > span {
+  color: var(--nx-fg-subtle);
+  font-size: 0.68rem;
+}
+.courseBody h3 {
+  margin: 13px 0 6px;
+  font-size: 1.08rem;
+}
+.courseBody > p {
+  height: 42px;
+  overflow: hidden;
+  color: var(--nx-fg-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.courseMetrics {
+  gap: 12px;
+  margin: 15px 0;
+  color: var(--nx-fg-muted);
+  font-size: 0.72rem;
+  flex-wrap: wrap;
+}
+.courseMetrics span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.courseActions {
+  justify-content: space-between;
+  padding-top: 13px;
+  border-top: 1px solid var(--nx-border);
+}
+.courseActions a,
+.courseActions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--nx-brand-300);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.courseActions button {
+  color: var(--nx-fg-subtle);
+}
+.revenueCard,
+.activityCard,
+.analyticsPanel {
+  padding: 21px !important;
+}
+.revenueCard > div,
+.cardHeading {
+  justify-content: space-between;
+}
+.revenueCard > div {
+  color: var(--nx-fg-muted);
+}
+.revenueCard > strong {
+  display: block;
+  margin: 14px 0 3px;
+  font-size: 2rem;
+}
+.revenueCard p,
+.muted {
+  margin: 0 0 12px;
+  color: var(--nx-fg-subtle);
+  font-size: 0.8rem;
+}
+.cardHeading {
+  margin-bottom: 15px;
+}
+.cardHeading h2 {
+  font-size: 1.05rem;
+}
+.activityCard ul {
+  list-style: none;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
-.statHeader {
+.activityCard li {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--nx-fg-muted);
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
-.statValue {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.02em;
-}
-
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.sectionTitle {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #fff;
-  display: flex;
-  align-items: center;
   gap: 10px;
 }
-
-.coursesGrid {
+.activityCard li > span,
+.avatar {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 24px;
-}
-
-.courseCard {
-  padding: 26px !important;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 20px;
-  min-height: 240px;
-}
-
-.courseTop {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.courseName {
-  font-size: 1.2rem;
+  place-items: center;
+  flex: 0 0 35px;
+  height: 35px;
+  border-radius: 11px;
+  background: rgba(79, 70, 229, 0.16);
+  color: var(--nx-brand-200);
   font-weight: 800;
-  color: #fff;
-  line-height: 1.35;
-  margin-bottom: 6px;
-}
-
-.courseDesc {
-  color: var(--nx-fg-muted);
-  font-size: 0.88rem;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-.actionsRow {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
+.activityCard li div {
+  min-width: 0;
 }
-
-.modalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(10px);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+.activityCard li strong,
+.activityCard li p,
+.activityCard li small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
-.modalCard {
-  width: 100%;
-  max-width: 500px;
-  padding: 36px !important;
-  border-radius: var(--nx-radius-xl, 28px) !important;
+.activityCard li strong {
+  font-size: 0.78rem;
 }
-
-.formField {
+.activityCard li p,
+.activityCard li small {
+  color: var(--nx-fg-subtle);
+  font-size: 0.7rem;
+}
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.performanceList,
+.studentList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 18px;
 }
-
-.label {
-  font-size: 0.88rem;
-  font-weight: 600;
+.performanceList > div,
+.studentList > div {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 54px;
+  border-top: 1px solid var(--nx-border);
+}
+.performanceList > div > span {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 9px;
+  background: var(--nx-glass-bg-strong);
+  color: var(--nx-brand-300);
+  font-family: var(--nx-font-mono);
+  font-size: 0.72rem;
+}
+.performanceList > div > div,
+.studentList > div > span {
+  min-width: 0;
+  flex: 1;
+}
+.performanceList strong,
+.performanceList small,
+.studentList strong,
+.studentList small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.performanceList small,
+.studentList small {
+  color: var(--nx-fg-subtle);
+  font-size: 0.7rem;
+}
+.performanceList b {
+  color: var(--nx-success);
+  font-size: 0.82rem;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.emptyState,
+.errorState {
+  padding: 52px 24px !important;
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  text-align: center;
+  color: var(--nx-fg-muted);
+}
+.emptyState h3,
+.errorState h1 {
   color: var(--nx-fg);
 }
-
-.input {
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: var(--nx-radius-md, 12px);
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #fff;
-  font-size: 0.95rem;
-  font-family: inherit;
+.emptyState p,
+.errorState p {
+  max-width: 440px;
 }
-
-.input:focus {
-  outline: none;
-  border-color: var(--nx-brand-400);
+.inlineError {
+  padding: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 11px;
+  color: var(--nx-danger);
+  background: rgba(248, 113, 113, 0.08);
 }
-
-.gradingList {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.skeletonHeader,
+.skeletonGrid span,
+.skeletonPanel {
+  border-radius: 18px;
+  background: linear-gradient(90deg, var(--nx-glass-bg), var(--nx-glass-bg-strong), var(--nx-glass-bg));
+  background-size: 200%;
+  animation: shimmer 1.3s infinite;
 }
-
-.gradingItem {
-  padding: 18px 22px !important;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+.skeletonHeader {
+  height: 180px;
+}
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+.skeletonGrid span {
+  height: 150px;
+}
+.skeletonPanel {
+  height: 300px;
+  padding: 24px;
+  color: var(--nx-fg-muted);
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (max-width: 1100px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+  .sideColumn {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .headerBanner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .coursesGrid,
+  .analyticsGrid {
+    grid-template-columns: 1fr;
+  }
+  .sideColumn {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .container {
+    padding-inline: 12px;
+  }
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  .skeletonGrid {
+    grid-template-columns: 1fr;
+  }
+  .courseMetrics {
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeletonHeader,
+  .skeletonGrid span,
+  .skeletonPanel {
+    animation: none;
+  }
 }

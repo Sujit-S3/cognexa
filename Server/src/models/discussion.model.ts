@@ -8,7 +8,7 @@ export interface DiscussionCommentAttrs {
 const discussionCommentSchema = new Schema<DiscussionCommentAttrs>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    data: { type: String, required: true }
+    data: { type: String, required: true },
   },
   { timestamps: true }
 )
@@ -25,7 +25,7 @@ const discussionSchema = new Schema<DiscussionAttrs>(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
     data: { type: String, required: true },
-    comments: [discussionCommentSchema]
+    comments: [discussionCommentSchema],
   },
   { timestamps: true }
 )

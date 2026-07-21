@@ -1,0 +1,57 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "API targets up",
+      "targets": [{ "expr": "sum(up{namespace=\"cognexa\",service=\"cognexa-server\"})" }],
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Requests per second",
+      "targets": [{ "expr": "sum(rate(cognexa_http_requests_total[5m]))" }],
+      "gridPos": { "h": 8, "w": 9, "x": 6, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "5xx percentage",
+      "targets": [
+        {
+          "expr": "100 * sum(rate(cognexa_http_requests_total{status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(cognexa_http_requests_total[5m])), 0.001)"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 9, "x": 15, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "API latency percentiles",
+      "targets": [
+        {
+          "legendFormat": "p95",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(cognexa_http_request_duration_seconds_bucket[5m])))"
+        },
+        {
+          "legendFormat": "p50",
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(cognexa_http_request_duration_seconds_bucket[5m])))"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Process memory",
+      "targets": [{ "expr": "sum(cognexa_process_resident_memory_bytes)" }],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["cognexa", "production"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Cognexa Production Overview",
+  "uid": "cognexa-production",
+  "version": 1
+}

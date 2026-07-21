@@ -10,7 +10,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-const STORAGE_KEY = 'nexus-theme'
+const STORAGE_KEY = 'cognexa-theme'
 
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'dark'
@@ -34,7 +34,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setTheme: setThemeState,
       toggleTheme: () => setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark')),
     }),
-    [theme],
+    [theme]
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

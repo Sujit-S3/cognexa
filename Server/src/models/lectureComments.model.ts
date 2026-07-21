@@ -9,7 +9,7 @@ export interface LectureCommentAttrs {
 const commentSchema = new Schema<LectureCommentAttrs>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    comment: { type: String, required: true }
+    comment: { type: String, required: true },
   },
   { timestamps: true }
 )
@@ -24,7 +24,7 @@ export interface LectureCommentsAttrs {
 const lectureCommentsSchema = new Schema<LectureCommentsAttrs>({
   courseId: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
   moduleItemId: { type: Schema.Types.ObjectId, ref: 'CourseModuleItem', required: true, index: true },
-  comments: [commentSchema]
+  comments: [commentSchema],
 })
 lectureCommentsSchema.set('toJSON', { transform: stripInternalTransform })
 

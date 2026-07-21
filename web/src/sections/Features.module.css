@@ -45,7 +45,9 @@
   flex-direction: column;
   padding: 28px !important;
   gap: 12px;
-  transition: border-color 0.3s ease, transform 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .icon {

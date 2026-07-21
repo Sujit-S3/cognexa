@@ -3,13 +3,23 @@ import { Course } from '../../models/course.model'
 import { LectureComments } from '../../models/lectureComments.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
 import { AppError } from '../../utils/AppError'
+import { assertCourseRole } from '../../utils/courseAccess'
+
+async function requireCourseMember(req: Request) {
+  const course = await Course.findById(req.params.courseId).orFail(
+    () => new AppError(404, 'Course not found')
+  )
+  assertCourseRole(course, req.user!._id, req.user!.role, ['student', 'instructor', 'admin'])
+  return course
+}
 
 export const getAllVideos = asyncHandler(async (req: Request, res: Response) => {
-  const course = await Course.findById(req.params.courseId).orFail(() => new AppError(404, 'Course not found'))
+  const course = await requireCourseMember(req)
   res.json(course.getVideos())
 })
 
 export const getAllComments = asyncHandler(async (req: Request, res: Response) => {
+  await requireCourseMember(req)
   const comments = await LectureComments.findOne({ moduleItemId: req.params.moduleItemId }).populate(
     'comments.user',
     '_id name username photo'
@@ -18,6 +28,7 @@ export const getAllComments = asyncHandler(async (req: Request, res: Response) =
 })
 
 export const createComment = asyncHandler(async (req: Request, res: Response) => {
+  await requireCourseMember(req)
   const { courseId, moduleItemId } = req.params
   const { comment } = req.body
   if (!comment) throw new AppError(400, 'missing comment')
@@ -33,6 +44,7 @@ export const createComment = asyncHandler(async (req: Request, res: Response) =>
 })
 
 export const deleteComment = asyncHandler(async (req: Request, res: Response) => {
+  await requireCourseMember(req)
   const { moduleItemId, commentId } = req.params
   if (!commentId) throw new AppError(400, 'Missing comment id')
 

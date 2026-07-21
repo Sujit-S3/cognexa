@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import { authApi } from '../../services/api'
@@ -31,7 +31,9 @@ export function LoginPage() {
     onSuccess: (data) => {
       login(data.user, data.token)
       const role = data.user.role
-      navigate(role === 'admin' ? '/admin' : role === 'instructor' ? '/instructor' : '/dashboard', { replace: true })
+      navigate(role === 'admin' ? '/admin' : role === 'instructor' ? '/instructor' : '/dashboard', {
+        replace: true,
+      })
     },
   })
 
@@ -40,7 +42,7 @@ export function LoginPage() {
   return (
     <AuthLayout
       title="Welcome Back"
-      subtitle="Sign in to your NEXUS AI account to continue learning"
+      subtitle="Sign in to Cognexa and continue your learning journey"
       badgeText="Secure Sign In"
       footerText="Don't have an account?"
       footerLinkText="Create one free"
@@ -54,7 +56,9 @@ export function LoginPage() {
         )}
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="login-email">Email Address</label>
+          <label className={styles.label} htmlFor="login-email">
+            Email Address
+          </label>
           <input
             id="login-email"
             type="email"
@@ -80,7 +84,15 @@ export function LoginPage() {
           />
           {errors.password && <span className={styles.fieldError}>⚠ {errors.password.message}</span>}
           <div style={{ textAlign: 'right', marginTop: '2px' }}>
-            <Link to="/auth/forgot" style={{ fontSize: '0.82rem', color: 'var(--nx-brand-400)', textDecoration: 'none', fontWeight: 600 }}>
+            <Link
+              to="/auth/forgot"
+              style={{
+                fontSize: '0.82rem',
+                color: 'var(--nx-brand-400)',
+                textDecoration: 'none',
+                fontWeight: 600,
+              }}
+            >
               Forgot password?
             </Link>
           </div>

@@ -21,13 +21,22 @@ export interface GlassCardProps extends Omit<HTMLMotionProps<'div'>, 'ref' | 'ch
 }
 
 /**
- * GlassCard — the core surface primitive of the NEXUS AI design system.
+ * GlassCard — the core surface primitive of the Cognexa design system.
  * All panels/widgets/cards compose this so glass, blur, borders, light reflection
  * and elevation stay consistent and token-driven.
  */
 export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(function GlassCard(
-  { elevation = 'raised', intensity = 'regular', reflective = false, interactive = false, glow = false, className, children, ...rest },
-  ref,
+  {
+    elevation = 'raised',
+    intensity = 'regular',
+    reflective = false,
+    interactive = false,
+    glow = false,
+    className,
+    children,
+    ...rest
+  },
+  ref
 ) {
   return (
     <motion.div
@@ -39,9 +48,11 @@ export const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(function Gla
         reflective && styles.reflective,
         interactive && styles.interactive,
         glow && styles.glow,
-        className,
+        className
       )}
-      whileHover={interactive ? { y: -6, transition: { type: 'spring', stiffness: 300, damping: 22 } } : undefined}
+      whileHover={
+        interactive ? { y: -6, transition: { type: 'spring', stiffness: 300, damping: 22 } } : undefined
+      }
       {...rest}
     >
       {reflective && <span aria-hidden className={styles.sheen} />}

@@ -20,15 +20,18 @@ const QUIZ_BANK: Record<string, Question[]> = {
       question: 'Which mathematical construct is used to compute inverse kinematics without gimbal lock?',
       options: ['Euler Angles', 'Quaternion algebra', 'Rotation Matrices only', 'Linear Interpolation'],
       correctIndex: 1,
-      explanation: 'Quaternions represent rotation in 4D space, avoiding the singularity (gimbal lock) inherent to 3D Euler angle representation.',
+      explanation:
+        'Quaternions represent rotation in 4D space, avoiding the singularity (gimbal lock) inherent to 3D Euler angle representation.',
       points: 35,
     },
     {
       id: 2,
-      question: 'In GLSL, which built-in function returns the fractional part of a float for procedural shader patterns?',
+      question:
+        'In GLSL, which built-in function returns the fractional part of a float for procedural shader patterns?',
       options: ['floor()', 'mod()', 'fract()', 'clamp()'],
       correctIndex: 2,
-      explanation: 'fract(x) returns x - floor(x), producing repeating [0,1) patterns essential for procedural textures and noise functions.',
+      explanation:
+        'fract(x) returns x - floor(x), producing repeating [0,1) patterns essential for procedural textures and noise functions.',
       points: 35,
     },
     {
@@ -36,7 +39,8 @@ const QUIZ_BANK: Record<string, Question[]> = {
       question: 'What is the time complexity of the Bellman–Ford shortest path algorithm?',
       options: ['O(V log V)', 'O(V + E)', 'O(V × E)', 'O(E log V)'],
       correctIndex: 2,
-      explanation: 'Bellman–Ford runs V−1 edge relaxation passes, each taking O(E) time, giving O(V×E) overall — slower but handles negative edge weights.',
+      explanation:
+        'Bellman–Ford runs V−1 edge relaxation passes, each taking O(E) time, giving O(V×E) overall — slower but handles negative edge weights.',
       points: 30,
     },
   ],
@@ -79,7 +83,10 @@ export function QuizPage() {
     if (done) return
     const id = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) { submit(); return 0 }
+        if (t <= 1) {
+          submit()
+          return 0
+        }
         return t - 1
       })
     }, 1000)
@@ -105,28 +112,52 @@ export function QuizPage() {
     return (
       <div className={styles.container}>
         <GlassCard elevation="raised" glow className={styles.resultsCard}>
-          <div style={{ fontSize: '4rem', margin: '0 auto 8px' }}>{pct >= 85 ? '🏆' : pct >= 70 ? '🎉' : '📚'}</div>
+          <div style={{ fontSize: '4rem', margin: '0 auto 8px' }}>
+            {pct >= 85 ? '🏆' : pct >= 70 ? '🎉' : '📚'}
+          </div>
           <Badge tone={pct >= 85 ? 'success' : pct >= 55 ? 'violet' : 'pink'} style={{ margin: '0 auto' }}>
             Grade {grade} — {pct}%
           </Badge>
           <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#fff', marginTop: '10px' }}>
-            {pct >= 85 ? 'Outstanding!' : pct >= 70 ? 'Well Done!' : pct >= 55 ? 'Good Effort!' : 'Keep Practicing!'}
+            {pct >= 85
+              ? 'Outstanding!'
+              : pct >= 70
+                ? 'Well Done!'
+                : pct >= 55
+                  ? 'Good Effort!'
+                  : 'Keep Practicing!'}
           </h2>
           <p style={{ color: 'var(--nx-fg-muted)', marginBottom: '16px' }}>
-            You scored <strong style={{ color: '#fff' }}>{earnedPoints}/{totalPoints}</strong> on the {title}.
+            You scored{' '}
+            <strong style={{ color: '#fff' }}>
+              {earnedPoints}/{totalPoints}
+            </strong>{' '}
+            on the {title}.
           </p>
           <div className={styles.xpBadge}>+{xp} XP Awarded 🚀</div>
 
           {/* Per-question review */}
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '24px' }}>
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              marginTop: '24px',
+            }}
+          >
             {questions.map((q, idx) => {
               const pick = selected[idx]
               const correct = pick === q.correctIndex
               return (
                 <GlassCard key={q.id} style={{ padding: '16px 20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem' }}>Q{idx + 1}: {q.question}</span>
-                    <Badge tone={correct ? 'success' : 'pink'}>{correct ? `+${q.points} pts` : '0 pts'}</Badge>
+                    <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.9rem' }}>
+                      Q{idx + 1}: {q.question}
+                    </span>
+                    <Badge tone={correct ? 'success' : 'pink'}>
+                      {correct ? `+${q.points} pts` : '0 pts'}
+                    </Badge>
                   </div>
                   <div style={{ fontSize: '0.83rem', color: 'var(--nx-fg-muted)' }}>
                     <span style={{ color: correct ? '#34d399' : '#f43f5e' }}>
@@ -138,7 +169,15 @@ export function QuizPage() {
                       ✓ Correct: {q.options[q.correctIndex]}
                     </div>
                   )}
-                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginTop: '6px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '6px' }}>
+                  <div
+                    style={{
+                      fontSize: '0.8rem',
+                      color: 'rgba(255,255,255,0.4)',
+                      marginTop: '6px',
+                      borderTop: '1px solid rgba(255,255,255,0.07)',
+                      paddingTop: '6px',
+                    }}
+                  >
                     💡 {q.explanation}
                   </div>
                 </GlassCard>
@@ -147,11 +186,22 @@ export function QuizPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-            <Button variant="secondary" onClick={() => { setCurrent(0); setSelected({}); setRevealed({}); setDone(false); setTimeLeft(TIMER_SECS) }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setCurrent(0)
+                setSelected({})
+                setRevealed({})
+                setDone(false)
+                setTimeLeft(TIMER_SECS)
+              }}
+            >
               Retry Quiz
             </Button>
             <Link to="/dashboard">
-              <Button magnetic glow>Back to Dashboard ⚡</Button>
+              <Button magnetic glow>
+                Back to Dashboard ⚡
+              </Button>
             </Link>
           </div>
         </GlassCard>
@@ -182,7 +232,9 @@ export function QuizPage() {
           >
             ⏱ {fmtTime(timeLeft)}
           </Badge>
-          <Button variant="secondary" size="sm" onClick={submit}>Submit Now</Button>
+          <Button variant="secondary" size="sm" onClick={submit}>
+            Submit Now
+          </Button>
         </div>
       </div>
 
@@ -224,13 +276,17 @@ export function QuizPage() {
         </div>
 
         {isRevealedNow && (
-          <div className={`${styles.explanation} ${isCorrect ? styles.explanationGood : styles.explanationBad}`}>
+          <div
+            className={`${styles.explanation} ${isCorrect ? styles.explanationGood : styles.explanationBad}`}
+          >
             {isCorrect ? '✓ Correct!' : '✗ Incorrect'} — {q.explanation}
           </div>
         )}
 
         <div className={styles.quizFooter}>
-          <Button variant="secondary" disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>← Previous</Button>
+          <Button variant="secondary" disabled={current === 0} onClick={() => setCurrent((c) => c - 1)}>
+            ← Previous
+          </Button>
           <div style={{ display: 'flex', gap: '10px' }}>
             {!isRevealedNow && isAnswered && (
               <Button variant="ghost" onClick={handleReveal} style={{ color: 'var(--nx-accent-cyan)' }}>
@@ -242,7 +298,9 @@ export function QuizPage() {
                 Next Question →
               </Button>
             ) : (
-              <Button magnetic glow onClick={submit}>Finish Quiz 🏆</Button>
+              <Button magnetic glow onClick={submit}>
+                Finish Quiz 🏆
+              </Button>
             )}
           </div>
         </div>

@@ -87,7 +87,10 @@ export function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps)
             {items.map((item) => (
               <div key={item.id} className={`${styles.item} ${item.unread ? styles.itemUnread : ''}`}>
                 <div className={styles.itemTop}>
-                  <Badge tone={item.type === 'Grade' ? 'success' : item.type === 'Quest' ? 'pink' : 'cyan'} style={{ fontSize: '0.72rem' }}>
+                  <Badge
+                    tone={item.type === 'Grade' ? 'success' : item.type === 'Quest' ? 'pink' : 'cyan'}
+                    style={{ fontSize: '0.72rem' }}
+                  >
                     {item.type}
                   </Badge>
                   <span>{item.time}</span>
@@ -96,7 +99,11 @@ export function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps)
                 <div className={styles.itemMsg}>{item.message}</div>
                 {item.link && (
                   <Link to={item.link} onClick={onClose} style={{ textDecoration: 'none', marginTop: '4px' }}>
-                    <Button variant="ghost" size="sm" style={{ color: 'var(--nx-accent-cyan)', padding: '0', fontSize: '0.84rem' }}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      style={{ color: 'var(--nx-accent-cyan)', padding: '0', fontSize: '0.84rem' }}
+                    >
                       View Details →
                     </Button>
                   </Link>
@@ -106,11 +113,28 @@ export function NotificationDrawer({ isOpen, onClose }: NotificationDrawerProps)
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: '10px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <Button variant="secondary" onClick={markAllRead} disabled={unreadCount === 0} style={{ flex: 1, fontSize: '0.86rem', padding: '10px' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '10px',
+            paddingTop: '16px',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <Button
+            variant="secondary"
+            onClick={markAllRead}
+            disabled={unreadCount === 0}
+            style={{ flex: 1, fontSize: '0.86rem', padding: '10px' }}
+          >
             Mark All Read ✓
           </Button>
-          <Button variant="ghost" onClick={clearAll} disabled={items.length === 0} style={{ color: 'var(--nx-fg-muted)', fontSize: '0.86rem' }}>
+          <Button
+            variant="ghost"
+            onClick={clearAll}
+            disabled={items.length === 0}
+            style={{ color: 'var(--nx-fg-muted)', fontSize: '0.86rem' }}
+          >
             Clear All
           </Button>
         </div>

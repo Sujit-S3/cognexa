@@ -10,7 +10,7 @@ const commentSchema = new Schema<CommentAttrs>(
   {
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     article: { type: Schema.Types.ObjectId, ref: 'Article', required: true },
-    body: { type: String, required: true }
+    body: { type: String, required: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 )

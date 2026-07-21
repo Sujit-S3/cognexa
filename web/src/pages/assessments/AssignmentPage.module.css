@@ -13,17 +13,32 @@
   gap: 8px;
   font-size: 0.84rem;
 }
-.breadcrumbLink { color: var(--nx-fg-muted); text-decoration: none; font-weight: 600; }
-.breadcrumbLink:hover { color: #fff; }
-.sep { color: rgba(255,255,255,0.2); }
-.current { color: #fff; font-weight: 700; }
+.breadcrumbLink {
+  color: var(--nx-fg-muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+.breadcrumbLink:hover {
+  color: #fff;
+}
+.sep {
+  color: rgba(255, 255, 255, 0.2);
+}
+.current {
+  color: #fff;
+  font-weight: 700;
+}
 
 .layout {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
   gap: 24px;
 }
-@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
 
 .briefCard {
   padding: 32px !important;
@@ -46,8 +61,8 @@
 }
 
 .rubric {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -57,7 +72,7 @@
   font-size: 0.88rem;
   font-weight: 700;
   color: #fff;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .rubricRow {
@@ -66,9 +81,11 @@
   padding: 10px 18px;
   font-size: 0.88rem;
   color: var(--nx-fg-muted);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-.rubricRow strong { color: var(--nx-accent-cyan); }
+.rubricRow strong {
+  color: var(--nx-accent-cyan);
+}
 
 /* ── Submission panel ── */
 .submissionCard {
@@ -96,29 +113,40 @@
 .input {
   padding: 11px 14px;
   border-radius: 13px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #fff;
   font-size: 0.93rem;
   font-family: inherit;
   width: 100%;
   transition: border-color 0.2s;
 }
-.input:focus { outline: none; border-color: var(--nx-brand-400); }
-.inputError { border-color: var(--nx-danger) !important; }
-.fieldError { font-size: 0.78rem; color: var(--nx-danger); }
+.input:focus {
+  outline: none;
+  border-color: var(--nx-brand-400);
+}
+.inputError {
+  border-color: var(--nx-danger) !important;
+}
+.fieldError {
+  font-size: 0.78rem;
+  color: var(--nx-danger);
+}
 
 /* Drop zone */
 .dropZone {
-  border: 2px dashed rgba(255,255,255,0.2);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   padding: 28px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
 }
-.dropZone:hover { border-color: var(--nx-brand-400); background: rgba(99,102,241,0.06); }
+.dropZone:hover {
+  border-color: var(--nx-brand-400);
+  background: rgba(99, 102, 241, 0.06);
+}
 
 /* Success */
 .successBlock {
@@ -131,20 +159,24 @@
 }
 
 .successIcon {
-  width: 56px; height: 56px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: rgba(52,211,153,0.2);
-  border: 2px solid rgba(52,211,153,0.4);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6rem; color: #34d399;
-  box-shadow: 0 0 20px rgba(52,211,153,0.3);
+  background: rgba(52, 211, 153, 0.2);
+  border: 2px solid rgba(52, 211, 153, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #34d399;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
 }
 
 .xpBadge {
   padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(99,102,241,0.2);
-  border: 1px solid rgba(99,102,241,0.35);
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.35);
   color: var(--nx-brand-400);
   font-size: 0.84rem;
   font-weight: 700;
@@ -153,8 +185,8 @@
 .alertDanger {
   padding: 12px 16px;
   border-radius: 12px;
-  background: rgba(244,63,94,0.12);
-  border: 1px solid rgba(244,63,94,0.3);
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.3);
   color: #fca5a5;
   font-size: 0.88rem;
 }

@@ -16,7 +16,7 @@ const achievementSchema = new Schema<AchievementAttrs>({
   score: { type: String, required: true },
   gradeLetter: { type: String, required: true },
   finishedAt: { type: Date, required: true, default: Date.now },
-  certificate: { type: String }
+  certificate: { type: String },
 })
 
 achievementSchema.set('toJSON', { virtuals: true, transform: stripInternalTransform })

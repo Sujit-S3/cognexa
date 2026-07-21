@@ -1,27 +1,38 @@
 import { useState, useRef, useEffect } from 'react'
 import { GlassCard, Badge, Button } from '../../design'
-import { aiComplete, createMessage, buildSystemMessage, PROMPT_TEMPLATES, type AIMessage } from '../../services/ai.service'
+import {
+  aiComplete,
+  createMessage,
+  buildSystemMessage,
+  PROMPT_TEMPLATES,
+  type AIMessage,
+} from '../../services/ai.service'
 import { useConversationStore } from '../../stores/conversationStore'
 import styles from './AITutorPage.module.css'
 
 const AI_MODES = [
-  { id: 'tutor',      label: 'AI Tutor',      icon: '🤖', desc: 'Interactive Q&A on any topic' },
-  { id: 'summary',    label: 'Summarize',     icon: '📋', desc: 'Condense lecture content' },
-  { id: 'flashcards', label: 'Flashcards',    icon: '🃏', desc: 'Generate study cards' },
-  { id: 'quiz',       label: 'Quiz Gen',      icon: '🎯', desc: 'Auto-generate MCQ quiz' },
-  { id: 'code',       label: 'Code Review',   icon: '💻', desc: 'Review and improve code' },
-  { id: 'career',     label: 'Career Coach',  icon: '🚀', desc: 'Roadmaps and interview prep' },
+  { id: 'tutor', label: 'AI Tutor', icon: '🤖', desc: 'Interactive Q&A on any topic' },
+  { id: 'summary', label: 'Summarize', icon: '📋', desc: 'Condense lecture content' },
+  { id: 'flashcards', label: 'Flashcards', icon: '🃏', desc: 'Generate study cards' },
+  { id: 'quiz', label: 'Quiz Gen', icon: '🎯', desc: 'Auto-generate MCQ quiz' },
+  { id: 'code', label: 'Code Review', icon: '💻', desc: 'Review and improve code' },
+  { id: 'career', label: 'Career Coach', icon: '🚀', desc: 'Roadmaps and interview prep' },
 ] as const
 
 type AIMode = (typeof AI_MODES)[number]['id']
 
 const STARTERS: Record<AIMode, string[]> = {
-  tutor:      ['Explain quaternion algebra', 'How does GLSL fragment shading work?', 'What is backpropagation?'],
-  summary:    ['Summarize: Inverse kinematics involves computing joint angles from end-effector positions using Jacobian matrices.'],
+  tutor: ['Explain quaternion algebra', 'How does GLSL fragment shading work?', 'What is backpropagation?'],
+  summary: [
+    'Summarize: Inverse kinematics involves computing joint angles from end-effector positions using Jacobian matrices.',
+  ],
   flashcards: ['Generate flashcards on: Neural Networks and Backpropagation'],
-  quiz:       ['Generate a quiz on: Distributed Systems consensus algorithms'],
-  code:       ['Review this code:\n```typescript\nfunction add(a: number, b: number) { return a + b }```'],
-  career:     ['Create a learning roadmap to become an AI engineer', 'How to prepare for FAANG system design interviews?'],
+  quiz: ['Generate a quiz on: Distributed Systems consensus algorithms'],
+  code: ['Review this code:\n```typescript\nfunction add(a: number, b: number) { return a + b }```'],
+  career: [
+    'Create a learning roadmap to become an AI engineer',
+    'How to prepare for FAANG system design interviews?',
+  ],
 }
 
 function renderMarkdown(text: string) {
@@ -66,12 +77,18 @@ export function AITutorPage() {
       const systemMsg = buildSystemMessage(mode)
       const contextMsg = (() => {
         switch (mode) {
-          case 'summary':    return createMessage('user', PROMPT_TEMPLATES.summarize(userText))
-          case 'flashcards': return createMessage('user', PROMPT_TEMPLATES.flashcards(userText))
-          case 'quiz':       return createMessage('user', PROMPT_TEMPLATES.quizGenerator(userText))
-          case 'code':       return createMessage('user', PROMPT_TEMPLATES.codeReview(userText))
-          case 'career':     return createMessage('user', PROMPT_TEMPLATES.roadmap(userText, 'intermediate'))
-          default:           return userMsg
+          case 'summary':
+            return createMessage('user', PROMPT_TEMPLATES.summarize(userText))
+          case 'flashcards':
+            return createMessage('user', PROMPT_TEMPLATES.flashcards(userText))
+          case 'quiz':
+            return createMessage('user', PROMPT_TEMPLATES.quizGenerator(userText))
+          case 'code':
+            return createMessage('user', PROMPT_TEMPLATES.codeReview(userText))
+          case 'career':
+            return createMessage('user', PROMPT_TEMPLATES.roadmap(userText, 'intermediate'))
+          default:
+            return userMsg
         }
       })()
 
@@ -130,7 +147,7 @@ export function AITutorPage() {
           <div className={styles.chatHeader}>
             <div>
               <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>
-                {AI_MODES.find((m) => m.id === mode)?.icon} NEXUS AI —{' '}
+                {AI_MODES.find((m) => m.id === mode)?.icon} Cognexa —{' '}
                 {AI_MODES.find((m) => m.id === mode)?.label}
               </div>
               <div style={{ fontSize: '0.82rem', color: 'var(--nx-fg-muted)', marginTop: '2px' }}>
@@ -139,11 +156,15 @@ export function AITutorPage() {
             </div>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <Badge tone="success">
-                {import.meta.env.VITE_AI_PROVIDER === 'gemini' ? 'Gemini' :
-                 import.meta.env.VITE_AI_PROVIDER === 'openai' ? 'GPT-4o' : 'Mock AI'}
+                {import.meta.env.VITE_AI_PROVIDER === 'mock' ? 'Mock AI' : 'Secure AI'}
               </Badge>
               {messages.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={clearChat} style={{ color: 'var(--nx-fg-muted)', fontSize: '0.8rem' }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearChat}
+                  style={{ color: 'var(--nx-fg-muted)', fontSize: '0.8rem' }}
+                >
                   Clear ✕
                 </Button>
               )}
@@ -158,10 +179,11 @@ export function AITutorPage() {
                   {AI_MODES.find((m) => m.id === mode)?.icon}
                 </div>
                 <div style={{ fontWeight: 700, color: '#fff', fontSize: '1.1rem' }}>
-                  Start a conversation with NEXUS AI
+                  Start a conversation with Cognexa
                 </div>
                 <p style={{ color: 'var(--nx-fg-muted)', fontSize: '0.88rem', maxWidth: '380px' }}>
-                  {AI_MODES.find((m) => m.id === mode)?.desc}. Try one of the starters below or type your own question.
+                  {AI_MODES.find((m) => m.id === mode)?.desc}. Try one of the starters below or type your own
+                  question.
                 </p>
                 <div className={styles.starters}>
                   {STARTERS[mode].map((s) => (
@@ -178,9 +200,7 @@ export function AITutorPage() {
                 key={msg.id}
                 className={`${styles.message} ${msg.role === 'user' ? styles.messageUser : styles.messageAI}`}
               >
-                {msg.role === 'assistant' && (
-                  <div className={styles.aiAvatar}>🤖</div>
-                )}
+                {msg.role === 'assistant' && <div className={styles.aiAvatar}>🤖</div>}
                 <div className={styles.bubble}>
                   {msg.role === 'assistant' ? (
                     <div
@@ -210,11 +230,7 @@ export function AITutorPage() {
               </div>
             )}
 
-            {error && (
-              <div className={styles.errorBox}>
-                ⚠️ {error}
-              </div>
-            )}
+            {error && <div className={styles.errorBox}>⚠️ {error}</div>}
 
             <div ref={bottomRef} />
           </div>
@@ -224,7 +240,7 @@ export function AITutorPage() {
             <textarea
               ref={textareaRef}
               className={styles.textarea}
-              placeholder={`Ask NEXUS AI anything about ${AI_MODES.find((m) => m.id === mode)?.label.toLowerCase()}… (Enter to send, Shift+Enter for newline)`}
+              placeholder={`Ask Cognexa anything about ${AI_MODES.find((m) => m.id === mode)?.label.toLowerCase()}… (Enter to send, Shift+Enter for newline)`}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}

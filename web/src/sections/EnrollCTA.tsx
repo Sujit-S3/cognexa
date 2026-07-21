@@ -17,27 +17,35 @@ export function EnrollCTA() {
     <section className={styles.section} id="enroll">
       <Reveal>
         <GlassCard elevation="floating" glow className={styles.ctaCard}>
-          <Badge tone="cyan">🎁 Instant 14-Day Pro Pass</Badge>
-          
+          <Badge tone="cyan">Start with Cognexa</Badge>
+
           <h2 className={styles.title}>
-            Ready to experience the <span className="nx-gradient-text">Future of Education?</span>
+            Bring every learning journey into <span className="nx-gradient-text">one intelligent space.</span>
           </h2>
-          
+
           <p className={styles.subtitle}>
-            Join over 15,000+ students leveling up their skills today. Enter your email below to instantly unlock
-            full access to the AI Tutor, 3D Web sandboxes, and personalized career roadmaps.
+            Create a focused environment for teaching, learning, assessment, and collaboration—supported by AI
+            that strengthens human expertise rather than replacing it.
           </p>
 
           <div className={styles.perksRow}>
-            <div className={styles.perk}><span>⚡</span> Instant Access</div>
-            <div className={styles.perk}><span>🤖</span> 14 AI Tools Included</div>
-            <div className={styles.perk}><span>🎮</span> Gamified XP Rewards</div>
-            <div className={styles.perk}><span>🛡️</span> Cancel Anytime</div>
+            <div className={styles.perk}>
+              <span>⚡</span> Guided Learning
+            </div>
+            <div className={styles.perk}>
+              <span>🤖</span> Secure AI Assistance
+            </div>
+            <div className={styles.perk}>
+              <span>🎓</span> Mastery-Based Progress
+            </div>
+            <div className={styles.perk}>
+              <span>🛡️</span> Privacy by Design
+            </div>
           </div>
 
           {enrolled ? (
             <div className={styles.successMsg}>
-              <span>🎉</span> Welcome aboard! Your 14-Day Pro Pass and setup guide have been sent to {email}.
+              <span>🎉</span> Welcome to Cognexa. Your getting-started guide has been sent to {email}.
             </div>
           ) : (
             <form onSubmit={handleSubmit} className={styles.form}>
@@ -50,7 +58,7 @@ export function EnrollCTA() {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <Button type="submit" size="lg" magnetic className={styles.submitBtn}>
-                Enroll Free Now
+                Join Cognexa
               </Button>
             </form>
           )}
@@ -59,20 +67,28 @@ export function EnrollCTA() {
 
       <footer className={styles.footer}>
         <div className={styles.footerLogo}>
-          <span className="nx-gradient-text">NEXUS AI</span> • Gamified Education
-        </div>
-        
-        <div className={styles.footerLinks}>
-          <a href="#catalog" className={styles.footerLink}>Catalog</a>
-          <a href="#progress" className={styles.footerLink}>XP Engine</a>
-          <a href="#features" className={styles.footerLink}>AI Tools</a>
-          <a href="#testimonials" className={styles.footerLink}>Testimonials</a>
-          <a href="#" className={styles.footerLink}>Privacy & Terms</a>
+          <span className="nx-gradient-text">Cognexa</span> • Connecting Knowledge, Empowering Minds.
         </div>
 
-        <div>
-          © 2026 NEXUS AI Platform. Built with React 19, Three.js & Framer Motion.
+        <div className={styles.footerLinks}>
+          <a href="#catalog" className={styles.footerLink}>
+            Catalog
+          </a>
+          <a href="#progress" className={styles.footerLink}>
+            XP Engine
+          </a>
+          <a href="#features" className={styles.footerLink}>
+            AI Tools
+          </a>
+          <a href="#testimonials" className={styles.footerLink}>
+            Testimonials
+          </a>
+          <a href="#" className={styles.footerLink}>
+            Privacy & Terms
+          </a>
         </div>
+
+        <div>© 2026 Cognexa. Intelligent learning for every mind.</div>
       </footer>
     </section>
   )

@@ -1,0 +1,58 @@
+name: Roll Back Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        options: [staging, production]
+      server_revision:
+        description: Known-good server Deployment revision
+        required: true
+        type: number
+      web_revision:
+        description: Known-good web Deployment revision
+        required: true
+        type: number
+      expected_commit:
+        description: Commit SHA expected after rollback
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+      - name: Configure cluster credentials
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          mkdir -p "${HOME}/.kube"
+          printf '%s' "$KUBE_CONFIG" | base64 --decode > "${HOME}/.kube/config"
+          chmod 600 "${HOME}/.kube/config"
+      - name: Restore known-good revisions
+        run: |
+          kubectl rollout undo deployment/cognexa-server -n cognexa --to-revision=${{ inputs.server_revision }}
+          kubectl rollout undo deployment/cognexa-web -n cognexa --to-revision=${{ inputs.web_revision }}
+          kubectl rollout status deployment/cognexa-server -n cognexa --timeout=8m
+          kubectl rollout status deployment/cognexa-web -n cognexa --timeout=5m
+      - name: Verify rollback
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          WEB_URL: ${{ secrets.WEB_URL }}
+          EXPECTED_COMMIT: ${{ inputs.expected_commit }}
+        run: node scripts/smoke-test.mjs

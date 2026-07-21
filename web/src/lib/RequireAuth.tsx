@@ -19,7 +19,16 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   // Still hydrating from localStorage
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--nx-bg)', color: 'var(--nx-fg-muted)' }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--nx-bg)',
+          color: 'var(--nx-fg-muted)',
+        }}
+      >
         Initializing session…
       </div>
     )
@@ -30,7 +39,8 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    const fallback = user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard'
+    const fallback =
+      user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard'
     return <Navigate to={fallback} replace />
   }
 

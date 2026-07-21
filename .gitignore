@@ -5,3 +5,9 @@ build/
 *.log
 .DS_Store
 .claude/settings.local.json
+.corepack/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+.tmp-*/

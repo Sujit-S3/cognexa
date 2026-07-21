@@ -6,7 +6,7 @@ import { logger } from '../config/logger'
 import { isProduction } from '../config/env'
 
 export function notFoundHandler(req: Request, res: Response): void {
-  res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found` })
+  res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found`, requestId: req.id })
 }
 
 interface MongoDuplicateKeyError extends Error {
@@ -20,32 +20,34 @@ function isDuplicateKeyError(err: unknown): err is MongoDuplicateKeyError {
 
 export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction): void {
   if (err instanceof ZodError) {
-    res.status(422).json({ error: 'Validation failed', details: err.flatten() })
+    res.status(422).json({ error: 'Validation failed', details: err.flatten(), requestId: req.id })
     return
   }
 
   if (err instanceof mongoose.Error.ValidationError) {
-    res.status(422).json({ error: 'Validation failed', details: err.errors })
+    res.status(422).json({ error: 'Validation failed', details: err.errors, requestId: req.id })
     return
   }
 
   if (err instanceof mongoose.Error.CastError) {
-    res.status(400).json({ error: `Invalid ${err.path}: ${String(err.value)}` })
+    res.status(400).json({ error: `Invalid ${err.path}: ${String(err.value)}`, requestId: req.id })
     return
   }
 
   if (isDuplicateKeyError(err)) {
-    res.status(409).json({ error: 'A record with these values already exists', details: err.keyValue })
+    res
+      .status(409)
+      .json({ error: 'A record with these values already exists', details: err.keyValue, requestId: req.id })
     return
   }
 
   if (err instanceof AppError) {
     if (err.statusCode >= 500) logger.error({ err }, err.message)
-    res.status(err.statusCode).json({ error: err.message, details: err.details })
+    res.status(err.statusCode).json({ error: err.message, details: err.details, requestId: req.id })
     return
   }
 
   logger.error({ err, path: req.originalUrl }, 'Unhandled error')
   const message = err instanceof Error ? err.message : 'Internal server error'
-  res.status(500).json({ error: isProduction ? 'Internal server error' : message })
+  res.status(500).json({ error: isProduction ? 'Internal server error' : message, requestId: req.id })
 }

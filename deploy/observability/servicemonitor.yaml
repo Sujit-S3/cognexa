@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cognexa-server
+  namespace: cognexa
+  labels:
+    app.kubernetes.io/part-of: cognexa
+spec:
+  namespaceSelector:
+    matchNames: [cognexa]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cognexa-server
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      authorization:
+        type: Bearer
+        credentials:
+          name: cognexa-runtime
+          key: METRICS_AUTH_TOKEN

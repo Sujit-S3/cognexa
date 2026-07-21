@@ -15,7 +15,7 @@ export function CertificateModal({
   onClose,
   courseName = 'AI & Robotics — Neural Control Systems',
   dateIssued = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-  certId = 'NEXUS-CERT-9942A',
+  certId = 'COGNEXA-CERT-9942A',
 }: CertificateModalProps) {
   const { user } = useAuthStore()
 
@@ -26,7 +26,7 @@ export function CertificateModal({
   }
 
   const handleShare = () => {
-    alert(`Certificate link copied to clipboard: https://nexus-ai.edu/verify/${certId}`)
+    alert(`Certificate link copied to clipboard: https://cognexa.app/verify/${certId}`)
   }
 
   return (
@@ -38,17 +38,16 @@ export function CertificateModal({
 
         <div className={styles.certificateFrame}>
           <div className={styles.seal}>🎖️</div>
-          <Badge tone="violet">NEXUS AI VERIFIED CREDENTIAL</Badge>
+          <Badge tone="violet">COGNEXA VERIFIED CREDENTIAL</Badge>
 
           <h2 className={styles.certTitle}>Certificate of Mastery</h2>
           <div className={styles.presentedTo}>This officially certifies that</div>
 
-          <div className={styles.studentName}>
-            {user ? user.name || user.email : 'Alex Rivera'}
-          </div>
+          <div className={styles.studentName}>{user ? user.name || user.email : 'Alex Rivera'}</div>
 
           <p className={styles.reason}>
-            Has successfully demonstrated advanced proficiency, completed all required interactive assessments, code labs, and met all rigor criteria for the professional curriculum:
+            Has successfully demonstrated advanced proficiency, completed all required interactive
+            assessments, code labs, and met all rigor criteria for the professional curriculum:
           </p>
 
           <div className={styles.courseName}>{courseName}</div>
@@ -61,12 +60,16 @@ export function CertificateModal({
 
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '1.4rem', marginBottom: '2px' }}>📱</div>
-              <Badge tone="cyan" style={{ fontSize: '0.72rem' }}>ID: {certId}</Badge>
+              <Badge tone="cyan" style={{ fontSize: '0.72rem' }}>
+                ID: {certId}
+              </Badge>
             </div>
 
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontWeight: 700, color: '#fff' }}>Chief AI Architect:</div>
-              <div style={{ fontFamily: 'var(--nx-font-mono, monospace)', color: 'var(--nx-accent-cyan)' }}>Dr. Marcus Vance</div>
+              <div style={{ fontFamily: 'var(--nx-font-mono, monospace)', color: 'var(--nx-accent-cyan)' }}>
+                Dr. Marcus Vance
+              </div>
             </div>
           </div>
         </div>

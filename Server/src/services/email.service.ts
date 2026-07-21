@@ -11,7 +11,7 @@ function getTransporter(): Transporter | null {
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,
       secure: env.SMTP_PORT === 465,
-      auth: { user: env.SMTP_USER, pass: env.SMTP_PASS }
+      auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
     })
   }
   return transporter
@@ -41,15 +41,15 @@ export async function sendPasswordResetEmail(to: string, resetToken: string): Pr
   const resetUrl = `${env.CLIENT_URL}/reset-password/${resetToken}`
   await sendEmail({
     to,
-    subject: 'Reset your NEXUS AI password',
-    html: `<p>Click the link below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`
+    subject: 'Reset your Cognexa password',
+    html: `<p>Click the link below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
   })
 }
 
 export async function sendWelcomeEmail(to: string, name: string): Promise<void> {
   await sendEmail({
     to,
-    subject: 'Welcome to NEXUS AI',
-    html: `<p>Hi ${name}, welcome to NEXUS AI — the future of intelligent learning.</p>`
+    subject: 'Welcome to Cognexa',
+    html: `<p>Hi ${name}, welcome to Cognexa.</p><p>Connecting Knowledge, Empowering Minds.</p>`,
   })
 }

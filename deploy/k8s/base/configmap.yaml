@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cognexa-server-config
+data:
+  NODE_ENV: production
+  APP_ENV: production
+  PORT: '4000'
+  APP_VERSION: '0.1.0'
+  COMMIT_SHA: release
+  LOG_LEVEL: info
+  CLIENT_URL: https://app.cognexa.app
+  CORS_ALLOWED_ORIGINS: https://app.cognexa.app
+  COOKIE_DOMAIN: .cognexa.app
+  COOKIE_SECURE: 'true'
+  REDIS_REQUIRED: 'true'
+  REDIS_CONNECT_TIMEOUT_MS: '5000'
+  RATE_LIMIT_WINDOW_MS: '900000'
+  RATE_LIMIT_MAX: '300'
+  AUTH_RATE_LIMIT_MAX: '20'
+  AI_RATE_LIMIT_MAX: '30'
+  FEATURE_FLAGS: ai_tutor,certificates
+  OTEL_ENABLED: 'true'
+  OTEL_SERVICE_NAME: cognexa-server
+  CLOUDINARY_UPLOAD_FOLDER: cognexa

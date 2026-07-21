@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cognexa
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/proxy-body-size: 2m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '60'
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.cognexa.app
+        - api.cognexa.app
+      secretName: cognexa-tls
+  rules:
+    - host: app.cognexa.app
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: cognexa-server
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cognexa-web
+                port:
+                  name: http
+    - host: api.cognexa.app
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cognexa-server
+                port:
+                  name: http

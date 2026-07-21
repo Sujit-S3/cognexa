@@ -16,7 +16,7 @@ const notificationSchema = new Schema<NotificationAttrs>(
     type: { type: String, enum: ['follow', 'comment', 'like', 'admin', 'alert', 'bookmark'], required: true },
     priority: { type: Number, default: 0 },
     read: { type: Boolean, default: false },
-    data: { type: String }
+    data: { type: String },
   },
   { timestamps: true }
 )
@@ -30,7 +30,7 @@ export interface NotificationSubscriptionAttrs {
 
 const notificationSubscriptionSchema = new Schema<NotificationSubscriptionAttrs>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  subData: { type: Object, required: true }
+  subData: { type: Object, required: true },
 })
 
 export const NotificationSubscription = mongoose.model(

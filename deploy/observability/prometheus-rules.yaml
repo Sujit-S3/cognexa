@@ -1,0 +1,73 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cognexa-production
+  namespace: cognexa
+  labels:
+    app.kubernetes.io/part-of: cognexa
+spec:
+  groups:
+    - name: cognexa.availability
+      rules:
+        - alert: CognexaApiUnavailable
+          expr: max(up{namespace="cognexa", service="cognexa-server"}) == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Cognexa API has no healthy metrics targets
+            runbook_url: https://github.com/Sujit-S3/nexus-ai/blob/main/docs/runbooks/API_UNAVAILABLE.md
+        - alert: CognexaApiHighErrorRate
+          expr: |
+            sum(rate(cognexa_http_requests_total{status_code=~"5.."}[5m]))
+              / clamp_min(sum(rate(cognexa_http_requests_total[5m])), 0.001) > 0.02
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: Cognexa API 5xx rate exceeds 2 percent
+            runbook_url: https://github.com/Sujit-S3/nexus-ai/blob/main/docs/runbooks/HIGH_ERROR_RATE.md
+        - alert: CognexaApiHighLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum by (le) (rate(cognexa_http_request_duration_seconds_bucket[5m]))) > 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Cognexa API p95 latency exceeds one second
+            runbook_url: https://github.com/Sujit-S3/nexus-ai/blob/main/docs/runbooks/HIGH_LATENCY.md
+        - alert: CognexaApiMemoryPressure
+          expr: cognexa_process_resident_memory_bytes > 650000000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Cognexa API memory is near its container limit
+            runbook_url: https://github.com/Sujit-S3/nexus-ai/blob/main/docs/runbooks/HIGH_MEMORY.md
+    - name: cognexa.dependencies
+      rules:
+        - alert: CognexaMongoExporterUnavailable
+          expr: absent(mongodb_up{namespace="cognexa"}) or max(mongodb_up{namespace="cognexa"}) == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: MongoDB health metrics are absent or unhealthy
+            runbook_url: https://github.com/Sujit-S3/nexus-ai/blob/main/docs/runbooks/DATABASE_UNAVAILABLE.md
+        - alert: CognexaRedisExporterUnavailable
+          expr: absent(redis_up{namespace="cognexa"}) or max(redis_up{namespace="cognexa"}) == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: Redis health metrics are absent or unhealthy
+            runbook_url: https://github.com/Sujit-S3/nexus-ai/blob/main/docs/runbooks/REDIS_UNAVAILABLE.md
+        - alert: CognexaCertificateExpiring
+          expr: probe_ssl_earliest_cert_expiry{job="blackbox-https"} - time() < 1209600
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: A Cognexa TLS certificate expires in less than 14 days
+            runbook_url: https://github.com/Sujit-S3/nexus-ai/blob/main/docs/runbooks/CERTIFICATE_EXPIRY.md

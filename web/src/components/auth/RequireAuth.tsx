@@ -16,11 +16,14 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
         <GlassCard elevation="raised" style={{ padding: '32px', textAlign: 'center' }}>
-          <div className="nx-gradient-text" style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>
+          <div
+            className="nx-gradient-text"
+            style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}
+          >
             Checking Session...
           </div>
           <p style={{ color: 'var(--nx-fg-muted)', fontSize: '0.9rem' }}>
-            Verifying secure access credentials with NEXUS AI.
+            Verifying secure access credentials with Cognexa.
           </p>
         </GlassCard>
       </div>
@@ -33,15 +36,27 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
 
   if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', padding: '24px' }}>
-        <GlassCard elevation="raised" glow style={{ padding: '40px', maxWidth: '480px', textAlign: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '60vh',
+          padding: '24px',
+        }}
+      >
+        <GlassCard
+          elevation="raised"
+          glow
+          style={{ padding: '40px', maxWidth: '480px', textAlign: 'center' }}
+        >
           <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🚫</div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>
             Access Restricted
           </h2>
           <p style={{ color: 'var(--nx-fg-muted)', lineHeight: 1.6, marginBottom: '24px' }}>
-            Your account is currently registered with the role <strong>{user.role.toUpperCase()}</strong>, which does not
-            grant permission to view this section.
+            Your account is currently registered with the role <strong>{user.role.toUpperCase()}</strong>,
+            which does not grant permission to view this section.
           </p>
           <Button magnetic onClick={() => window.history.back()}>
             Go Back

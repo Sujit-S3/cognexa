@@ -8,7 +8,7 @@ export interface BookMarkedAttrs {
 const bookMarkedSchema = new Schema<BookMarkedAttrs>(
   {
     bookedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    article: { type: Schema.Types.ObjectId, ref: 'Article', required: true }
+    article: { type: Schema.Types.ObjectId, ref: 'Article', required: true },
   },
   { timestamps: true }
 )

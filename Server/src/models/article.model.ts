@@ -18,7 +18,7 @@ const articleSchema = new Schema<ArticleAttrs>(
     lang: { type: String, required: true, enum: ['en', 'fr', 'sp', 'ar'], default: 'en' },
     contentType: { type: String, default: 'html' },
     url: { type: String },
-    contentId: { type: Number, required: true }
+    contentId: { type: Number, required: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 )

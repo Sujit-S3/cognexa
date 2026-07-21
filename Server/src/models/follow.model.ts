@@ -8,7 +8,7 @@ export interface FollowAttrs {
 const followSchema = new Schema<FollowAttrs>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    follows: { type: Schema.Types.ObjectId, ref: 'User', required: true }
+    follows: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   { timestamps: true }
 )

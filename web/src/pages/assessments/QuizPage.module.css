@@ -26,7 +26,7 @@
 .progressBar {
   height: 5px;
   border-radius: 3px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
 
@@ -62,8 +62,8 @@
   gap: 14px;
   padding: 14px 18px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
   color: var(--nx-fg-muted);
   font-size: 0.95rem;
   font-family: inherit;
@@ -74,40 +74,43 @@
 }
 
 .option:hover:not(:disabled) {
-  background: rgba(99,102,241,0.1);
+  background: rgba(99, 102, 241, 0.1);
   border-color: var(--nx-brand-400);
   color: #fff;
 }
 
-.option:disabled { cursor: default; }
+.option:disabled {
+  cursor: default;
+}
 
 .optionLabel {
-  width: 28px; height: 28px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.82rem;
   font-weight: 800;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.6);
   flex-shrink: 0;
 }
 
 .optionSelected {
-  background: rgba(99,102,241,0.18) !important;
+  background: rgba(99, 102, 241, 0.18) !important;
   border-color: var(--nx-brand-400) !important;
   color: #fff !important;
 }
 
 .optionCorrect {
-  background: rgba(52,211,153,0.15) !important;
+  background: rgba(52, 211, 153, 0.15) !important;
   border-color: #34d399 !important;
   color: #6ee7b7 !important;
 }
 
 .optionWrong {
-  background: rgba(244,63,94,0.1) !important;
+  background: rgba(244, 63, 94, 0.1) !important;
   border-color: #f43f5e !important;
   color: #fca5a5 !important;
 }
@@ -123,14 +126,14 @@
 }
 
 .explanationGood {
-  background: rgba(52,211,153,0.12);
-  border: 1px solid rgba(52,211,153,0.25);
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.25);
   color: #6ee7b7;
 }
 
 .explanationBad {
-  background: rgba(244,63,94,0.1);
-  border: 1px solid rgba(244,63,94,0.25);
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.25);
   color: #fca5a5;
 }
 
@@ -140,7 +143,7 @@
   align-items: center;
   margin-top: 24px;
   padding-top: 18px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Dot navigation */
@@ -153,21 +156,40 @@
 }
 
 .dot {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.45);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.18s;
 }
-.dot:hover { background: rgba(99,102,241,0.18); color: #fff; }
-.dotCurrent { border-color: var(--nx-brand-400) !important; color: #fff !important; box-shadow: 0 0 10px rgba(99,102,241,0.5); }
-.dotAnswered { background: rgba(99,102,241,0.15) !important; color: var(--nx-brand-400) !important; }
-.dotCorrect { background: rgba(52,211,153,0.2) !important; border-color: #34d399 !important; color: #34d399 !important; }
-.dotWrong { background: rgba(244,63,94,0.15) !important; border-color: #f43f5e !important; color: #f43f5e !important; }
+.dot:hover {
+  background: rgba(99, 102, 241, 0.18);
+  color: #fff;
+}
+.dotCurrent {
+  border-color: var(--nx-brand-400) !important;
+  color: #fff !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
+.dotAnswered {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: var(--nx-brand-400) !important;
+}
+.dotCorrect {
+  background: rgba(52, 211, 153, 0.2) !important;
+  border-color: #34d399 !important;
+  color: #34d399 !important;
+}
+.dotWrong {
+  background: rgba(244, 63, 94, 0.15) !important;
+  border-color: #f43f5e !important;
+  color: #f43f5e !important;
+}
 
 /* Results */
 .resultsCard {
@@ -184,8 +206,8 @@
 .xpBadge {
   padding: 8px 20px;
   border-radius: 999px;
-  background: rgba(99,102,241,0.2);
-  border: 1px solid rgba(99,102,241,0.4);
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.4);
   color: var(--nx-brand-400);
   font-size: 0.88rem;
   font-weight: 700;

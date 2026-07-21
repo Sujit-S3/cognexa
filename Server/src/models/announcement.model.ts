@@ -10,7 +10,7 @@ const announcementSchema = new Schema<AnnouncementAttrs>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
-    data: { type: String, required: true }
+    data: { type: String, required: true },
   },
   { timestamps: true }
 )

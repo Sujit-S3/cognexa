@@ -1,0 +1,110 @@
+name: Deploy Immutable Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Protected GitHub environment to deploy
+        required: true
+        type: choice
+        options: [staging, production]
+      release_version:
+        description: Semantic release version, for example 1.4.0
+        required: true
+        type: string
+      commit_sha:
+        description: Full Git commit SHA embedded in the release
+        required: true
+        type: string
+      server_digest:
+        description: Immutable server image digest (sha256:...)
+        required: true
+        type: string
+      web_digest:
+        description: Immutable web image digest (sha256:...)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+        with:
+          version: v1.31.0
+      - name: Validate immutable release inputs
+        env:
+          SERVER_DIGEST: ${{ inputs.server_digest }}
+          WEB_DIGEST: ${{ inputs.web_digest }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          [[ "$SERVER_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]
+          [[ "$WEB_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]
+          [[ "$COMMIT_SHA" =~ ^[a-f0-9]{40}$ ]]
+      - name: Configure cluster credentials
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          test -n "$KUBE_CONFIG"
+          mkdir -p "${HOME}/.kube"
+          printf '%s' "$KUBE_CONFIG" | base64 --decode > "${HOME}/.kube/config"
+          chmod 600 "${HOME}/.kube/config"
+      - name: Render digest-pinned manifests
+        env:
+          DEPLOY_ENV: ${{ inputs.environment }}
+          SERVER_DIGEST: ${{ inputs.server_digest }}
+          WEB_DIGEST: ${{ inputs.web_digest }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          cp -R deploy/k8s "${RUNNER_TEMP}/k8s"
+          cd "${RUNNER_TEMP}/k8s/overlays/${DEPLOY_ENV}"
+          sed -i "s|image: ghcr.io/sujit-s3/cognexa-server:0.1.0|image: ghcr.io/${{ github.repository_owner }}/cognexa-server@${SERVER_DIGEST}|" \
+            "${RUNNER_TEMP}/k8s/base/server-deployment.yaml"
+          sed -i "s|image: ghcr.io/sujit-s3/cognexa-web:0.1.0|image: ghcr.io/${{ github.repository_owner }}/cognexa-web@${WEB_DIGEST}|" \
+            "${RUNNER_TEMP}/k8s/base/web-deployment.yaml"
+          sed -i "s/APP_VERSION: '0.1.0'/APP_VERSION: '${RELEASE_VERSION}'/" \
+            "${RUNNER_TEMP}/k8s/base/configmap.yaml"
+          sed -i "s/COMMIT_SHA: release/COMMIT_SHA: '${COMMIT_SHA}'/" \
+            "${RUNNER_TEMP}/k8s/base/configmap.yaml"
+          kubectl kustomize . > "${RUNNER_TEMP}/release.yaml"
+          kubectl apply --dry-run=client --validate=false -f "${RUNNER_TEMP}/release.yaml"
+      - name: Apply digest-pinned release
+        run: |
+          kubectl apply -f "${RUNNER_TEMP}/release.yaml"
+      - name: Run additive database migrations
+        env:
+          SERVER_DIGEST: ${{ inputs.server_digest }}
+        run: |
+          kubectl delete job cognexa-migrate -n cognexa --ignore-not-found
+          sed "s|SERVER_IMAGE|ghcr.io/${{ github.repository_owner }}/cognexa-server@${SERVER_DIGEST}|" \
+            deploy/k8s/jobs/migration-job.yaml | kubectl apply -f -
+          kubectl wait --for=condition=complete job/cognexa-migrate -n cognexa --timeout=5m
+      - name: Complete zero-downtime rollout
+        run: |
+          kubectl rollout status deployment/cognexa-server -n cognexa --timeout=8m
+          kubectl rollout status deployment/cognexa-web -n cognexa --timeout=5m
+      - name: Verify deployed release
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          WEB_URL: ${{ secrets.WEB_URL }}
+          EXPECTED_COMMIT: ${{ inputs.commit_sha }}
+        run: node scripts/smoke-test.mjs
+      - name: Roll back failed rollout
+        if: failure()
+        run: |
+          kubectl rollout undo deployment/cognexa-server -n cognexa || true
+          kubectl rollout undo deployment/cognexa-web -n cognexa || true
+          kubectl rollout status deployment/cognexa-server -n cognexa --timeout=5m || true
+          kubectl rollout status deployment/cognexa-web -n cognexa --timeout=5m || true

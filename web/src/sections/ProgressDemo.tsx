@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { GlassCard, Reveal, Badge, Button } from '../design'
 import styles from './ProgressDemo.module.css'
-import studentAvatarImg from '../assets/student_avatar.png'
+import studentAvatarImg from '../assets/student_avatar.webp'
 
 interface Quest {
   id: number
@@ -27,21 +27,19 @@ export function ProgressDemo() {
   const streak = 14 + (completedCount > 1 ? 1 : 0)
 
   const toggleQuest = (id: number) => {
-    setQuests((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, done: !q.done } : q))
-    )
+    setQuests((prev) => prev.map((q) => (q.id === id ? { ...q, done: !q.done } : q)))
   }
 
   return (
     <section className={styles.section} id="progress">
       <Reveal className={styles.header}>
-        <Badge tone="cyan">Gamified Mastery</Badge>
+        <Badge tone="cyan">Mastery in motion</Badge>
         <h2 className={styles.title}>
-          Learning that feels like an <span className="nx-gradient-text">Addictive Game</span>
+          Learning that turns progress into <span className="nx-gradient-text">lasting momentum.</span>
         </h2>
         <p className={styles.subtitle}>
-          Click the quests below to experience NEXUS AI’s real-time XP engine, dynamic level progression,
-          and daily study streak multiplier in action right now!
+          Explore how Cognexa turns clear goals, visible progress, and consistent practice into a learning
+          rhythm that keeps moving forward.
         </p>
       </Reveal>
 
@@ -79,7 +77,11 @@ export function ProgressDemo() {
             <span className={styles.heatmapTitle}>2-Week Study Heatmap (Active Activity)</span>
             <div className={styles.heatmapGrid}>
               {Array.from({ length: 14 }).map((_, i) => {
-                const isActive = i < 11 || (i === 11 && completedCount >= 1) || (i === 12 && completedCount >= 2) || (i === 13 && completedCount >= 3)
+                const isActive =
+                  i < 11 ||
+                  (i === 11 && completedCount >= 1) ||
+                  (i === 12 && completedCount >= 2) ||
+                  (i === 13 && completedCount >= 3)
                 const isBoost = aiBoostActive && isActive && i >= 11
                 return (
                   <div
@@ -114,9 +116,7 @@ export function ProgressDemo() {
                       {q.title}
                     </span>
                   </div>
-                  <span className={styles.questReward}>
-                    +{q.reward * (aiBoostActive ? 2 : 1)} XP
-                  </span>
+                  <span className={styles.questReward}>+{q.reward * (aiBoostActive ? 2 : 1)} XP</span>
                 </div>
               ))}
             </div>
@@ -128,7 +128,9 @@ export function ProgressDemo() {
                 {aiBoostActive ? '⚡ 2x AI Speed Multiplier ACTIVE!' : '⚡ Activate AI 2x XP Multiplier'}
               </span>
               <span className={styles.boosterSub}>
-                {aiBoostActive ? 'All completed quests yield double rewards today!' : 'Double your daily study gains instantly'}
+                {aiBoostActive
+                  ? 'All completed quests yield double rewards today!'
+                  : 'Double your daily study gains instantly'}
               </span>
             </div>
             <Button

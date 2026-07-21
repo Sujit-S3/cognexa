@@ -6,8 +6,8 @@ import { useAuthStore } from '../../stores/authStore'
 import { GlassCard, Badge, Button, Reveal, RevealItem } from '../../design'
 import { CertificateModal } from '../../components/certificates/CertificateModal'
 import styles from './StudentDashboard.module.css'
-import aiRoboticsImg from '../../assets/ai_robotics.png'
-import webMasteryImg from '../../assets/web_mastery.png'
+import aiRoboticsImg from '../../assets/ai_robotics.webp'
+import webMasteryImg from '../../assets/web_mastery.webp'
 
 interface DailyQuest {
   id: number
@@ -32,24 +32,29 @@ export function StudentDashboard() {
 
   // Enrolled courses from backend or fallback interactive demo courses
   const enrolledCourses = courses.filter((c) => c.enrolled)
-  const displayCourses =
+  const displayCourses: CourseView[] =
     enrolledCourses.length > 0
       ? enrolledCourses
       : [
           {
             _id: 'demo-ai',
             name: 'AI & Robotics — Neural Control Systems',
-            description: 'Master reinforcement learning algorithms and real-time robotic kinematics with custom shaders.',
+            description:
+              'Master reinforcement learning algorithms and real-time robotic kinematics with custom shaders.',
             image: aiRoboticsImg,
             backgroundColor: '#6366f1',
             status: 'published' as const,
             enrolled: true,
-            modules: [{ title: 'Module 1: Kinematics', moduleItems: [] }, { title: 'Module 2: Neural Control', moduleItems: [] }],
+            modules: [
+              { title: 'Module 1: Kinematics', moduleItems: [] },
+              { title: 'Module 2: Neural Control', moduleItems: [] },
+            ],
           },
           {
             _id: 'demo-web',
             name: 'Web Mastery — 3D WebGL & React 19',
-            description: 'Build state-of-the-art interactive 3D web applications with Three.js and custom Framer physics.',
+            description:
+              'Build state-of-the-art interactive 3D web applications with Three.js and custom Framer physics.',
             image: webMasteryImg,
             backgroundColor: '#ec4899',
             status: 'published' as const,
@@ -108,19 +113,22 @@ export function StudentDashboard() {
       <GlassCard elevation="raised" glow className={styles.welcomeBanner}>
         <div className={styles.welcomeText}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <Badge tone="brand">⚡ Season 1 Live</Badge>
+            <Badge tone="brand">Learning in progress</Badge>
             <Badge tone="success">🔥 7 Day Streak</Badge>
           </div>
           <h1 className={styles.title}>Welcome Back, {user?.name || 'Student'}! 🚀</h1>
           <p className={styles.subtitle}>
-            You are currently ranked in the top <strong>4%</strong> of AI students this week. Keep up the momentum!
+            You are currently ranked in the top <strong>4%</strong> of AI students this week. Keep up the
+            momentum!
           </p>
         </div>
 
         <div className={styles.levelBox}>
           <div className={styles.levelTop}>
             <span>🎮 Level 14 AI Architect</span>
-            <span>{totalXp} / {xpForNextLevel} XP</span>
+            <span>
+              {totalXp} / {xpForNextLevel} XP
+            </span>
           </div>
           <div className={styles.progressBar}>
             <div className={styles.progressFill} style={{ width: `${xpPercent}%` }} />
@@ -187,13 +195,15 @@ export function StudentDashboard() {
               <span>🎯 My Enrolled Courses</span>
             </h2>
             <Link to="/catalog">
-              <Button variant="ghost" size="sm">Explore All Courses →</Button>
+              <Button variant="ghost" size="sm">
+                Explore All Courses →
+              </Button>
             </Link>
           </div>
 
           {coursesLoading ? (
             <div style={{ padding: '40px', textAlign: 'center', color: 'var(--nx-fg-muted)' }}>
-              Syncing courses with NEXUS AI backend...
+              Syncing your Cognexa learning space...
             </div>
           ) : (
             <div className={styles.coursesGrid}>
@@ -207,15 +217,27 @@ export function StudentDashboard() {
                           {course.modules?.length || 2} Modules
                         </Badge>
                         <h3 className={styles.courseName}>{course.name}</h3>
-                        <p className={styles.courseDesc}>{course.description || 'Interactive AI study module'}</p>
+                        <p className={styles.courseDesc}>
+                          {course.description || 'Interactive AI study module'}
+                        </p>
                       </div>
-                      <div className={styles.courseIcon} style={{ background: course.backgroundColor || '#6366f1' }}>
+                      <div
+                        className={styles.courseIcon}
+                        style={{ background: course.backgroundColor || '#6366f1' }}
+                      >
                         🧠
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--nx-fg-muted)' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontSize: '0.8rem',
+                          color: 'var(--nx-fg-muted)',
+                        }}
+                      >
                         <span>Progress</span>
                         <span style={{ color: '#fff', fontWeight: 700 }}>68%</span>
                       </div>
@@ -224,7 +246,11 @@ export function StudentDashboard() {
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                         <Link to={`/courses/${courseId}`} style={{ flex: 1 }}>
-                          <Button magnetic glow style={{ width: '100%', padding: '10px', fontSize: '0.86rem' }}>
+                          <Button
+                            magnetic
+                            glow
+                            style={{ width: '100%', padding: '10px', fontSize: '0.86rem' }}
+                          >
                             Continue ⚡
                           </Button>
                         </Link>
@@ -252,7 +278,9 @@ export function StudentDashboard() {
               <h3 className={styles.sectionTitle} style={{ fontSize: '1.2rem' }}>
                 ⚡ Daily Study Quests
               </h3>
-              <Badge tone="brand">+{quests.filter((q) => !q.completed).reduce((sum, q) => sum + q.xp, 0)} XP Avail</Badge>
+              <Badge tone="brand">
+                +{quests.filter((q) => !q.completed).reduce((sum, q) => sum + q.xp, 0)} XP Avail
+              </Badge>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -267,7 +295,9 @@ export function StudentDashboard() {
                     padding: '14px 16px',
                     borderRadius: '14px',
                     background: q.completed ? 'rgba(52, 211, 153, 0.12)' : 'rgba(255, 255, 255, 0.05)',
-                    border: q.completed ? '1px solid rgba(52, 211, 153, 0.35)' : '1px solid rgba(255, 255, 255, 0.1)',
+                    border: q.completed
+                      ? '1px solid rgba(52, 211, 153, 0.35)'
+                      : '1px solid rgba(255, 255, 255, 0.1)',
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                   }}
@@ -290,7 +320,13 @@ export function StudentDashboard() {
                     >
                       {q.completed && '✓'}
                     </div>
-                    <span style={{ fontSize: '0.9rem', color: q.completed ? 'var(--nx-success)' : '#fff', textDecoration: q.completed ? 'line-through' : 'none' }}>
+                    <span
+                      style={{
+                        fontSize: '0.9rem',
+                        color: q.completed ? 'var(--nx-success)' : '#fff',
+                        textDecoration: q.completed ? 'line-through' : 'none',
+                      }}
+                    >
                       {q.title}
                     </span>
                   </div>
@@ -317,28 +353,35 @@ export function StudentDashboard() {
                 {displayDeadlines.map((item, index) => {
                   const dateObj = new Date(item.deadline)
                   const formattedDate = !isNaN(dateObj.getTime())
-                    ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    ? dateObj.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                     : 'Upcoming'
 
                   return (
                     <Link
                       key={index}
-                      to={item.type === 'Exam' ? '/assessments/quizzes/mock-2' : '/assessments/assignments/mock-1'}
+                      to={
+                        item.type === 'Exam'
+                          ? '/assessments/quizzes/mock-2'
+                          : '/assessments/assignments/mock-1'
+                      }
                       style={{ textDecoration: 'none' }}
                     >
                       <GlassCard className={styles.deadlineItem}>
                         <div className={styles.deadlineLeft}>
-                          <div className={styles.deadlineIcon}>
-                            {item.type === 'Exam' ? '📝' : '💻'}
-                          </div>
+                          <div className={styles.deadlineIcon}>{item.type === 'Exam' ? '📝' : '💻'}</div>
                           <div>
                             <div className={styles.deadlineTitle}>{item.title}</div>
-                            <div className={styles.deadlineCourse}>{item.course?.name || 'Course Assignment'}</div>
+                            <div className={styles.deadlineCourse}>
+                              {item.course?.name || 'Course Assignment'}
+                            </div>
                           </div>
                         </div>
-                        <Badge tone={item.type === 'Exam' ? 'pink' : 'violet'}>
-                          Due: {formattedDate}
-                        </Badge>
+                        <Badge tone={item.type === 'Exam' ? 'pink' : 'violet'}>Due: {formattedDate}</Badge>
                       </GlassCard>
                     </Link>
                   )

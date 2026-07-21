@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { useMutation } from '@tanstack/react-query'
 import { authApi } from '../../services/api'
 import { AuthLayout } from './AuthLayout'
@@ -51,7 +51,9 @@ export function ForgotPasswordPage() {
         {!mutation.isSuccess && (
           <>
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="forgot-email">Email Address</label>
+              <label className={styles.label} htmlFor="forgot-email">
+                Email Address
+              </label>
               <input
                 id="forgot-email"
                 type="email"

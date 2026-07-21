@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { Badge } from '../../design'
+import { BrandLogo } from '../brand/BrandLogo'
 import styles from './AppShell.module.css'
 
 interface NavItem {
@@ -16,16 +17,16 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard',    icon: '⚡', to: '/dashboard',  roles: ['student'] },
-  { label: 'My Courses',   icon: '📚', to: '/catalog',    roles: ['student', 'instructor'] },
-  { label: 'AI Tutor',     icon: '🤖', to: '/ai',         roles: ['student', 'instructor', 'admin'] },
-  { label: 'Assessments',  icon: '📝', to: '/assessments/quizzes/mock-2', roles: ['student'] },
-  { label: 'Certificates', icon: '🏆', to: '/dashboard',  roles: ['student'] },
-  { label: 'Portal',       icon: '🎯', to: '/instructor',  roles: ['instructor'] },
-  { label: 'Analytics',    icon: '📊', to: '/instructor',  roles: ['instructor'] },
-  { label: 'Admin Panel',  icon: '🛡️', to: '/admin',       roles: ['admin'] },
-  { label: 'Users',        icon: '👥', to: '/admin',       roles: ['admin'] },
-  { label: 'Settings',     icon: '⚙️', to: '/dashboard',  roles: ['student', 'instructor', 'admin'] },
+  { label: 'Dashboard', icon: '⚡', to: '/dashboard', roles: ['student'] },
+  { label: 'My Courses', icon: '📚', to: '/catalog', roles: ['student', 'instructor'] },
+  { label: 'AI Tutor', icon: '🤖', to: '/ai', roles: ['student', 'instructor', 'admin'] },
+  { label: 'Assessments', icon: '📝', to: '/assessments/quizzes/mock-2', roles: ['student'] },
+  { label: 'Certificates', icon: '🏆', to: '/dashboard', roles: ['student'] },
+  { label: 'Portal', icon: '🎯', to: '/instructor', roles: ['instructor'] },
+  { label: 'Analytics', icon: '📊', to: '/instructor', roles: ['instructor'] },
+  { label: 'Admin Panel', icon: '🛡️', to: '/admin', roles: ['admin'] },
+  { label: 'Users', icon: '👥', to: '/admin', roles: ['admin'] },
+  { label: 'Settings', icon: '⚙️', to: '/dashboard', roles: ['student', 'instructor', 'admin'] },
 ]
 
 export function AppShell() {
@@ -57,12 +58,7 @@ export function AppShell() {
         <div className={styles.sidebarInner}>
           {/* Logo */}
           <Link to="/" className={styles.logo}>
-            <div className={styles.logoIcon}>⚡</div>
-            {!collapsed && (
-              <span>
-                NEXUS <span className="nx-gradient-text">AI</span>
-              </span>
-            )}
+            <BrandLogo compact={collapsed} />
           </Link>
 
           {/* Nav */}
@@ -89,7 +85,10 @@ export function AppShell() {
             {user && (
               <div className={styles.userChip}>
                 <img
-                  src={user.photo || `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(user.name)}`}
+                  src={
+                    user.photo ||
+                    `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(user.name)}`
+                  }
                   alt={user.name}
                   className={styles.avatar}
                 />
@@ -121,14 +120,18 @@ export function AppShell() {
         <header className={styles.topbar}>
           {/* Breadcrumbs */}
           <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
-            <Link to="/" className={styles.breadcrumbLink}>Home</Link>
+            <Link to="/" className={styles.breadcrumbLink}>
+              Home
+            </Link>
             {breadcrumbs.map((crumb) => (
               <span key={crumb.to} className={styles.breadcrumbItem}>
                 <span className={styles.breadcrumbSep}>/</span>
                 {crumb.isLast ? (
                   <span className={styles.breadcrumbCurrent}>{crumb.label}</span>
                 ) : (
-                  <Link to={crumb.to} className={styles.breadcrumbLink}>{crumb.label}</Link>
+                  <Link to={crumb.to} className={styles.breadcrumbLink}>
+                    {crumb.label}
+                  </Link>
                 )}
               </span>
             ))}
@@ -143,7 +146,7 @@ export function AppShell() {
         </header>
 
         {/* Page content */}
-        <main className={styles.content}>
+        <main id="main-content" className={styles.content} tabIndex={-1}>
           <Outlet />
         </main>
       </div>

@@ -25,13 +25,17 @@ export async function runPlagiarismCheck(courseId: string, assessmentId: string)
     const submissions = await Submission.find({
       course: courseId,
       assessment: assessmentId,
-      submittedAt: { $exists: true }
+      submittedAt: { $exists: true },
     })
 
     const pdfFiles = submissions.flatMap((submission) =>
       submission.files
         .filter((file) => file.url.toLowerCase().endsWith('.pdf'))
-        .map((file) => ({ submissionId: submission._id.toString(), fileId: file._id.toString(), url: file.url }))
+        .map((file) => ({
+          submissionId: submission._id.toString(),
+          fileId: file._id.toString(),
+          url: file.url,
+        }))
     )
 
     const matches = await aiService.checkPlagiarism(

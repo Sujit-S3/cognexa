@@ -1,160 +1,266 @@
-/**
- * NEXUS AI — Application Router
- *
- * Layout structure:
- *   / (public)      → Header + landing sections
- *   /auth/*         → full-screen auth pages (no shell)
- *   /dashboard/*    → RequireAuth → AppShell (glass sidebar) → page
- *   /instructor/*   → RequireAuth → AppShell → page
- *   /admin/*        → RequireAuth → AppShell → page
- *   /catalog        → public CourseCatalogPage (no shell, uses Header)
- *   /courses/:id    → public CourseDetailPage  (no shell, uses Header)
- */
-import { Routes, Route } from 'react-router-dom'
-import { useSmoothScroll } from './design'
-
-// ── Layout components ──
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { Header } from './components/common/Header'
+import { AppErrorBoundary } from './components/common/AppErrorBoundary'
 import { AppShell } from './components/shell/AppShell'
-
-// ── Auth guard ──
 import { RequireAuth } from './lib/RequireAuth'
-
-// ── Landing sections ──
 import { Hero } from './sections/Hero'
-import { CourseCatalog } from './sections/CourseCatalog'
-import { ProgressDemo } from './sections/ProgressDemo'
-import { Features } from './sections/Features'
-import { Testimonials } from './sections/Testimonials'
-import { EnrollCTA } from './sections/EnrollCTA'
 
-// ── Auth pages ──
-import { LoginPage } from './pages/auth/LoginPage'
-import { RegisterPage } from './pages/auth/RegisterPage'
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
-import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
+const BrandStory = lazy(() =>
+  import('./sections/BrandStory').then((module) => ({ default: module.BrandStory }))
+)
+const CourseCatalog = lazy(() =>
+  import('./sections/CourseCatalog').then((module) => ({ default: module.CourseCatalog }))
+)
+const ProgressDemo = lazy(() =>
+  import('./sections/ProgressDemo').then((module) => ({ default: module.ProgressDemo }))
+)
+const Features = lazy(() => import('./sections/Features').then((module) => ({ default: module.Features })))
+const Testimonials = lazy(() =>
+  import('./sections/Testimonials').then((module) => ({ default: module.Testimonials }))
+)
+const EnrollCTA = lazy(() => import('./sections/EnrollCTA').then((module) => ({ default: module.EnrollCTA })))
 
-// ── Dashboard pages ──
-import { StudentDashboard } from './pages/dashboard/StudentDashboard'
-import { InstructorDashboard } from './pages/dashboard/InstructorDashboard'
-import { AdminDashboard } from './pages/dashboard/AdminDashboard'
+// Route-level boundaries keep admin, assessment, and AI code out of the
+// anonymous landing bundle.
+const LoginPage = lazy(() =>
+  import('./pages/auth/LoginPage').then((module) => ({ default: module.LoginPage }))
+)
+const RegisterPage = lazy(() =>
+  import('./pages/auth/RegisterPage').then((module) => ({ default: module.RegisterPage }))
+)
+const ForgotPasswordPage = lazy(() =>
+  import('./pages/auth/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage }))
+)
+const ResetPasswordPage = lazy(() =>
+  import('./pages/auth/ResetPasswordPage').then((module) => ({ default: module.ResetPasswordPage }))
+)
+const StudentDashboard = lazy(() =>
+  import('./pages/dashboard/StudentDashboard').then((module) => ({ default: module.StudentDashboard }))
+)
+const InstructorDashboard = lazy(() =>
+  import('./pages/dashboard/InstructorDashboard').then((module) => ({ default: module.InstructorDashboard }))
+)
+const InstructorWorkspacePage = lazy(() =>
+  import('./pages/instructor/InstructorWorkspacePage').then((module) => ({
+    default: module.InstructorWorkspacePage,
+  }))
+)
+const AdminDashboard = lazy(() =>
+  import('./pages/dashboard/AdminDashboard').then((module) => ({ default: module.AdminDashboard }))
+)
+const CourseCatalogPage = lazy(() =>
+  import('./pages/courses/CourseCatalogPage').then((module) => ({ default: module.CourseCatalogPage }))
+)
+const CourseDetailPage = lazy(() =>
+  import('./pages/courses/CourseDetailPage').then((module) => ({ default: module.CourseDetailPage }))
+)
+const VideoPlayerPage = lazy(() =>
+  import('./pages/learn/VideoPlayerPage').then((module) => ({ default: module.VideoPlayerPage }))
+)
+const AssignmentPage = lazy(() =>
+  import('./pages/assessments/AssignmentPage').then((module) => ({ default: module.AssignmentPage }))
+)
+const QuizPage = lazy(() =>
+  import('./pages/assessments/QuizPage').then((module) => ({ default: module.QuizPage }))
+)
+const AITutorPage = lazy(() =>
+  import('./pages/ai/AITutorPage').then((module) => ({ default: module.AITutorPage }))
+)
 
-// ── Course pages ──
-import { CourseCatalogPage } from './pages/courses/CourseCatalogPage'
-import { CourseDetailPage } from './pages/courses/CourseDetailPage'
-
-// ── Learning pages ──
-import { VideoPlayerPage } from './pages/learn/VideoPlayerPage'
-
-// ── Assessment pages ──
-import { AssignmentPage } from './pages/assessments/AssignmentPage'
-import { QuizPage } from './pages/assessments/QuizPage'
-
-// ── AI pages ──
-import { AITutorPage } from './pages/ai/AITutorPage'
-
-// ── Landing shell with smooth scroll ──
 function LandingShell() {
-  useSmoothScroll()
   return (
     <main className="nx-shell">
       <Hero />
-      <CourseCatalog />
-      <ProgressDemo />
-      <Features />
-      <Testimonials />
-      <EnrollCTA />
+      <LandingSection>
+        <BrandStory />
+      </LandingSection>
+      <LandingSection>
+        <CourseCatalog />
+      </LandingSection>
+      <LandingSection>
+        <ProgressDemo />
+      </LandingSection>
+      <LandingSection>
+        <Features />
+      </LandingSection>
+      <LandingSection>
+        <Testimonials />
+      </LandingSection>
+      <LandingSection>
+        <EnrollCTA />
+      </LandingSection>
     </main>
   )
 }
 
-// ── Public layout (header + page) ──
-function PublicLayout({ children }: { children: React.ReactNode }) {
+function LandingSection({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<section className="nx-section-skeleton" aria-hidden="true" />}>{children}</Suspense>
+  )
+}
+
+function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--nx-bg)' }}>
       <Header />
-      {children}
+      <div id="main-content" tabIndex={-1}>
+        {children}
+      </div>
     </div>
+  )
+}
+
+function PageLoading() {
+  return (
+    <div className="nx-page-loading" role="status" aria-live="polite">
+      <span className="nx-page-loading__mark" aria-hidden="true">
+        C
+      </span>
+      <span>Loading your learning space…</span>
+    </div>
+  )
+}
+
+function NotFoundPage() {
+  return (
+    <main id="main-content" className="nx-not-found">
+      <span className="nx-not-found__code">404</span>
+      <h1>This path is outside the curriculum.</h1>
+      <p>The page may have moved, or you may not have access to it.</p>
+      <Link to="/">Return to Cognexa</Link>
+    </main>
+  )
+}
+
+function DocumentTitle() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    const page =
+      pathname === '/'
+        ? null
+        : pathname === '/catalog'
+          ? 'Course Catalog'
+          : pathname.startsWith('/courses/') && pathname.includes('/learn/')
+            ? 'Learning Workspace'
+            : pathname.startsWith('/courses/')
+              ? 'Course Details'
+              : pathname === '/dashboard'
+                ? 'Dashboard'
+                : pathname.startsWith('/instructor/courses/')
+                  ? 'Course Builder'
+                  : pathname === '/instructor'
+                    ? 'Instructor Workspace'
+                    : pathname === '/admin'
+                      ? 'Admin Control Center'
+                      : pathname === '/ai'
+                        ? 'AI Tutor'
+                        : pathname === '/auth/login'
+                          ? 'Sign In'
+                          : pathname === '/auth/register'
+                            ? 'Create Account'
+                            : pathname.startsWith('/auth/')
+                              ? 'Account Access'
+                              : pathname.startsWith('/assessments/')
+                                ? 'Assessment'
+                                : 'Page Not Found'
+
+    document.title = page ? `${page} | Cognexa` : 'Cognexa — Connecting Knowledge, Empowering Minds.'
+  }, [pathname])
+
+  return null
+}
+
+function AppRoutes() {
+  return (
+    <>
+      <DocumentTitle />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <PublicLayout>
+              <LandingShell />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/catalog"
+          element={
+            <PublicLayout>
+              <CourseCatalogPage />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/courses/:courseId"
+          element={
+            <PublicLayout>
+              <CourseDetailPage />
+            </PublicLayout>
+          }
+        />
+
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/auth/forgot" element={<ForgotPasswordPage />} />
+        <Route path="/auth/reset/:token" element={<ResetPasswordPage />} />
+
+        <Route
+          element={
+            <RequireAuth allowedRoles={['student', 'instructor', 'admin']}>
+              <AppShell />
+            </RequireAuth>
+          }
+        >
+          <Route path="/dashboard" element={<StudentDashboard />} />
+          <Route path="/courses/:courseId/learn/:itemId" element={<VideoPlayerPage />} />
+          <Route path="/assessments/assignments/:assessmentId" element={<AssignmentPage />} />
+          <Route path="/assessments/quizzes/:assessmentId" element={<QuizPage />} />
+          <Route
+            path="/instructor"
+            element={
+              <RequireAuth allowedRoles={['instructor', 'admin']}>
+                <InstructorDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/instructor/courses/:courseId/edit"
+            element={
+              <RequireAuth allowedRoles={['instructor', 'admin']}>
+                <InstructorWorkspacePage />
+              </RequireAuth>
+            }
+          />
+          <Route path="/ai" element={<AITutorPage />} />
+          <Route
+            path="/admin"
+            element={
+              <RequireAuth allowedRoles={['admin']}>
+                <AdminDashboard />
+              </RequireAuth>
+            }
+          />
+        </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </>
   )
 }
 
 export function App() {
   return (
-    <Routes>
-      {/* ── Public pages ─────────────────────────────── */}
-      <Route
-        path="/"
-        element={
-          <PublicLayout>
-            <LandingShell />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/catalog"
-        element={
-          <PublicLayout>
-            <CourseCatalogPage />
-          </PublicLayout>
-        }
-      />
-      <Route
-        path="/courses/:courseId"
-        element={
-          <PublicLayout>
-            <CourseDetailPage />
-          </PublicLayout>
-        }
-      />
-
-      {/* ── Auth pages (no shell) ────────────────────── */}
-      <Route path="/auth/login"         element={<LoginPage />} />
-      <Route path="/auth/register"      element={<RegisterPage />} />
-      <Route path="/auth/forgot"        element={<ForgotPasswordPage />} />
-      <Route path="/auth/reset/:token"  element={<ResetPasswordPage />} />
-
-      {/* ── Authenticated app shell routes ───────────── */}
-      <Route
-        element={
-          <RequireAuth allowedRoles={['student', 'instructor', 'admin']}>
-            <AppShell />
-          </RequireAuth>
-        }
-      >
-        {/* Student */}
-        <Route path="/dashboard" element={<StudentDashboard />} />
-
-        {/* Learning */}
-        <Route path="/courses/:courseId/learn/:itemId" element={<VideoPlayerPage />} />
-
-        {/* Assessments */}
-        <Route path="/assessments/assignments/:assessmentId" element={<AssignmentPage />} />
-        <Route path="/assessments/quizzes/:assessmentId"    element={<QuizPage />} />
-
-        {/* Instructor */}
-        <Route
-          path="/instructor"
-          element={
-            <RequireAuth allowedRoles={['instructor', 'admin']}>
-              <InstructorDashboard />
-            </RequireAuth>
-          }
-        />
-
-        {/* AI Tutor */}
-        <Route path="/ai" element={<AITutorPage />} />
-
-        {/* Admin */}
-        <Route
-          path="/admin"
-          element={
-            <RequireAuth allowedRoles={['admin']}>
-              <AdminDashboard />
-            </RequireAuth>
-          }
-        />
-      </Route>
-    </Routes>
+    <AppErrorBoundary>
+      <a className="nx-skip-link" href="#main-content">
+        Skip to main content
+      </a>
+      <Suspense fallback={<PageLoading />}>
+        <AppRoutes />
+      </Suspense>
+    </AppErrorBoundary>
   )
 }
 

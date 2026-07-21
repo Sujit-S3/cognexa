@@ -1,12 +1,12 @@
 import pino from 'pino'
-import { isProduction } from './env'
+import { env, isProduction } from './env'
 
 export const logger = pino({
-  level: isProduction ? 'info' : 'debug',
+  level: env.LOG_LEVEL,
   transport: isProduction
     ? undefined
     : {
         target: 'pino-pretty',
-        options: { colorize: true, translateTime: 'HH:MM:ss', ignore: 'pid,hostname' }
-      }
+        options: { colorize: true, translateTime: 'HH:MM:ss', ignore: 'pid,hostname' },
+      },
 })

@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 ARG APP_VERSION=0.1.0
 ARG COMMIT_SHA=development
 WORKDIR /workspace
@@ -13,7 +13,7 @@ COPY Server Server
 RUN pnpm --filter cognexa-server build \
   && pnpm --filter cognexa-server deploy --prod /output
 
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 ARG APP_VERSION=0.1.0
 ARG COMMIT_SHA=development
 ENV NODE_ENV=production

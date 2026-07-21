@@ -15,6 +15,8 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm --filter web build
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+USER root
+RUN apk update && apk upgrade --no-cache
 ARG APP_VERSION=0.1.0
 ARG COMMIT_SHA=development
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf

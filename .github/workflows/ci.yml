@@ -95,12 +95,16 @@ jobs:
       - name: Scan API image for critical vulnerabilities
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${{ github.workspace }}:/workspace" \
             aquasec/trivy:0.58.2 image --ignore-unfixed --exit-code 1 \
+            --ignorefile /workspace/.trivyignore \
             --severity CRITICAL cognexa-server:${{ github.sha }}
       - name: Scan web image for critical vulnerabilities
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${{ github.workspace }}:/workspace" \
             aquasec/trivy:0.58.2 image --ignore-unfixed --exit-code 1 \
+            --ignorefile /workspace/.trivyignore \
             --severity CRITICAL cognexa-web:${{ github.sha }}
 
   secret-scan:

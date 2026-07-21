@@ -20,7 +20,8 @@ ENV NODE_ENV=production
 ENV APP_VERSION=$APP_VERSION
 ENV COMMIT_SHA=$COMMIT_SHA
 WORKDIR /app
-RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+RUN apk update && apk upgrade --no-cache \
+  && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 COPY --from=build --chown=node:node /output ./
 USER node
 EXPOSE 4000

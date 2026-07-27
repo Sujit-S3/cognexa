@@ -1,5 +1,5 @@
 FROM node:22-alpine AS build
-ARG APP_VERSION=0.1.0
+ARG APP_VERSION=1.0.0
 ARG COMMIT_SHA=development
 WORKDIR /workspace
 RUN corepack enable
@@ -17,7 +17,7 @@ RUN pnpm --filter web build
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 USER root
 RUN apk update && apk upgrade --no-cache
-ARG APP_VERSION=0.1.0
+ARG APP_VERSION=1.0.0
 ARG COMMIT_SHA=development
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/security-headers.conf /etc/nginx/security-headers.conf
@@ -30,4 +30,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 LABEL org.opencontainers.image.title="Cognexa Web" \
   org.opencontainers.image.version=$APP_VERSION \
   org.opencontainers.image.revision=$COMMIT_SHA \
-  org.opencontainers.image.source="https://github.com/Sujit-S3/nexus-ai"
+  org.opencontainers.image.source="https://github.com/Sujit-S3/cognexa"

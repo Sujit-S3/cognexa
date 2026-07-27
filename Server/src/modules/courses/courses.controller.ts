@@ -5,7 +5,7 @@ import { Achievement } from '../../models/achievement.model'
 import { GradesSummary } from '../../models/gradesSummary.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
 import { AppError } from '../../utils/AppError'
-import { assertCourseRole, getEnrollment } from '../../utils/courseAccess'
+import { assertCourseRole, assertSelfEnrollmentOpen, getEnrollment } from '../../utils/courseAccess'
 import { requireParam } from '../../utils/httpParams'
 
 function serializePublicCourse(course: CourseDocument): Record<string, unknown> {
@@ -153,6 +153,10 @@ export const enroll = asyncHandler(async (req: Request, res: Response) => {
   const targetUserId = (req.body.userId as string | undefined) ?? requester._id.toString()
 
   const course = await Course.findById(courseId).orFail(() => new AppError(404, 'Course not found'))
+
+  if (targetUserId === requester._id.toString()) {
+    assertSelfEnrollmentOpen(course, requester._id, requester.role)
+  }
 
   // Only self-enrollment is allowed unless the requester already manages this course.
   if (targetUserId !== requester._id.toString()) {

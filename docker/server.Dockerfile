@@ -1,5 +1,5 @@
 FROM node:22-alpine AS build
-ARG APP_VERSION=0.1.0
+ARG APP_VERSION=1.0.0
 ARG COMMIT_SHA=development
 WORKDIR /workspace
 RUN corepack enable
@@ -14,7 +14,7 @@ RUN pnpm --filter cognexa-server build \
   && pnpm --filter cognexa-server deploy --prod /output
 
 FROM node:22-alpine AS runtime
-ARG APP_VERSION=0.1.0
+ARG APP_VERSION=1.0.0
 ARG COMMIT_SHA=development
 ENV NODE_ENV=production
 ENV APP_VERSION=$APP_VERSION
@@ -31,5 +31,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
 LABEL org.opencontainers.image.title="Cognexa API" \
   org.opencontainers.image.version=$APP_VERSION \
   org.opencontainers.image.revision=$COMMIT_SHA \
-  org.opencontainers.image.source="https://github.com/Sujit-S3/nexus-ai"
+  org.opencontainers.image.source="https://github.com/Sujit-S3/cognexa"
 CMD ["node", "dist/server.js"]

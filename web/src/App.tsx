@@ -46,23 +46,11 @@ const InstructorWorkspacePage = lazy(() =>
     default: module.InstructorWorkspacePage,
   }))
 )
-const AdminDashboard = lazy(() =>
-  import('./pages/dashboard/AdminDashboard').then((module) => ({ default: module.AdminDashboard }))
-)
 const CourseCatalogPage = lazy(() =>
   import('./pages/courses/CourseCatalogPage').then((module) => ({ default: module.CourseCatalogPage }))
 )
 const CourseDetailPage = lazy(() =>
   import('./pages/courses/CourseDetailPage').then((module) => ({ default: module.CourseDetailPage }))
-)
-const VideoPlayerPage = lazy(() =>
-  import('./pages/learn/VideoPlayerPage').then((module) => ({ default: module.VideoPlayerPage }))
-)
-const AssignmentPage = lazy(() =>
-  import('./pages/assessments/AssignmentPage').then((module) => ({ default: module.AssignmentPage }))
-)
-const QuizPage = lazy(() =>
-  import('./pages/assessments/QuizPage').then((module) => ({ default: module.QuizPage }))
 )
 const AITutorPage = lazy(() =>
   import('./pages/ai/AITutorPage').then((module) => ({ default: module.AITutorPage }))
@@ -130,6 +118,49 @@ function NotFoundPage() {
       <p>The page may have moved, or you may not have access to it.</p>
       <Link to="/">Return to Cognexa</Link>
     </main>
+  )
+}
+
+function UnavailableFeaturePage({
+  title,
+  description,
+  returnTo,
+  returnLabel,
+}: {
+  title: string
+  description: string
+  returnTo: string
+  returnLabel: string
+}) {
+  return (
+    <section
+      aria-labelledby="unavailable-feature-title"
+      style={{
+        maxWidth: '720px',
+        margin: '48px auto',
+        padding: '40px',
+        border: '1px solid var(--nx-border)',
+        borderRadius: 'var(--nx-radius-xl)',
+        background: 'var(--nx-surface)',
+      }}
+    >
+      <p style={{ color: 'var(--nx-brand-400)', fontWeight: 700 }}>Not available in this release</p>
+      <h1 id="unavailable-feature-title" style={{ margin: '8px 0 12px' }}>
+        {title}
+      </h1>
+      <p style={{ color: 'var(--nx-fg-muted)', lineHeight: 1.6 }}>{description}</p>
+      <Link
+        to={returnTo}
+        style={{
+          display: 'inline-block',
+          marginTop: '24px',
+          color: 'var(--nx-accent-cyan)',
+          fontWeight: 700,
+        }}
+      >
+        {returnLabel}
+      </Link>
+    </section>
   )
 }
 
@@ -215,9 +246,39 @@ function AppRoutes() {
           }
         >
           <Route path="/dashboard" element={<StudentDashboard />} />
-          <Route path="/courses/:courseId/learn/:itemId" element={<VideoPlayerPage />} />
-          <Route path="/assessments/assignments/:assessmentId" element={<AssignmentPage />} />
-          <Route path="/assessments/quizzes/:assessmentId" element={<QuizPage />} />
+          <Route
+            path="/courses/:courseId/learn/:itemId"
+            element={
+              <UnavailableFeaturePage
+                title="Learner content delivery"
+                description="Course playback and learner progress persistence are not part of the v1.0 supported surface. Course content remains available to instructors in the course workspace."
+                returnTo="/catalog"
+                returnLabel="Return to the course catalog"
+              />
+            }
+          />
+          <Route
+            path="/assessments/assignments/:assessmentId"
+            element={
+              <UnavailableFeaturePage
+                title="Assignment submission"
+                description="Learner submission and grading workflows are not part of the v1.0 supported surface. No submission has been recorded."
+                returnTo="/dashboard"
+                returnLabel="Return to the dashboard"
+              />
+            }
+          />
+          <Route
+            path="/assessments/quizzes/:assessmentId"
+            element={
+              <UnavailableFeaturePage
+                title="Quiz delivery"
+                description="Learner quiz delivery and server-side grading are not part of the v1.0 supported surface. No attempt has been recorded."
+                returnTo="/dashboard"
+                returnLabel="Return to the dashboard"
+              />
+            }
+          />
           <Route
             path="/instructor"
             element={
@@ -239,7 +300,12 @@ function AppRoutes() {
             path="/admin"
             element={
               <RequireAuth allowedRoles={['admin']}>
-                <AdminDashboard />
+                <UnavailableFeaturePage
+                  title="Administration console"
+                  description="The administration console is not part of the v1.0 supported surface. Administrative actions must be performed through approved operational procedures."
+                  returnTo="/instructor"
+                  returnLabel="Open the instructor workspace"
+                />
               </RequireAuth>
             }
           />

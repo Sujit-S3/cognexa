@@ -1,3 +1,0 @@
-# Trivy Ignore Configuration for Cognexa
-# Ignore base image OS/bundled package CVEs when fixed versions require base image vendor rebuild
-CVE-2024-55571

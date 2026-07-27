@@ -5,6 +5,9 @@ packages:
 
 injectWorkspacePackages: true
 
+overrides:
+  brace-expansion: 5.0.8
+
 allowBuilds:
   esbuild: true
   # OpenTelemetry uses the runtime JS implementation; its optional generator hook is not needed.

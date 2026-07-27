@@ -68,9 +68,40 @@ if (environment === 'staging' || environment === 'production') {
   if (publicUrls.some((value) => value && !value.trim().startsWith('https://'))) {
     errors.push('CLIENT_URL and all CORS_ALLOWED_ORIGINS must use HTTPS')
   }
+
+  const featureFlags = (values.FEATURE_FLAGS ?? 'ai_tutor')
+    .split(',')
+    .map((flag) => flag.trim())
+    .filter(Boolean)
+  if (featureFlags.includes('ai_tutor')) {
+    requireUrl('AI_SERVICE_URL', ['http:', 'https:'])
+    requireValue('AI_SERVICE_API_KEY')
+  }
+  for (const name of [
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_USER',
+    'SMTP_PASS',
+    'CLOUDINARY_CLOUD_NAME',
+    'CLOUDINARY_API_KEY',
+    'CLOUDINARY_API_SECRET',
+  ]) {
+    requireValue(name)
+  }
 }
 
 if (values.OTEL_ENABLED === 'true') requireUrl('OTEL_EXPORTER_OTLP_TRACES_ENDPOINT', ['http:', 'https:'])
+
+for (const group of [
+  ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'],
+  ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'],
+  ['AI_SERVICE_URL', 'AI_SERVICE_API_KEY'],
+]) {
+  const present = group.filter((name) => values[name]?.trim())
+  if (present.length > 0 && present.length < group.length) {
+    errors.push(`${group.join(', ')} must be configured together`)
+  }
+}
 
 if (errors.length) {
   console.error(`Environment validation failed for ${environment}:`)

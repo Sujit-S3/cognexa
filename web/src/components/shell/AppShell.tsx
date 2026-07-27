@@ -18,15 +18,9 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', icon: '⚡', to: '/dashboard', roles: ['student'] },
-  { label: 'My Courses', icon: '📚', to: '/catalog', roles: ['student', 'instructor'] },
+  { label: 'Course Catalog', icon: '📚', to: '/catalog', roles: ['student', 'instructor', 'admin'] },
   { label: 'AI Tutor', icon: '🤖', to: '/ai', roles: ['student', 'instructor', 'admin'] },
-  { label: 'Assessments', icon: '📝', to: '/assessments/quizzes/mock-2', roles: ['student'] },
-  { label: 'Certificates', icon: '🏆', to: '/dashboard', roles: ['student'] },
-  { label: 'Portal', icon: '🎯', to: '/instructor', roles: ['instructor'] },
-  { label: 'Analytics', icon: '📊', to: '/instructor', roles: ['instructor'] },
-  { label: 'Admin Panel', icon: '🛡️', to: '/admin', roles: ['admin'] },
-  { label: 'Users', icon: '👥', to: '/admin', roles: ['admin'] },
-  { label: 'Settings', icon: '⚙️', to: '/dashboard', roles: ['student', 'instructor', 'admin'] },
+  { label: 'Instructor Portal', icon: '🎯', to: '/instructor', roles: ['instructor', 'admin'] },
 ]
 
 export function AppShell() {

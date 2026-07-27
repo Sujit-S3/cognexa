@@ -363,10 +363,25 @@ paths:
     put:
       tags: [Courses]
       summary: Update a course as its instructor or an administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              minProperties: 1
+              properties:
+                name: { type: string, minLength: 1, maxLength: 160 }
+                description: { type: string, maxLength: 2000 }
+                image: { type: string, format: uri, maxLength: 2048 }
+                status: { type: string, enum: [draft, archived] }
+                backgroundColor: { type: string, minLength: 1, maxLength: 64 }
       responses:
         '200': { description: Updated course }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
     delete:
       tags: [Courses]
       summary: Delete a course as its instructor or an administrator
@@ -374,12 +389,27 @@ paths:
         '204': { description: Course deleted }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /courses/{courseId}/end-course:
+    post:
+      tags: [Courses]
+      summary: Archive a course as its instructor or an administrator
+      parameters:
+        - $ref: '#/components/parameters/CourseId'
+      responses:
+        '204': { description: Course archived }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /courses/{courseId}/enroll:
     post:
       tags: [Courses]
       summary: Enroll the current user; managers may enroll another user
       parameters:
         - $ref: '#/components/parameters/CourseId'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnrollmentTarget' }
       responses:
         '200': { description: Updated course collection }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -392,9 +422,43 @@ paths:
       summary: Unenroll the current user; managers may unenroll another user
       parameters:
         - $ref: '#/components/parameters/CourseId'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnrollmentTarget' }
       responses:
         '200': { description: Updated course collection }
         '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /courses/{courseId}/enrollments:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+    get:
+      tags: [Courses]
+      summary: List course enrollments as an instructor or administrator
+      responses:
+        '200':
+          description: Course enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Enrollment' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Courses]
+      summary: Change an enrollment role as an instructor or administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnrollmentUpdate' }
+      responses:
+        '200': { description: Updated course enrollments }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
 
   /courses/{courseId}/modules:
     get:
@@ -411,9 +475,102 @@ paths:
       summary: Add a module as an instructor or administrator
       parameters:
         - $ref: '#/components/parameters/CourseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [title]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 160 }
+                description: { type: string, maxLength: 2000 }
       responses:
-        '201': { description: Module created }
+        '200': { description: Module created }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /courses/{courseId}/modules/{moduleId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
+    get:
+      tags: [Curriculum]
+      security: []
+      summary: Get a curriculum module visible to the caller
+      responses:
+        '200':
+          description: Curriculum module
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CourseModule' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Curriculum]
+      summary: Update a module as a course instructor or administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModuleUpdate' }
+      responses:
+        '200': { description: Updated module }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Curriculum]
+      summary: Delete a module as a course instructor or administrator
+      responses:
+        '200': { description: Module deleted and remaining modules returned }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /courses/{courseId}/modules/{moduleId}/module-item:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
+    post:
+      tags: [Curriculum]
+      summary: Add an item to a module as a course instructor or administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModuleItemCreate' }
+      responses:
+        '200': { description: Module item created and modules returned }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /courses/{courseId}/modules/{moduleId}/module-item/{moduleItemId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleId'
+      - $ref: '#/components/parameters/ModuleItemId'
+    put:
+      tags: [Curriculum]
+      summary: Update a module item as a course instructor or administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModuleItemUpdate' }
+      responses:
+        '200': { description: Updated module item }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      tags: [Curriculum]
+      summary: Delete a module item as a course instructor or administrator
+      responses:
+        '200': { description: Module item deleted and remaining modules returned }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /courses/{courseId}/lectures:
     get:
@@ -423,6 +580,61 @@ paths:
         - $ref: '#/components/parameters/CourseId'
       responses:
         '200': { description: Video metadata }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /courses/{courseId}/lectures/{moduleItemId}/comments:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleItemId'
+    get:
+      tags: [Curriculum]
+      summary: List comments for a course lecture
+      responses:
+        '200':
+          description: Lecture comments
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LectureCommentCollection' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Curriculum]
+      summary: Add a comment to a course lecture
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [comment]
+              properties:
+                comment: { type: string, minLength: 1, maxLength: 5000 }
+      responses:
+        '200':
+          description: Comment created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LectureCommentCollection' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /courses/{courseId}/lectures/{moduleItemId}/comments/{commentId}:
+    parameters:
+      - $ref: '#/components/parameters/CourseId'
+      - $ref: '#/components/parameters/ModuleItemId'
+      - $ref: '#/components/parameters/CommentId'
+    delete:
+      tags: [Curriculum]
+      summary: Delete an owned comment or moderate it as a course manager
+      responses:
+        '200':
+          description: Comment deleted and remaining comments returned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LectureCommentCollection' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /instructor/dashboard:
@@ -557,6 +769,14 @@ paths:
         '200': { description: Deadlines }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /deadlines/calendar:
+    get:
+      tags: [Courses]
+      summary: Get assessment deadlines grouped for calendar display
+      responses:
+        '200': { description: Calendar deadline groups }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /ai/complete:
     post:
       tags: [AI]
@@ -595,6 +815,21 @@ components:
   parameters:
     CourseId:
       name: courseId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+    ModuleId:
+      name: moduleId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+    ModuleItemId:
+      name: moduleItemId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+    CommentId:
+      name: commentId
       in: path
       required: true
       schema: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
@@ -712,6 +947,100 @@ components:
     CourseStatus:
       type: string
       enum: [draft, review, published, archived]
+
+    EnrollmentTarget:
+      type: object
+      additionalProperties: false
+      properties:
+        userId: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+
+    Enrollment:
+      type: object
+      required: [id, user, enrolledAs, createdAt]
+      properties:
+        id: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+        user:
+          oneOf:
+            - { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+            - { $ref: '#/components/schemas/User' }
+        enrolledAs: { type: string, enum: [student, instructor, admin] }
+        createdAt: { type: string, format: date-time }
+
+    EnrollmentUpdate:
+      type: object
+      additionalProperties: false
+      required: [enrollmentId, enrolledAs]
+      properties:
+        enrollmentId: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+        enrolledAs: { type: string, enum: [student, instructor, admin] }
+
+    ModuleUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: string, maxLength: 2000 }
+        order: { type: integer, minimum: 0, maximum: 10000 }
+
+    ModuleItemCreate:
+      type: object
+      additionalProperties: false
+      required: [title, type]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 160 }
+        type:
+          type: string
+          enum: [video, pdf, markdown, rich_text, external_url, youtube, live_session, file]
+        url: { type: string, format: uri, maxLength: 2048 }
+        content: { type: string, maxLength: 100000 }
+        description: { type: string, maxLength: 2000 }
+        durationMinutes: { type: number, minimum: 0, maximum: 100000 }
+        isPreview: { type: boolean }
+        asset: { $ref: '#/components/schemas/UploadedAsset' }
+
+    ModuleItemUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title: { type: string, minLength: 1, maxLength: 160 }
+        type:
+          type: string
+          enum: [video, pdf, markdown, rich_text, external_url, youtube, live_session, file]
+        url: { type: string, format: uri, maxLength: 2048 }
+        content: { type: string, maxLength: 100000 }
+        description: { type: string, maxLength: 2000 }
+        durationMinutes: { type: number, minimum: 0, maximum: 100000 }
+        isPreview: { type: boolean }
+        asset: { $ref: '#/components/schemas/UploadedAsset' }
+        order: { type: integer, minimum: 0, maximum: 10000 }
+
+    LectureComment:
+      type: object
+      required: [id, user, comment, createdAt, updatedAt]
+      properties:
+        id: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+        user:
+          type: object
+          properties:
+            id: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+            name: { type: string }
+            username: { type: string }
+            photo: { type: string, format: uri }
+        comment: { type: string, minLength: 1, maxLength: 5000 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    LectureCommentCollection:
+      type: object
+      properties:
+        id: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+        courseId: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+        moduleItemId: { type: string, pattern: '^[a-fA-F0-9]{24}$' }
+        comments:
+          type: array
+          items: { $ref: '#/components/schemas/LectureComment' }
 
     UploadedAsset:
       type: object

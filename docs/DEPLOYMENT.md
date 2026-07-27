@@ -19,7 +19,7 @@ Keep web and API under the same registrable site so `SameSite=Lax` refresh cooki
 
 CI builds from `pnpm-lock.yaml` with Node 22 and publishes immutable image digests. The frontend API URL is a build argument; all credentials are server runtime values.
 
-Required API values: `MONGODB_ATLAS_URI`, a random `SECRET_KEY` of at least 32 characters, exact `CORS_ALLOWED_ORIGINS`, and correct public `CLIENT_URL`. Optional email, push, and AI values enable their integrations. See `Server/.env.example`.
+Required API values: `MONGODB_ATLAS_URI`, a random `SECRET_KEY` of at least 32 characters, exact `CORS_ALLOWED_ORIGINS`, and correct public `CLIENT_URL`. Deployed environments also require Redis, a metrics bearer token, immutable commit metadata, SMTP, Cloudinary, and a real AI gateway when `ai_tutor` is enabled. See `Server/.env.example`.
 
 Never place a secret in a variable prefixed `VITE_`; Vite embeds those values in public browser assets.
 

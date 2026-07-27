@@ -3,7 +3,7 @@ import { Course } from '../../models/course.model'
 import { LectureComments } from '../../models/lectureComments.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
 import { AppError } from '../../utils/AppError'
-import { assertCourseRole } from '../../utils/courseAccess'
+import { assertCourseRole, canModerateCourse } from '../../utils/courseAccess'
 
 async function requireCourseMember(req: Request) {
   const course = await Course.findById(req.params.courseId).orFail(
@@ -44,7 +44,7 @@ export const createComment = asyncHandler(async (req: Request, res: Response) =>
 })
 
 export const deleteComment = asyncHandler(async (req: Request, res: Response) => {
-  await requireCourseMember(req)
+  const course = await requireCourseMember(req)
   const { moduleItemId, commentId } = req.params
   if (!commentId) throw new AppError(400, 'Missing comment id')
 
@@ -55,7 +55,10 @@ export const deleteComment = asyncHandler(async (req: Request, res: Response) =>
   if (!comment) throw new AppError(404, 'Comment not found')
 
   // Only the comment's author (or an instructor/admin) may delete it.
-  if (comment.user.toString() !== req.user!._id.toString() && req.user!.role === 'student') {
+  if (
+    comment.user.toString() !== req.user!._id.toString() &&
+    !canModerateCourse(course, req.user!._id, req.user!.role)
+  ) {
     throw new AppError(403, 'You cannot delete this comment')
   }
 

@@ -23,7 +23,7 @@ const envSchema = z
     APP_ENV: z.enum(['development', 'test', 'preview', 'staging', 'production']).default('development'),
     PORT: z.coerce.number().int().min(1).max(65_535).default(4000),
     CLIENT_URL: z.string().url().default('http://localhost:3000'),
-    APP_VERSION: z.string().default('0.1.0'),
+    APP_VERSION: z.string().default('1.0.0'),
     COMMIT_SHA: z.string().default('development'),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
@@ -75,10 +75,6 @@ const envSchema = z
     SMTP_PASS: optionalString,
     EMAIL_FROM: z.string().default('no-reply@cognexa.app'),
 
-    VAPID_PUBLIC_KEY: optionalString,
-    VAPID_PRIVATE_KEY: optionalString,
-    VAPID_CONTACT_EMAIL: z.string().default('mailto:admin@cognexa.app'),
-
     CLOUDINARY_CLOUD_NAME: optionalString,
     CLOUDINARY_API_KEY: optionalString,
     CLOUDINARY_API_SECRET: optionalString,
@@ -98,7 +94,7 @@ const envSchema = z
     OTEL_SERVICE_NAME: z.string().min(1).default('cognexa-server'),
     FEATURE_FLAGS: z
       .string()
-      .default('ai_tutor,certificates')
+      .default('ai_tutor')
       .transform((value) =>
         value
           .split(',')
@@ -107,6 +103,34 @@ const envSchema = z
       ),
   })
   .superRefine((values, context) => {
+    const credentialGroups = [
+      {
+        names: ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'] as const,
+        values: [values.SMTP_HOST, values.SMTP_PORT, values.SMTP_USER, values.SMTP_PASS],
+      },
+      {
+        names: ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'] as const,
+        values: [values.CLOUDINARY_CLOUD_NAME, values.CLOUDINARY_API_KEY, values.CLOUDINARY_API_SECRET],
+      },
+      {
+        names: ['AI_SERVICE_URL', 'AI_SERVICE_API_KEY'] as const,
+        values: [values.AI_SERVICE_URL, values.AI_SERVICE_API_KEY],
+      },
+    ]
+
+    for (const group of credentialGroups) {
+      if (group.values.some(Boolean) && !group.values.every(Boolean)) {
+        const missing = group.names.filter((_name, index) => !group.values[index])
+        for (const name of missing) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [name],
+            message: `${group.names.join(', ')} must be configured together`,
+          })
+        }
+      }
+    }
+
     if (values.REDIS_REQUIRED && !values.REDIS_URL) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -130,6 +154,24 @@ const envSchema = z
           path: ['NODE_ENV'],
           message: 'NODE_ENV must be production in staging and production deployments',
         })
+      }
+
+      for (const [name, value] of [
+        ['SMTP_HOST', values.SMTP_HOST],
+        ['SMTP_PORT', values.SMTP_PORT],
+        ['SMTP_USER', values.SMTP_USER],
+        ['SMTP_PASS', values.SMTP_PASS],
+        ['CLOUDINARY_CLOUD_NAME', values.CLOUDINARY_CLOUD_NAME],
+        ['CLOUDINARY_API_KEY', values.CLOUDINARY_API_KEY],
+        ['CLOUDINARY_API_SECRET', values.CLOUDINARY_API_SECRET],
+      ] as const) {
+        if (!value) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [name],
+            message: `${name} is required for the supported deployed release surface`,
+          })
+        }
       }
 
       const publicUrls = [values.CLIENT_URL, ...values.CORS_ALLOWED_ORIGINS]
@@ -180,6 +222,23 @@ const envSchema = z
           message: 'COMMIT_SHA must identify the deployed immutable release',
         })
       }
+
+      if (values.FEATURE_FLAGS.includes('ai_tutor')) {
+        if (!values.AI_SERVICE_URL) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['AI_SERVICE_URL'],
+            message: 'AI_SERVICE_URL is required when ai_tutor is enabled in a deployed environment',
+          })
+        }
+        if (!values.AI_SERVICE_API_KEY) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['AI_SERVICE_API_KEY'],
+            message: 'AI_SERVICE_API_KEY is required when ai_tutor is enabled in a deployed environment',
+          })
+        }
+      }
     }
   })
 
@@ -202,8 +261,7 @@ export const env = loadEnv()
 
 export const isProduction = env.NODE_ENV === 'production'
 export const isDeployedEnvironment = env.APP_ENV === 'staging' || env.APP_ENV === 'production'
-export const isEmailConfigured = Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS)
-export const isPushConfigured = Boolean(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY)
+export const isEmailConfigured = Boolean(env.SMTP_HOST && env.SMTP_PORT && env.SMTP_USER && env.SMTP_PASS)
 export const isAiServiceConfigured = Boolean(env.AI_SERVICE_URL)
 export const isRedisConfigured = Boolean(env.REDIS_URL)
 export const isCloudinaryConfigured = Boolean(

@@ -24,9 +24,10 @@ beforeAll(async () => {
       resolve()
     })
   })
-})
+}, 30_000)
 
 afterAll(async () => {
+  if (!server) return
   await new Promise<void>((resolve, reject) => {
     server.close((error) => (error ? reject(error) : resolve()))
   })
@@ -109,6 +110,12 @@ describe('app wiring', () => {
     expect(res.status).toBe(422)
     const body = (await res.json()) as { error: string }
     expect(body.error).toBe('Validation failed')
+  })
+
+  it('rejects malformed public course identifiers before querying MongoDB', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/courses/not-an-object-id`)
+    expect(res.status).toBe(422)
+    expect(await res.json()).toMatchObject({ error: 'Validation failed' })
   })
 
   it('rejects refresh attempts without an HttpOnly session cookie', async () => {

@@ -20,7 +20,7 @@
 - DNS, Cloudflare CDN/WAF, TLS issuer, ingress controller, and certificate monitoring.
 - MongoDB Atlas networking/users/backups/restore alerts and managed Redis with TLS/no eviction.
 - External secrets, OTLP collector, log/error platforms, Prometheus/Grafana/Alertmanager, and provider exporters.
-- Cloudinary, SMTP, push, and AI gateway accounts where enabled.
+- Cloudinary, SMTP, and AI gateway accounts where enabled.
 - Staging and production deploys, backup restore drill, load test, penetration review, browser/accessibility audit, and final go-live approval.
 
 ## Known operational gaps
@@ -30,5 +30,7 @@
 - No live cloud, DNS, TLS, container, Kubernetes, Lighthouse, load, backup-tool, or restore test can be claimed from a workstation without those providers and CLIs.
 - Multi-region failover is intentionally deferred until business-approved RTO/RPO and data-consistency requirements justify it.
 - Automated preview hosting is provider-dependent; staging promotion is automated after protected workflow dispatch.
+- Automated coverage is 10.8% for the web application and 36.04% for the API. Database-backed integration, critical learner-flow, accessibility, load, penetration, and restore suites are not release-complete.
+- Learner playback/progress, learner assessment delivery/submission/grading, certificates, general notifications, administration, commerce, and organization tenancy are not supported product surfaces.
 
-These gaps block a claim of completed production deployment, even though the repository is prepared for the manual cloud work.
+These gaps block a public production v1.0.0 release and any claim of completed production deployment. The repository is a release candidate for its narrower supported surface, not an approved production launch.

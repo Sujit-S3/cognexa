@@ -20,3 +20,22 @@ export function assertCourseRole(
     throw new AppError(403, 'You do not have permission to perform this action on this course')
   }
 }
+
+export function assertSelfEnrollmentOpen(
+  course: CourseDocument,
+  userId: Types.ObjectId | string,
+  globalRole: string
+): void {
+  if (course.status === 'published') return
+  assertCourseRole(course, userId, globalRole, ['instructor', 'admin'])
+}
+
+export function canModerateCourse(
+  course: CourseDocument,
+  userId: Types.ObjectId | string,
+  globalRole: string
+): boolean {
+  if (globalRole === 'admin') return true
+  const enrollment = getEnrollment(course, userId)
+  return ['instructor', 'admin'].includes(enrollment?.enrolledAs ?? '')
+}

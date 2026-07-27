@@ -8,6 +8,7 @@ import {
   type AIMessage,
 } from '../../services/ai.service'
 import { useConversationStore } from '../../stores/conversationStore'
+import { renderSafeMarkdown } from './markdown'
 import styles from './AITutorPage.module.css'
 
 const AI_MODES = [
@@ -33,19 +34,6 @@ const STARTERS: Record<AIMode, string[]> = {
     'Create a learning roadmap to become an AI engineer',
     'How to prepare for FAANG system design interviews?',
   ],
-}
-
-function renderMarkdown(text: string) {
-  // Minimal markdown: bold, code blocks, bullet lists
-  return text
-    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="code-block"><code>$2</code></pre>')
-    .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/^• (.+)$/gm, '<li>$1</li>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`)
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(.+)$/gm, (line) => (line.startsWith('<') ? line : `<p>${line}</p>`))
 }
 
 export function AITutorPage() {
@@ -205,7 +193,7 @@ export function AITutorPage() {
                   {msg.role === 'assistant' ? (
                     <div
                       className={styles.markdownContent}
-                      dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
+                      dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(msg.content) }}
                     />
                   ) : (
                     <div>{msg.content}</div>

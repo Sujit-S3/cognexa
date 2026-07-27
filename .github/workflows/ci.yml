@@ -54,7 +54,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
           version: 11.15.1
       - uses: actions/setup-node@v4
@@ -95,16 +95,12 @@ jobs:
       - name: Scan API image for critical vulnerabilities
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "${{ github.workspace }}:/workspace" \
-            aquasec/trivy:0.58.2 image --ignore-unfixed --exit-code 1 \
-            --ignorefile /workspace/.trivyignore \
+            aquasec/trivy:0.58.2 image --exit-code 1 \
             --severity CRITICAL cognexa-server:${{ github.sha }}
       - name: Scan web image for critical vulnerabilities
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "${{ github.workspace }}:/workspace" \
-            aquasec/trivy:0.58.2 image --ignore-unfixed --exit-code 1 \
-            --ignorefile /workspace/.trivyignore \
+            aquasec/trivy:0.58.2 image --exit-code 1 \
             --severity CRITICAL cognexa-web:${{ github.sha }}
 
   secret-scan:

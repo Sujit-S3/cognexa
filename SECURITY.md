@@ -12,11 +12,11 @@ Security fixes target the latest production release of `web/` and `Server/src/`.
 
 - Short-lived memory-only access tokens and rotating opaque refresh tokens stored hashed server-side.
 - `HttpOnly`, `SameSite=Lax`, production `Secure` refresh cookies; exact CORS allowlists.
-- Server-side authorization for global roles, tenant membership, course ownership, enrollment, and resource access.
-- Strict Zod request allowlists, bounded payloads, safe error shaping, Helmet, rate limits, and request correlation.
+- Server-side authorization for global roles, course ownership, enrollment, and resource access.
+- Strict Zod request allowlists on supported mutating routes, bounded payloads, safe error shaping, Helmet, rate limits, and request correlation.
 - Secret and credential redaction in structured logs; no secrets in frontend environment variables.
-- Private object storage, signed URLs, content limits, malware scanning, and isolated asset origins for uploads.
-- AI gateway with authentication, quotas, bounded context, provider credentials on the server, and safety/evaluation controls.
+- Course media uses ownership-checked, short-lived Cloudinary signatures and bounded metadata. Malware scanning and a private quarantine workflow remain required before accepting untrusted learner uploads.
+- The AI gateway requires authentication, rate limits, bounded context, and server-side provider credentials. A production safety/evaluation program remains a launch requirement.
 - Dependency, SAST, secret, container, and infrastructure scans in CI; patch SLAs based on exploitability.
 
 ## Data protection

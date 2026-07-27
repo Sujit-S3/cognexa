@@ -26,6 +26,7 @@ const lectureCommentsSchema = new Schema<LectureCommentsAttrs>({
   moduleItemId: { type: Schema.Types.ObjectId, ref: 'CourseModuleItem', required: true, index: true },
   comments: [commentSchema],
 })
+lectureCommentsSchema.index({ courseId: 1, moduleItemId: 1 })
 lectureCommentsSchema.set('toJSON', { transform: stripInternalTransform })
 
 export const LectureComments = mongoose.model('LectureComments', lectureCommentsSchema)

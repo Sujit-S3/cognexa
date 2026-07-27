@@ -76,6 +76,9 @@ const submissionSchema = new Schema<SubmissionAttrs>({
   ],
 })
 
+submissionSchema.index({ course: 1, submittedAt: -1 })
+submissionSchema.index({ assessment: 1, student: 1 })
+
 submissionSchema.pre('deleteMany', async function (next) {
   const filter = this.getFilter()
   const parent = await GradesSummary.findOne({ course: filter.course })

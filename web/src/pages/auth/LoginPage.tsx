@@ -31,7 +31,7 @@ export function LoginPage() {
     onSuccess: (data) => {
       login(data.user, data.token)
       const role = data.user.role
-      navigate(role === 'admin' ? '/admin' : role === 'instructor' ? '/instructor' : '/dashboard', {
+      navigate(role === 'admin' || role === 'instructor' ? '/instructor' : '/dashboard', {
         replace: true,
       })
     },

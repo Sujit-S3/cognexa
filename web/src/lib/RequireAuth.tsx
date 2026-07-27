@@ -39,8 +39,7 @@ export function RequireAuth({ children, allowedRoles }: RequireAuthProps) {
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    const fallback =
-      user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard'
+    const fallback = user.role === 'admin' || user.role === 'instructor' ? '/instructor' : '/dashboard'
     return <Navigate to={fallback} replace />
   }
 

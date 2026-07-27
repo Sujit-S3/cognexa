@@ -24,6 +24,26 @@ interface SendEmailInput {
   text?: string
 }
 
+export function escapeEmailHtml(value: string): string {
+  return value.replace(
+    /[&<>"']/g,
+    (character) =>
+      (
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        }) as Record<string, string>
+      )[character] ?? character
+  )
+}
+
+export function buildPasswordResetUrl(clientUrl: string, resetToken: string): string {
+  return `${clientUrl.replace(/\/$/, '')}/auth/reset/${encodeURIComponent(resetToken)}`
+}
+
 // Replaces the old dead SendGrid stub (hardcoded to test@example.com, never actually imported).
 // Falls back to logging the email in development/when SMTP isn't configured, instead of failing.
 export async function sendEmail({ to, subject, html, text }: SendEmailInput): Promise<void> {
@@ -38,7 +58,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailInput): Pr
 }
 
 export async function sendPasswordResetEmail(to: string, resetToken: string): Promise<void> {
-  const resetUrl = `${env.CLIENT_URL}/reset-password/${resetToken}`
+  const resetUrl = buildPasswordResetUrl(env.CLIENT_URL, resetToken)
   await sendEmail({
     to,
     subject: 'Reset your Cognexa password',
@@ -50,6 +70,6 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<void> 
   await sendEmail({
     to,
     subject: 'Welcome to Cognexa',
-    html: `<p>Hi ${name}, welcome to Cognexa.</p><p>Connecting Knowledge, Empowering Minds.</p>`,
+    html: `<p>Hi ${escapeEmailHtml(name)}, welcome to Cognexa.</p><p>Connecting Knowledge, Empowering Minds.</p>`,
   })
 }

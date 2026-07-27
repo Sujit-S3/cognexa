@@ -1,6 +1,14 @@
 import { z } from 'zod'
 
-const phoneRegex = /\d{3}-\d{3}-\d{4}/
+const phoneRegex = /^\d{3}-\d{3}-\d{4}$/
+
+export const sessionIdParamsSchema = z
+  .object({ sessionId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid session identifier') })
+  .strict()
+
+export const resetTokenParamsSchema = z
+  .object({ token: z.string().regex(/^[a-f\d]{64}$/i, 'Invalid password reset token') })
+  .strict()
 
 export const registerSchema = z
   .object({
@@ -44,6 +52,12 @@ export const updateUserSchema = z
     email: z.string().trim().email().optional(),
     photo: z.string().url().optional(),
     mobile: z.string().regex(phoneRegex).optional(),
-    password: z.string().min(8).optional(),
+    password: z
+      .string()
+      .min(8)
+      .refine((value) => !value.toLowerCase().includes('password'), {
+        message: 'Password cannot contain "password"',
+      })
+      .optional(),
   })
   .strict()

@@ -85,8 +85,9 @@ export async function rotateSession(
   const currentToken = readCookie(req, env.REFRESH_COOKIE_NAME)
   if (!currentToken) throw new AppError(401, 'Session expired')
 
+  const currentHash = hashRefreshToken(currentToken)
   const session = await Session.findOne({
-    tokenHash: hashRefreshToken(currentToken),
+    tokenHash: currentHash,
     expiresAt: { $gt: new Date() },
   }).select('+tokenHash')
 
@@ -103,11 +104,29 @@ export async function rotateSession(
   }
 
   const nextRefreshToken = createRefreshToken()
-  session.tokenHash = hashRefreshToken(nextRefreshToken)
-  session.expiresAt = new Date(Date.now() + refreshTtlMs)
-  session.lastSeenAt = new Date()
-  Object.assign(session, requestMetadata(req))
-  await session.save()
+  const rotated = await Session.findOneAndUpdate(
+    {
+      _id: session._id,
+      tokenHash: currentHash,
+      expiresAt: { $gt: new Date() },
+    },
+    {
+      $set: {
+        tokenHash: hashRefreshToken(nextRefreshToken),
+        expiresAt: new Date(Date.now() + refreshTtlMs),
+        lastSeenAt: new Date(),
+        ...requestMetadata(req),
+      },
+    },
+    { new: true }
+  )
+
+  // A concurrent request or replay may have consumed the token after the
+  // initial lookup. The compare-and-swap ensures only one rotation succeeds.
+  if (!rotated) {
+    clearRefreshCookie(res)
+    throw new AppError(401, 'Session expired')
+  }
 
   setRefreshCookie(res, nextRefreshToken)
   return { user, token: await user.generateAuthToken() }

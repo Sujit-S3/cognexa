@@ -127,6 +127,7 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
   // The original controller never called save() here — the reset silently did nothing. Fixed.
   await user.save()
   await Session.deleteMany({ user: user._id })
+  clearRefreshCookie(res)
 
   res.json({ message: 'Your password has been updated.' })
 })
@@ -137,9 +138,15 @@ export const getMe = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateMe = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user!
+  const passwordChanged = typeof req.body.password === 'string'
   Object.assign(user, req.body)
   await user.save()
-  const token = await user.generateAuthToken()
+  const token = passwordChanged
+    ? await (async () => {
+        await Session.deleteMany({ user: user._id })
+        return issueSession(req, res, user)
+      })()
+    : await user.generateAuthToken()
   res.json({ user, token })
 })
 

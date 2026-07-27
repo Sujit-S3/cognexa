@@ -2,7 +2,7 @@
 
 ## Decision summary
 
-Cognexa uses a modular monolith for the transactional learning core, a React single-page application for authenticated workflows, MongoDB as the system of record, private object storage for files, and provider-backed services for video, email, push, payments, and AI. This shape supports tens of thousands of users without accepting the operational tax of premature microservices.
+Cognexa uses a modular monolith for the current transactional core, a React single-page application for authenticated workflows, MongoDB as the system of record, and provider-backed email, course media, and AI integrations. The wider diagram and domain model in this document are the target architecture; unimplemented components are identified below and in the capability matrix.
 
 The supported runtime is `web/` plus `Server/src/`. Legacy code is frozen and removed domain-by-domain after parity, data validation, and rollback windows.
 

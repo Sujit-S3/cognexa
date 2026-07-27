@@ -19,6 +19,8 @@ const achievementSchema = new Schema<AchievementAttrs>({
   certificate: { type: String },
 })
 
+achievementSchema.index({ course: 1, user: 1 })
+
 achievementSchema.set('toJSON', { virtuals: true, transform: stripInternalTransform })
 achievementSchema.set('toObject', { virtuals: true, transform: stripInternalTransform })
 

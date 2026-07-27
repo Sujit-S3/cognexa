@@ -23,7 +23,7 @@ Staging and production also require:
 - HTTPS for the client URL and every CORS origin.
 - `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` when `OTEL_ENABLED=true`.
 
-Optional integrations are enabled only when their complete credential group is present: SMTP, VAPID, Cloudinary, AI gateway, and dependency-specific health-check URLs. Browser variables prefixed with `VITE_` are public and must never contain credentials.
+Integration credential groups are fail-closed: partial SMTP, Cloudinary, or AI gateway configuration is rejected. SMTP and Cloudinary are required in staging/production for the supported release surface; the AI gateway is required there when `ai_tutor` is enabled. Browser variables prefixed with `VITE_` are public and must never contain credentials.
 
 ## Validation
 

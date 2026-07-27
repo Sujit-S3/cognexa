@@ -2,7 +2,7 @@
 
 **Connecting Knowledge, Empowering Minds.**
 
-Cognexa is a premium AI-powered learning management system for modern educational institutions, instructors, enterprises, and learners. It unifies intelligent learning, course delivery, assessment, analytics, and collaboration in one trustworthy platform.
+Cognexa is an AI-assisted learning platform for modern educational institutions, instructors, enterprises, and learners. The supported v1.0 release-candidate surface includes identity and device sessions, the public catalog, enrollment, instructor course authoring, and an authenticated AI gateway.
 
 Our mission is to make high-quality knowledge easier to teach, discover, and master. Our vision is a world where every mind can reach the right knowledge at the right moment.
 
@@ -70,6 +70,9 @@ This starts MongoDB, the API on port 4000, and the web application on port 8080.
 - [Monitoring and alerting](docs/MONITORING.md)
 - [Release guide](docs/RELEASES.md)
 - [Production readiness](docs/PRODUCTION_READINESS.md)
+- [Supported capability matrix](docs/CAPABILITIES.md)
+- [Final release audit](docs/FINAL_RELEASE_AUDIT.md)
+- [v1.0.0 release notes](RELEASE_NOTES.md)
 - [Security policy](SECURITY.md)
 - [Contributing guide](CONTRIBUTING.md)
 - [Architecture decisions](docs/adr/0001-modular-monolith-and-incremental-migration.md)
@@ -84,6 +87,8 @@ This starts MongoDB, the API on port 4000, and the web application on port 8080.
 - Root API routes are compatibility aliases and carry deprecation/sunset headers. New integrations must use `/api/v1`.
 
 The delivery backlog and release gates are intentionally explicit in the engineering specification; unimplemented roadmap items are not represented as shipped features.
+
+Learner content playback/progress, assessment delivery/submission/grading, certificates, general notifications, the administration console, commerce, and organization tenancy are not supported in this release candidate. Their historical demo-only screens were removed from production routing; retained URLs show an explicit unavailable state. See the [capability matrix](docs/CAPABILITIES.md) before planning a deployment.
 
 ## Instructor workspace
 

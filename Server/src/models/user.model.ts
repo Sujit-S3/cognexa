@@ -62,7 +62,7 @@ const userSchema = new Schema<UserAttrs, UserModel, UserMethods>({
     },
   },
   passwordChangedAt: { type: Date, default: Date.now, select: false },
-  passwordResetToken: { type: String, select: false },
+  passwordResetToken: { type: String, select: false, index: true },
   passwordResetValidity: { type: Date, select: false },
   isActive: { type: Boolean, default: true },
   lastSeenAt: { type: Date, default: () => new Date(0) },
@@ -71,7 +71,7 @@ const userSchema = new Schema<UserAttrs, UserModel, UserMethods>({
     type: String,
     required: [true, 'User phone number required'],
     validate: {
-      validator: (value: string) => /\d{3}-\d{3}-\d{4}/.test(value),
+      validator: (value: string) => /^\d{3}-\d{3}-\d{4}$/.test(value),
       message: (props: { value: string }) => `${props.value} is not a valid phone number!`,
     },
   },
@@ -82,23 +82,6 @@ const userSchema = new Schema<UserAttrs, UserModel, UserMethods>({
 })
 
 userSchema.index({ name: 1, username: 1 })
-
-userSchema.virtual('followers', { ref: 'Follow', foreignField: 'follows', localField: '_id' })
-userSchema.virtual('followersCount', {
-  ref: 'Follow',
-  foreignField: 'follows',
-  localField: '_id',
-  count: true,
-})
-userSchema.virtual('follows', { ref: 'Follow', foreignField: 'user', localField: '_id' })
-userSchema.virtual('followCount', { ref: 'Follow', foreignField: 'user', localField: '_id', count: true })
-userSchema.virtual('articles', { ref: 'Article', foreignField: 'authorPersonId', localField: '_id' })
-userSchema.virtual('articlesCount', {
-  ref: 'Article',
-  foreignField: 'authorPersonId',
-  localField: '_id',
-  count: true,
-})
 
 userSchema.set('toJSON', {
   virtuals: true,

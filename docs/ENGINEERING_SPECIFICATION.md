@@ -1,10 +1,12 @@
 # Cognexa Engineering Specification
 
-Status: active execution baseline  
+Status: target product specification; implementation status is tracked separately
 Product class: B2C/B2B2C AI-enhanced LMS, course marketplace, and instructor operations platform  
 Scale target: tens of thousands of registered users; 2,000 concurrent learners at initial production scale
 
 Brand promise: **Connecting Knowledge, Empowering Minds.** Cognexa is positioned as a premium, intelligent, minimal, and trustworthy learning platform. Product language and interface decisions follow the [brand guide](BRAND_GUIDE.md).
+
+This document describes the intended product, not a list of shipped capabilities. The release-candidate truth is the [capability matrix](CAPABILITIES.md), and the current release decision is recorded in the [final release audit](FINAL_RELEASE_AUDIT.md).
 
 ## 1. Product intent
 

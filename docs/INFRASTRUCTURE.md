@@ -46,4 +46,4 @@ Cloudflare should proxy public DNS, enforce WAF/rate policies, and forward the o
 - Provision managed Redis with TLS, eviction disabled for rate-limit correctness, and alerts.
 - Create container registry access, GitHub protected environments, and workload credentials.
 - Install and configure ingress, cert-manager, metrics, tracing, logging, error tracking, and exporters.
-- Configure Cloudinary, email, push, and AI provider accounts where enabled.
+- Configure Cloudinary, email, and AI provider accounts where enabled.

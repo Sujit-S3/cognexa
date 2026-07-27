@@ -40,7 +40,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            APP_VERSION=${{ github.ref_name }}
+            APP_VERSION=${{ steps.meta.outputs.version }}
             COMMIT_SHA=${{ github.sha }}
           provenance: mode=max
           sbom: true
@@ -81,7 +81,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            APP_VERSION=${{ github.ref_name }}
+            APP_VERSION=${{ steps.meta.outputs.version }}
             COMMIT_SHA=${{ github.sha }}
             VITE_API_URL=/api/v1
           provenance: mode=max

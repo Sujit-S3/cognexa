@@ -7,7 +7,9 @@ import {
   loginSchema,
   recoverSchema,
   registerSchema,
+  resetTokenParamsSchema,
   resetPasswordSchema,
+  sessionIdParamsSchema,
   updateUserSchema,
 } from './auth.validation'
 
@@ -20,18 +22,23 @@ authRouter.post('/refresh', authRateLimiter, authController.refresh)
 authRouter.post('/logout', authController.logout)
 authRouter.post('/logout-all', authenticate, authController.logoutAll)
 authRouter.get('/sessions', authenticate, authController.listSessions)
-authRouter.delete('/sessions/:sessionId', authenticate, authController.revokeSession)
+authRouter.delete(
+  '/sessions/:sessionId',
+  authenticate,
+  validate({ params: sessionIdParamsSchema }),
+  authController.revokeSession
+)
 authRouter.post(
   '/recover',
   authRateLimiter,
   validate({ body: recoverSchema }),
   authController.recoverPassword
 )
-authRouter.get('/reset/:token', authController.verifyResetToken)
+authRouter.get('/reset/:token', validate({ params: resetTokenParamsSchema }), authController.verifyResetToken)
 authRouter.post(
   '/reset/:token',
   authRateLimiter,
-  validate({ body: resetPasswordSchema }),
+  validate({ params: resetTokenParamsSchema, body: resetPasswordSchema }),
   authController.resetPassword
 )
 authRouter.get('/me', authenticate, authController.getMe)

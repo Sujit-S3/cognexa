@@ -31,7 +31,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: server
-          image: ghcr.io/sujit-s3/cognexa-server:0.1.0
+          image: ghcr.io/sujit-s3/cognexa-server:1.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

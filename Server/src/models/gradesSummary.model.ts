@@ -94,6 +94,7 @@ const gradesSummarySchema = new Schema<GradesSummaryAttrs, GradesSummaryModelTyp
   course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
   studentGrades: [studentGradesSchema],
 })
+gradesSummarySchema.index({ course: 1 })
 gradesSummarySchema.set('toJSON', { virtuals: true, transform: toJsonTransform })
 gradesSummarySchema.set('toObject', { virtuals: true, transform: toJsonTransform })
 

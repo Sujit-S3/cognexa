@@ -41,6 +41,9 @@ const assessmentSchema = new Schema<AssessmentAttrs>(
   { ...options, timestamps: true }
 )
 
+assessmentSchema.index({ course: 1, type: 1, visiblity: 1 })
+assessmentSchema.index({ course: 1, createdAt: -1 })
+
 assessmentSchema.virtual('status').get(function (
   this: HydratedDocument<AssessmentAttrs & { openAt?: Date; closeAt?: Date }>
 ) {

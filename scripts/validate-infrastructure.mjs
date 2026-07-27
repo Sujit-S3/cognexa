@@ -151,6 +151,21 @@ if ((ciWorkflow.match(/--exit-code 1/g) ?? []).length !== 2) {
   throw new Error('Both container vulnerability scans must fail on critical findings')
 }
 
+const dependabot = parseAllDocuments(read('.github/dependabot.yml'))[0].toJS()
+const npmDependabot = dependabot.updates?.find(
+  (configuration) => configuration['package-ecosystem'] === 'npm'
+)
+const ignoredVersionUpdates = npmDependabot?.ignore?.find((rule) => rule['dependency-name'] === '*')?.[
+  'update-types'
+]
+if (
+  !ignoredVersionUpdates?.includes('version-update:semver-major') ||
+  !ignoredVersionUpdates.includes('version-update:semver-minor') ||
+  ignoredVersionUpdates.includes('version-update:semver-patch')
+) {
+  throw new Error('Dependabot must automate npm patch updates without routine minor/major upgrades')
+}
+
 const gitleaksConfig = read('.gitleaks.toml')
 if (/^\s*paths\s*=/m.test(gitleaksConfig) || /^\s*commits\s*=/m.test(gitleaksConfig)) {
   throw new Error('Secret scanning must not exclude paths or commits')

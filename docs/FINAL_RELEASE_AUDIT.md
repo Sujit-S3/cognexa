@@ -37,6 +37,7 @@ Release state: prepared release candidate; not tagged or deployed
 - Code health: duplicate route guard, disconnected modern-source social/notification/grading models/services, and unused dependencies were removed. The frozen legacy tree remains by architectural decision.
 - Release engineering: all package/image/Kubernetes/OpenAPI versions align at `1.0.0`; deploy input validation and mutable tag replacement are release-safe.
 - API documentation: the OpenAPI contract now covers every supported versioned route, matches implemented response semantics, resolves all local references, and is guarded by the infrastructure CI validator.
+- Dependencies: routine Dependabot version updates are restricted to patch releases for the v1 release branch; security updates remain enabled and are not filtered by the version-update policy.
 
 ## Files changed
 

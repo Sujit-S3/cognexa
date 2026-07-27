@@ -9,6 +9,13 @@ updates:
         dependency-type: production
       development-dependencies:
         dependency-type: development
+    # Release branches accept routine patch updates only. Security updates are unaffected by
+    # version-update ignore rules and remain enabled.
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
   - package-ecosystem: github-actions
     directory: /
     schedule:

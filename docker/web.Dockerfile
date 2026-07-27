@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 ARG APP_VERSION=1.0.0
 ARG COMMIT_SHA=development
 WORKDIR /workspace

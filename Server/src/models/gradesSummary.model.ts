@@ -1,3 +1,8 @@
+// Quarantined: superseded by AssessmentSubmission's per-attempt score/passed fields, computed
+// directly at grading time (assessments.controller.ts, instructor.controller.ts#gradeSubmission)
+// rather than accumulated into a separate summary document. This file has no live call sites —
+// it is retained, unmodified, only because the shipped, checksummed migration 202607270001-
+// index-operational-queries still references it. Do not import from this file in new code.
 import mongoose, { HydratedDocument, Model, Schema, Types } from 'mongoose'
 import { AssessmentDocument } from './assessment.model'
 import { idTransform as toJsonTransform } from '../utils/mongoTransform'

@@ -5,10 +5,15 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler'
 import { authRouter } from './modules/auth/auth.routes'
 import { courseRouter, deadlinesRouter } from './modules/courses/courses.routes'
 import { lectureRouter } from './modules/lectures/lectures.routes'
+import { assessmentRouter } from './modules/assessments/assessments.routes'
+import { certificateRouter } from './modules/certificates/certificates.routes'
+import { notificationRouter } from './modules/notifications/notifications.routes'
 import { requestLogger } from './middleware/requestLogger'
 import { env } from './config/env'
 import { aiRouter } from './modules/ai/ai.routes'
 import { instructorRouter, uploadRouter } from './modules/instructor/instructor.routes'
+import { adminRouter } from './modules/admin/admin.routes'
+import { invitationsRouter, organizationsRouter } from './modules/organizations/organizations.routes'
 import { metricsContentType, metricsMiddleware, renderMetrics } from './services/metrics.service'
 import { getDependencyHealth } from './services/health.service'
 import { asyncHandler } from './middleware/asyncHandler'
@@ -117,6 +122,12 @@ export function createApp(): Application {
   apiRouter.use('/instructor', instructorRouter)
   apiRouter.use('/uploads', uploadRouter)
   apiRouter.use('/courses/:courseId/lectures', lectureRouter)
+  apiRouter.use('/assessments', assessmentRouter)
+  apiRouter.use('/certificates', certificateRouter)
+  apiRouter.use('/notifications', notificationRouter)
+  apiRouter.use('/admin', adminRouter)
+  apiRouter.use('/organizations', organizationsRouter)
+  apiRouter.use('/invitations', invitationsRouter)
 
   // Versioned contracts are canonical. Root aliases remain temporarily for the
   // legacy client and advertise their deprecation on every response.

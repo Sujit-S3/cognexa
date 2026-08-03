@@ -10,6 +10,8 @@ overrides:
 
 allowBuilds:
   esbuild: true
+  # Downloads the test-only mongod binary used by Server's memory-server-backed integration tests.
+  mongodb-memory-server: true
   # OpenTelemetry uses the runtime JS implementation; its optional generator hook is not needed.
   protobufjs: false
   sharp: true

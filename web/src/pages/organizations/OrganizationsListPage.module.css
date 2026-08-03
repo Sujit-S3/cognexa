@@ -1,0 +1,85 @@
+.container {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 30px clamp(16px, 3vw, 42px) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.headerBanner {
+  padding: clamp(24px, 4vw, 42px) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.85), rgba(8, 47, 73, 0.5)) !important;
+}
+.headerBanner h1 {
+  margin: 12px 0 7px;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+}
+.headerBanner p {
+  max-width: 520px;
+  color: var(--nx-fg-muted);
+}
+
+.createForm {
+  display: flex;
+  gap: 10px;
+}
+.createForm input {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--nx-border);
+  background: var(--nx-glass-bg);
+  color: var(--nx-fg);
+  min-width: 220px;
+}
+
+.orgsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 15px;
+}
+.orgCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px !important;
+}
+.orgCard h3 {
+  font-size: 1.05rem;
+}
+.orgCard p {
+  color: var(--nx-fg-muted);
+  font-size: 0.82rem;
+}
+.orgCard a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  color: var(--nx-brand-300);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.panelLoading {
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--nx-fg-muted);
+}
+.errorState,
+.emptyState {
+  padding: 48px 24px !important;
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  text-align: center;
+  color: var(--nx-fg-muted);
+}
+.emptyState h3 {
+  color: var(--nx-fg);
+}

@@ -234,6 +234,9 @@ export function InstructorDashboard() {
                         <Link to={`/instructor/courses/${id}/edit`}>
                           Open builder <ArrowRight size={15} />
                         </Link>
+                        <Link to={`/instructor/courses/${id}/submissions`}>
+                          <FileCheck2 size={15} /> Review submissions
+                        </Link>
                         <button
                           type="button"
                           disabled={archiveCourse.isPending}
@@ -284,12 +287,17 @@ export function InstructorDashboard() {
               <ul>
                 {data.recentActivity.slice(0, 6).map((activity) => (
                   <li key={activity.id}>
-                    <span>{activity.studentName.slice(0, 1).toUpperCase()}</span>
-                    <div>
-                      <strong>{activity.studentName}</strong>
-                      <p>Submitted {activity.assessmentTitle}</p>
-                      <small>{formatDate(activity.occurredAt)}</small>
-                    </div>
+                    <Link
+                      to={`/instructor/courses/${activity.courseId}/submissions`}
+                      style={{ display: 'flex', gap: '10px', alignItems: 'center', textDecoration: 'none' }}
+                    >
+                      <span>{activity.studentName.slice(0, 1).toUpperCase()}</span>
+                      <div>
+                        <strong>{activity.studentName}</strong>
+                        <p>Submitted {activity.assessmentTitle}</p>
+                        <small>{formatDate(activity.occurredAt)}</small>
+                      </div>
+                    </Link>
                   </li>
                 ))}
               </ul>

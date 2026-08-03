@@ -4,6 +4,8 @@ import { authenticate } from '../../middleware/auth'
 import { validate } from '../../middleware/validate'
 import * as lectures from './lectures.controller'
 
+// Despite the module name, routes here cover any module item (video/pdf/markdown/rich_text/
+// external_url/youtube/live_session/file), not literally just video lectures.
 export const lectureRouter = Router({ mergeParams: true })
 
 const createCommentSchema = z.object({ comment: z.string().trim().min(1).max(5_000) }).strict()
@@ -15,6 +17,18 @@ const commentParamsSchema = z
   .strict()
 
 lectureRouter.get('/', authenticate, validate({ params: lectureParamsSchema }), lectures.getAllVideos)
+lectureRouter.get(
+  '/:moduleItemId',
+  authenticate,
+  validate({ params: moduleItemParamsSchema }),
+  lectures.getModuleItem
+)
+lectureRouter.post(
+  '/:moduleItemId/complete',
+  authenticate,
+  validate({ params: moduleItemParamsSchema }),
+  lectures.markComplete
+)
 lectureRouter.get(
   '/:moduleItemId/comments',
   authenticate,

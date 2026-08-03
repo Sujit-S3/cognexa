@@ -7,6 +7,7 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../../stores/authStore'
 import { Badge } from '../../design'
 import { BrandLogo } from '../brand/BrandLogo'
+import { NotificationBell } from '../notifications/NotificationBell'
 import styles from './AppShell.module.css'
 
 interface NavItem {
@@ -21,6 +22,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Course Catalog', icon: '📚', to: '/catalog', roles: ['student', 'instructor', 'admin'] },
   { label: 'AI Tutor', icon: '🤖', to: '/ai', roles: ['student', 'instructor', 'admin'] },
   { label: 'Instructor Portal', icon: '🎯', to: '/instructor', roles: ['instructor', 'admin'] },
+  { label: 'Organizations', icon: '🏢', to: '/organizations', roles: ['student', 'instructor', 'admin'] },
+  { label: 'Admin Console', icon: '🛡️', to: '/admin', roles: ['admin'] },
 ]
 
 export function AppShell() {
@@ -136,6 +139,7 @@ export function AppShell() {
             <Link to="/catalog" className={styles.topbarBtn} title="Course Catalog">
               📚
             </Link>
+            <NotificationBell />
           </div>
         </header>
 

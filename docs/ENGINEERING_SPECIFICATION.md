@@ -71,7 +71,7 @@ These decisions materially affect compliance, data modeling, pricing, and operat
 - Question pools, randomization, matching, ordering, code execution sandbox, and rubric grading.
 - Search, community, moderation, grade book, cohort analytics, feature flags, and analytics events.
 - Stripe billing, coupons, invoices, refunds, tax integration, and entitlement webhooks.
-- Organization tenancy, invitations, team roles, SSO-ready identity boundaries, and tenant audit logs.
+- ~~Organization tenancy, invitations, team roles, and tenant audit logs~~ — delivered: organizations with owner/admin/member roles, email invitations, assign-learning onto existing published courses, per-member progress, and an org-scoped audit log. SSO-linked identity boundaries remain Enterprise roadmap (see below).
 - PWA installation and deliberately scoped offline lesson access.
 
 ### Enterprise roadmap
@@ -106,6 +106,8 @@ As a learner, I can resume where I stopped and understand what remains.
 - Concurrent updates cannot reduce completed progress.
 - Empty, loading, offline, access-denied, and archived-course states are defined.
 
+Current implementation: enrolled learners open any published module item (video, PDF, markdown, rich text, external URL, YouTube, live-session placeholder, or file); completion is recorded through an idempotent `$addToSet` write scoped to the caller's own enrollment, so a retry or double-click can never regress or duplicate progress. Percent complete is always recomputed server-side from completed vs. total published module items and surfaced on the course detail page, the student dashboard, and a resume action pointing at the last-accessed item.
+
 ### Instructor publishing
 
 As an instructor, I can safely publish a course without exposing unfinished material.
@@ -139,6 +141,19 @@ As a learner, I can submit exactly once before a deadline and obtain a durable r
 - File uploads are scanned, type/size constrained, and stored outside MongoDB.
 - Objective grading is deterministic; AI-assisted grading remains reviewable and appealable.
 - A submission receipt records server time, attempt, version, and content hash.
+
+Current implementation: a learner starts an attempt against a published quiz or assignment; a database-level partial unique index guarantees at most one in-progress attempt per learner per assessment, so a retry or double-click returns the existing attempt instead of erroring or creating a duplicate. Quiz attempts freeze a pool-sampled, optionally randomized question set — with no answer key sent to the browser — at start time, and grade synchronously on submit, storing a per-question correct/incorrect result alongside the aggregate score. Assignment attempts accept drafts and a final text/attachment submission (reusing the instructor media-upload pipeline, authorized by enrollment rather than course ownership), then wait in an instructor grading queue for rubric-based scoring. Attempt limits are enforced server-side against the assessment's configured `submissionLimit`. AI-assisted grading is not wired in this release; all grading is either fully deterministic (quiz) or performed by a human instructor (assignment), and course completion — including automatic certificate issuance — is evaluated after every grading and lesson-completion event.
+
+### Certificates
+
+As a learner, I receive verifiable proof of completion without an instructor performing a manual step.
+
+- Issuance is automatic and idempotent: at most one certificate per learner per course.
+- A certificate requires every required lesson complete and every published assessment passed.
+- The certificate PDF and its public verification page do not require the learner to be signed in.
+- A verification code is unique and never reused.
+
+Current implementation: `evaluateCourseCompletion` runs after every lesson-completion and grading event, checks an existing-achievement guard first, then re-derives completion from the learner's live progress and graded submissions rather than trusting a cached flag. On qualifying, it issues an `Achievement` with a unique `CGX-`-prefixed verification code and fires an in-app notification. The certificate PDF is regenerated on demand (no persisted artifact) since achievements never change after creation, and `/certificates/verify/:code` is a public, unauthenticated route.
 
 ## 6. Engineering requirements
 

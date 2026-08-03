@@ -1,0 +1,35 @@
+.container {
+  min-height: 100vh;
+  padding: 60px 24px;
+  background: var(--nx-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.logoLink {
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 12px;
+}
+
+.description {
+  color: var(--nx-fg-muted);
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+.warning {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.08);
+  color: var(--nx-danger);
+  font-size: 0.85rem;
+}

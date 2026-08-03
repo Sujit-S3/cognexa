@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { renderSafeMarkdown } from './markdown'
+import { renderSafeMarkdown } from './safeMarkdown'
 
 describe('renderSafeMarkdown', () => {
   it('escapes provider and user HTML before adding supported markdown', () => {

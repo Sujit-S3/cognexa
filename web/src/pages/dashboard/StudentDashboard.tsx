@@ -1,8 +1,15 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { coursesApi, deadlinesApi, type CourseView, type DeadlineView } from '../../services/api'
+import {
+  certificatesApi,
+  coursesApi,
+  deadlinesApi,
+  type CourseView,
+  type DeadlineView,
+} from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
 import { GlassCard, Badge, Button, Reveal, RevealItem } from '../../design'
+import { CertificateCard } from '../../components/certificates/CertificateCard'
 import styles from './StudentDashboard.module.css'
 
 export function StudentDashboard() {
@@ -24,6 +31,11 @@ export function StudentDashboard() {
   } = useQuery<DeadlineView[]>({
     queryKey: ['deadlines'],
     queryFn: () => deadlinesApi.getDeadlines(),
+  })
+
+  const { data: achievements = [] } = useQuery({
+    queryKey: ['certificates', 'mine'],
+    queryFn: () => certificatesApi.getMine(),
   })
 
   const enrolledCourses = courses.filter((course) => course.enrolled)
@@ -57,6 +69,15 @@ export function StudentDashboard() {
             </div>
             <div className={styles.statValue}>{deadlinesLoading ? '-' : deadlines.length}</div>
             <div className={styles.statTrend}>Scheduled assessments</div>
+          </GlassCard>
+        </RevealItem>
+        <RevealItem>
+          <GlassCard className={styles.statCard}>
+            <div className={styles.statHeader}>
+              <span>Certificates earned</span>
+            </div>
+            <div className={styles.statValue}>{achievements.length}</div>
+            <div className={styles.statTrend}>Course completions</div>
           </GlassCard>
         </RevealItem>
       </Reveal>
@@ -102,6 +123,34 @@ export function StudentDashboard() {
                         {course.description && <p className={styles.courseDesc}>{course.description}</p>}
                       </div>
                     </div>
+                    {course.progress && (
+                      <div
+                        role="status"
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0' }}
+                      >
+                        <div
+                          style={{
+                            flex: 1,
+                            height: '6px',
+                            borderRadius: '999px',
+                            background: 'rgba(255,255,255,0.08)',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${course.progress.percent}%`,
+                              borderRadius: '999px',
+                              background: 'var(--nx-accent-cyan)',
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--nx-fg-muted)' }}>
+                          {course.progress.percent}%
+                        </span>
+                      </div>
+                    )}
                     {courseId && (
                       <Link to={`/courses/${courseId}`}>
                         <Button magnetic style={{ width: '100%' }}>
@@ -140,9 +189,9 @@ export function StudentDashboard() {
                   ? 'Date unavailable'
                   : date.toLocaleString()
                 const assessmentPath =
-                  item.type === 'Exam'
-                    ? `/assessments/quizzes/${item.assessmentId}`
-                    : `/assessments/assignments/${item.assessmentId}`
+                  item.kind === 'quiz'
+                    ? `/assessments/quizzes/${item.course.id}/${item.assessmentId}`
+                    : `/assessments/assignments/${item.course.id}/${item.assessmentId}`
 
                 return (
                   <Link
@@ -159,7 +208,7 @@ export function StudentDashboard() {
                           </div>
                         </div>
                       </div>
-                      <Badge tone={item.type === 'Exam' ? 'pink' : 'violet'}>{formattedDate}</Badge>
+                      <Badge tone={item.kind === 'quiz' ? 'pink' : 'violet'}>{formattedDate}</Badge>
                     </GlassCard>
                   </Link>
                 )
@@ -168,6 +217,21 @@ export function StudentDashboard() {
           )}
         </section>
       </div>
+
+      {achievements.length > 0 && (
+        <section aria-labelledby="certificates-title">
+          <div className={styles.sectionHeader}>
+            <h2 id="certificates-title" className={styles.sectionTitle}>
+              My certificates
+            </h2>
+          </div>
+          <div className={styles.coursesGrid}>
+            {achievements.map((achievement) => (
+              <CertificateCard key={achievement.id} achievement={achievement} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

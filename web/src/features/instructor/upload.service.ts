@@ -1,6 +1,7 @@
 import { instructorApi, type CloudinaryUploadSignature, type UploadedAssetView } from '../../services/api'
 
-export type UploadPurpose = 'thumbnail' | 'banner' | 'lesson-video' | 'lesson-file' | 'assignment-file'
+export type UploadPurpose =
+  'thumbnail' | 'banner' | 'lesson-video' | 'lesson-file' | 'assignment-file' | 'assignment-submission'
 
 interface CloudinaryUploadResponse {
   secure_url: string

@@ -154,7 +154,14 @@ export const courseStatusTransitionSchema = z
 export const uploadSignatureSchema = z
   .object({
     courseId: objectIdSchema,
-    purpose: z.enum(['thumbnail', 'banner', 'lesson-video', 'lesson-file', 'assignment-file']),
+    purpose: z.enum([
+      'thumbnail',
+      'banner',
+      'lesson-video',
+      'lesson-file',
+      'assignment-file',
+      'assignment-submission',
+    ]),
     resourceType: z.enum(['image', 'video', 'raw']),
     originalName: z.string().trim().min(1).max(255),
   })

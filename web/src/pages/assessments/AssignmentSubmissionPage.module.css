@@ -1,0 +1,127 @@
+.container {
+  padding: 32px 24px 80px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 10px;
+}
+
+.description {
+  color: var(--nx-fg-muted);
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.metaGrid dt {
+  color: var(--nx-fg-muted);
+  font-size: 0.8rem;
+}
+
+.metaGrid dd {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.rubric {
+  margin: 20px 0;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.rubricRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--nx-fg-muted);
+}
+
+.rubricRow:first-of-type {
+  border-top: none;
+}
+
+.form {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attachmentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 10px;
+}
+
+.receipt {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feedback {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--nx-fg-muted);
+  line-height: 1.6;
+}

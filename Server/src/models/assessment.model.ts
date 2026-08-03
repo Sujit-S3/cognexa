@@ -1,3 +1,8 @@
+// Quarantined: superseded by course.model.ts's Course.assessments[] (the data the instructor
+// authoring UI actually writes to) and models/assessmentSubmission.model.ts (learner attempts).
+// This file has no live call sites — it is retained, unmodified, only because the shipped,
+// checksummed migration 202607270001-index-operational-queries still references it; editing this
+// file changes that migration's checksum. Do not import from this file in new code.
 import mongoose, { HydratedDocument, Schema, Types } from 'mongoose'
 import { DateTime } from 'luxon'
 import { idTransform } from '../utils/mongoTransform'

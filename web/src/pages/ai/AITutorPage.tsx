@@ -8,7 +8,7 @@ import {
   type AIMessage,
 } from '../../services/ai.service'
 import { useConversationStore } from '../../stores/conversationStore'
-import { renderSafeMarkdown } from './markdown'
+import { renderSafeMarkdown } from '../../lib/safeMarkdown'
 import styles from './AITutorPage.module.css'
 
 const AI_MODES = [

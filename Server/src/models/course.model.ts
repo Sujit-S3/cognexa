@@ -1,6 +1,5 @@
 import mongoose, { HydratedDocument, Model, Schema, Types } from 'mongoose'
 import { DateTime } from 'luxon'
-import { Assessment } from './assessment.model'
 import { idTransform } from '../utils/mongoTransform'
 
 export type CourseStatus = 'draft' | 'review' | 'published' | 'archived'
@@ -18,7 +17,7 @@ export interface UploadedAssetAttrs {
   thumbnailUrl?: string
 }
 
-const uploadedAssetSchema = new Schema<UploadedAssetAttrs>(
+export const uploadedAssetSchema = new Schema<UploadedAssetAttrs>(
   {
     url: { type: String, required: true },
     publicId: String,
@@ -153,12 +152,18 @@ export interface EnrollmentAttrs {
   user: Types.ObjectId
   enrolledAs: EnrollmentRole
   createdAt: Date
+  completedItems: Types.ObjectId[]
+  lastAccessedItemId?: Types.ObjectId
+  lastAccessedAt?: Date
 }
 
 const enrollmentSchema = new Schema<EnrollmentAttrs>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     enrolledAs: { type: String, enum: ['student', 'instructor', 'admin'], required: true },
+    completedItems: [{ type: Schema.Types.ObjectId }],
+    lastAccessedItemId: { type: Schema.Types.ObjectId },
+    lastAccessedAt: { type: Date },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 )
@@ -215,12 +220,10 @@ export interface CourseVideo {
 export interface CourseDeadline {
   title: string
   deadline: Date
-  type: AssessmentTypeName
+  kind: 'quiz' | 'assignment'
   assessmentId: Types.ObjectId
   course: { name: string; id: Types.ObjectId }
 }
-
-export type AssessmentTypeName = 'Exam' | 'Assignment'
 
 export interface CoursePrivilegeView extends Record<string, unknown> {
   status: string
@@ -228,12 +231,25 @@ export interface CoursePrivilegeView extends Record<string, unknown> {
   privilege?: string
 }
 
+export interface CourseProgress {
+  completedCount: number
+  totalCount: number
+  percent: number
+  completedItems: Types.ObjectId[]
+  lastAccessedItemId?: Types.ObjectId
+  lastAccessedAt?: Date
+}
+
+export type ModuleItemDocument = NonNullable<ReturnType<Types.DocumentArray<ModuleItemAttrs>['id']>>
+
 export interface CourseMethods {
   modulesJSON(): { modules: unknown[] }
   getVideos(): Array<CourseVideo | null>
   enroll(userId: Types.ObjectId | string, role: string): CourseDocument
   unEnroll(userId: Types.ObjectId | string): CourseDocument
   getInstructors(): EnrollmentAttrs[]
+  getModuleItem(itemId: Types.ObjectId | string): ModuleItemDocument | null
+  computeProgress(userId: Types.ObjectId | string): CourseProgress | null
 }
 
 export interface CourseModelType extends Model<CourseAttrs, unknown, CourseMethods> {
@@ -309,7 +325,7 @@ courseSchema.methods.modulesJSON = function (this: CourseDocument) {
   return { modules: this.modules.map((module) => module.toJSON()) }
 }
 
-const YOUTUBE_ID_REGEX =
+export const YOUTUBE_ID_REGEX =
   /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*?[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/i
 
 courseSchema.methods.getVideos = function (this: CourseDocument) {
@@ -349,6 +365,7 @@ courseSchema.statics.getCoursesWithPrivilege = async function (
       enrollments?: Array<{ user: { _id: Types.ObjectId }; enrolledAs: string }>
       assessments?: Array<{
         questions?: Array<Record<string, unknown>>
+        visibility?: string
       }>
       status: string
     }
@@ -370,11 +387,18 @@ courseSchema.statics.getCoursesWithPrivilege = async function (
     }
 
     if (!['instructor', 'admin'].includes(String(privilege))) {
+      result.progress = privilege ? course.computeProgress(userId) : null
       delete result.enrollments
-      result.assessments = coursePOJO.assessments?.map((assessment) => ({
-        ...assessment,
-        questions: assessment.questions?.map(({ correctAnswers: _correctAnswers, ...question }) => question),
-      }))
+      // Draft assessments aren't visible pre-publish, and quiz questions stay behind the
+      // attempt-start endpoint (pool selection + randomization + no answer key) rather than being
+      // visible from the course page — see courses.controller.ts's serializeAssessmentMetadata
+      // for the same rule applied to anonymous/public course reads.
+      result.assessments = coursePOJO.assessments
+        ?.filter((assessment) => assessment.visibility === 'published')
+        .map(({ questions, ...assessment }) => ({
+          ...assessment,
+          questionCount: questions?.length ?? 0,
+        }))
     }
 
     return result
@@ -408,33 +432,52 @@ courseSchema.methods.getInstructors = function (this: CourseDocument) {
   return this.enrollments.filter((enrollment) => enrollment.enrolledAs === 'instructor')
 }
 
-courseSchema.statics.getDeadLines = async function (courseId: Types.ObjectId | string) {
-  const assessments = await Assessment.find({ course: courseId }).populate('course', 'name').exec()
+courseSchema.methods.getModuleItem = function (this: CourseDocument, itemId: Types.ObjectId | string) {
+  for (const courseModule of this.modules) {
+    const item = courseModule.moduleItems.id(itemId)
+    if (item) return item
+  }
+  return null
+}
 
-  return assessments
-    .map((assessment) => {
-      const course = assessment.course as unknown as { name: string; _id: Types.ObjectId }
-      if (assessment.type === 'Exam') {
-        return {
-          title: assessment.title,
-          deadline: (assessment as unknown as { openAt: Date }).openAt,
-          type: assessment.type,
-          assessmentId: assessment._id,
-          course: { name: course.name, id: course._id },
-        }
-      }
-      if (assessment.type === 'Assignment') {
-        return {
-          title: assessment.title,
-          deadline: (assessment as unknown as { dueDate: Date }).dueDate,
-          type: assessment.type,
-          assessmentId: assessment._id,
-          course: { name: course.name, id: course._id },
-        }
-      }
-      return null
-    })
-    .filter(Boolean)
+// Percent is always derived from the learner's own enrollment record, never trusted from the
+// client — completedItems only grows (see the $addToSet-based complete endpoint), so this can
+// never regress under concurrent requests.
+courseSchema.methods.computeProgress = function (this: CourseDocument, userId: Types.ObjectId | string) {
+  const enrollment = this.enrollments.find((entry) => entry.user.toString() === userId.toString())
+  if (!enrollment) return null
+
+  const totalCount = this.modules.reduce((sum, courseModule) => sum + courseModule.moduleItems.length, 0)
+  const completedIds = new Set(enrollment.completedItems.map((id) => id.toString()))
+  const completedCount = this.modules.reduce(
+    (sum, courseModule) =>
+      sum + courseModule.moduleItems.filter((item) => completedIds.has(item._id.toString())).length,
+    0
+  )
+
+  return {
+    completedCount,
+    totalCount,
+    percent: totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100),
+    completedItems: enrollment.completedItems,
+    lastAccessedItemId: enrollment.lastAccessedItemId,
+    lastAccessedAt: enrollment.lastAccessedAt,
+  }
+}
+
+courseSchema.statics.getDeadLines = async function (courseId: Types.ObjectId | string) {
+  const course = await this.findById(courseId).select('name assessments')
+  if (!course) return []
+
+  return course.assessments
+    .filter((assessment) => assessment.visibility === 'published' && assessment.dueDate)
+    .map((assessment) => ({
+      title: assessment.title,
+      deadline: assessment.dueDate as Date,
+      kind: assessment.kind,
+      assessmentId: assessment._id,
+      course: { name: course.name, id: course._id },
+    }))
 }
 
 courseSchema.statics.formatCalendar = function (

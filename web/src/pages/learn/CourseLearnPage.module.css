@@ -1,0 +1,133 @@
+.container {
+  padding: 32px 24px 80px;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.backLink {
+  color: var(--nx-fg-muted);
+  font-weight: 600;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.backLink:hover {
+  color: var(--nx-accent-cyan);
+}
+
+.gridTwo {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .gridTwo {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lessonCard {
+  padding: 36px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.lessonHeader {
+  display: flex;
+  gap: 10px;
+}
+
+.title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+}
+
+.description {
+  color: var(--nx-fg-muted);
+  line-height: 1.6;
+}
+
+.content {
+  min-height: 120px;
+}
+
+.media {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: #000;
+}
+
+.prose {
+  color: var(--nx-fg-muted);
+  line-height: 1.7;
+}
+
+.prose :global(pre.code-block) {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px;
+  overflow-x: auto;
+}
+
+.prose :global(code.inline-code) {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.syllabusTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 14px;
+}
+
+.syllabusList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.syllabusItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--nx-fg-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.syllabusItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.syllabusItemActive {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}

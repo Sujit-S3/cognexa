@@ -1,10 +1,11 @@
 import { Request, Response } from 'express'
 import { Types } from 'mongoose'
 import { Achievement } from '../../models/achievement.model'
-import { Course, CourseDocument, CourseStatus } from '../../models/course.model'
-import { Submission } from '../../models/submission.model'
+import { AssessmentSubmission } from '../../models/assessmentSubmission.model'
+import { Course, CourseDocument, CourseStatus, EnrollmentRole } from '../../models/course.model'
 import { User } from '../../models/user.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
+import { evaluateCourseCompletion } from '../../services/achievement.service'
 import { createCloudinaryUploadSignature } from '../../services/storage/cloudinary.service'
 import { AppError } from '../../utils/AppError'
 import { assertCourseRole } from '../../utils/courseAccess'
@@ -15,6 +16,10 @@ const uploadRules = {
   'lesson-video': { resourceType: 'video', extensions: ['mp4', 'webm', 'mov'] },
   'lesson-file': { resourceType: 'raw', extensions: ['pdf'] },
   'assignment-file': {
+    resourceType: 'raw',
+    extensions: ['pdf', 'doc', 'docx', 'csv', 'txt', 'zip', 'jpg', 'jpeg', 'png', 'webp'],
+  },
+  'assignment-submission': {
     resourceType: 'raw',
     extensions: ['pdf', 'doc', 'docx', 'csv', 'txt', 'zip', 'jpg', 'jpeg', 'png', 'webp'],
   },
@@ -192,16 +197,13 @@ export const getDashboard = asyncHandler(async (req: Request, res: Response) => 
           { $match: { course: { $in: courseIds } } },
           { $group: { _id: { course: '$course', user: '$user' } } },
         ]),
-        Submission.find({ course: { $in: courseIds }, submittedAt: { $exists: true } })
+        AssessmentSubmission.find({ course: { $in: courseIds }, submittedAt: { $exists: true } })
           .sort({ submittedAt: -1 })
           .limit(10)
-          .populate('student', 'name photo')
-          .populate('assessment', 'title type'),
-        Submission.countDocuments({
-          course: { $in: courseIds },
-          finished: true,
-          autoGradingStatus: { $ne: 'Graded' },
-        }),
+          .populate('student', 'name photo'),
+        // Quizzes auto-grade synchronously and never rest at 'submitted', so this count is
+        // naturally just assignments awaiting manual grading.
+        AssessmentSubmission.countDocuments({ course: { $in: courseIds }, status: 'submitted' }),
       ])
     : [[], [], 0]
 
@@ -261,13 +263,12 @@ export const getDashboard = asyncHandler(async (req: Request, res: Response) => 
     students,
     recentActivity: recentSubmissions.map((submission) => {
       const student = submission.student as unknown as { name?: string }
-      const assessment = submission.assessment as unknown as { title?: string; type?: string }
       return {
         id: submission._id.toString(),
         kind: 'submission',
         studentName: student?.name ?? 'Learner',
-        assessmentTitle: assessment?.title ?? 'Assessment',
-        assessmentType: assessment?.type,
+        assessmentTitle: submission.assessmentTitleSnapshot,
+        assessmentType: submission.kind,
         occurredAt: submission.submittedAt,
         courseId: submission.course.toString(),
       }
@@ -385,7 +386,13 @@ export const transitionStatus = asyncHandler(async (req: Request, res: Response)
 export const createUploadSignature = asyncHandler(async (req: Request, res: Response) => {
   validateUploadIntent(req.body.purpose, req.body.resourceType, req.body.originalName)
   const course = await Course.findById(req.body.courseId).orFail(() => new AppError(404, 'Course not found'))
-  assertCourseRole(course, req.user!._id, req.user!.role, ['instructor', 'admin'])
+  // Instructor-authoring purposes require course ownership; a learner's own assignment
+  // submission only requires enrollment — the route itself no longer restricts by global role.
+  const allowedRoles: EnrollmentRole[] =
+    req.body.purpose === 'assignment-submission'
+      ? ['student', 'instructor', 'admin']
+      : ['instructor', 'admin']
+  assertCourseRole(course, req.user!._id, req.user!.role, allowedRoles)
 
   res.set('cache-control', 'no-store').json(
     createCloudinaryUploadSignature({
@@ -394,4 +401,59 @@ export const createUploadSignature = asyncHandler(async (req: Request, res: Resp
       resourceType: req.body.resourceType,
     })
   )
+})
+
+// Quizzes auto-grade at submit time and never appear here — this queue is assignments only,
+// the one kind that needs a human to look at it.
+export const getSubmissionsQueue = asyncHandler(async (req: Request, res: Response) => {
+  const course = await Course.findById(req.params.courseId).orFail(
+    () => new AppError(404, 'Course not found')
+  )
+  assertCourseRole(course, req.user!._id, req.user!.role, ['instructor', 'admin'])
+
+  const submissions = await AssessmentSubmission.find({
+    course: course._id,
+    kind: 'assignment',
+    status: { $in: ['submitted', 'graded'] },
+  })
+    .sort({ submittedAt: -1 })
+    .populate('student', 'name email photo')
+
+  res.json(submissions)
+})
+
+export const gradeSubmission = asyncHandler(async (req: Request, res: Response) => {
+  const submission = await AssessmentSubmission.findById(req.params.submissionId).orFail(
+    () => new AppError(404, 'Submission not found')
+  )
+  const course = await Course.findById(submission.course).orFail(() => new AppError(404, 'Course not found'))
+  assertCourseRole(course, req.user!._id, req.user!.role, ['instructor', 'admin'])
+
+  if (submission.kind !== 'assignment') {
+    throw new AppError(409, 'Only assignment submissions are graded manually')
+  }
+  if (submission.status === 'in_progress') {
+    throw new AppError(409, 'This submission has not been submitted yet')
+  }
+
+  const assessment = course.assessments.id(submission.courseAssessmentId)
+  const maxScore = assessment?.rubric.reduce((sum, criterion) => sum + criterion.points, 0)
+
+  if (req.body.rubricScores) submission.rubricScores = req.body.rubricScores
+  const score: number =
+    req.body.score !== undefined
+      ? req.body.score
+      : submission.rubricScores.reduce((sum, entry) => sum + entry.points, 0)
+
+  submission.score = score
+  submission.maxScore = maxScore
+  if (req.body.feedback !== undefined) submission.feedback = req.body.feedback
+  submission.passed = assessment && maxScore ? (score / maxScore) * 100 >= assessment.passingScore : undefined
+  submission.status = 'graded'
+  submission.gradedBy = req.user!._id
+  submission.gradedAt = new Date()
+
+  await submission.save()
+  await evaluateCourseCompletion(course, submission.student)
+  res.json(submission)
 })

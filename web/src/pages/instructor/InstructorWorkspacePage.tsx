@@ -1,15 +1,27 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Archive, ArrowLeft, Check, Eye, FileCheck2, LayoutList, Settings2 } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiClientError, instructorApi, type CourseStatus, type CourseWorkspace } from '../../services/api'
 import { Badge, Button, GlassCard } from '../../design'
-import { AssessmentBuilder } from '../../features/instructor/AssessmentBuilder'
-import { CoursePreview } from '../../features/instructor/CoursePreview'
-import { CourseSetupWizard } from '../../features/instructor/CourseSetupWizard'
-import { CurriculumBuilder } from '../../features/instructor/CurriculumBuilder'
 import { useCourseBuilderStore } from '../../features/instructor/courseBuilderStore'
 import styles from '../../features/instructor/InstructorWorkspace.module.css'
+
+// Only one tab renders at a time — splitting these out keeps the rich text editor
+// (@tiptap/*, used by CurriculumBuilder and AssessmentBuilder) out of the initial workspace
+// bundle for instructors who never leave the setup/preview tabs.
+const CourseSetupWizard = lazy(() =>
+  import('../../features/instructor/CourseSetupWizard').then((m) => ({ default: m.CourseSetupWizard }))
+)
+const CurriculumBuilder = lazy(() =>
+  import('../../features/instructor/CurriculumBuilder').then((m) => ({ default: m.CurriculumBuilder }))
+)
+const AssessmentBuilder = lazy(() =>
+  import('../../features/instructor/AssessmentBuilder').then((m) => ({ default: m.AssessmentBuilder }))
+)
+const CoursePreview = lazy(() =>
+  import('../../features/instructor/CoursePreview').then((m) => ({ default: m.CoursePreview }))
+)
 
 type WorkspaceTab = 'setup' | 'curriculum' | 'assessments' | 'preview'
 
@@ -259,16 +271,18 @@ export function InstructorWorkspacePage() {
       </nav>
 
       <div className={styles.workspaceContent}>
-        {tab === 'setup' && (
-          <CourseSetupWizard course={course} courseId={courseId} onChange={store.updateCourse} />
-        )}
-        {tab === 'curriculum' && (
-          <CurriculumBuilder course={course} courseId={courseId} onChange={store.updateCourse} />
-        )}
-        {tab === 'assessments' && (
-          <AssessmentBuilder course={course} courseId={courseId} onChange={store.updateCourse} />
-        )}
-        {tab === 'preview' && <CoursePreview course={course} />}
+        <Suspense fallback={<div className={styles.workspaceSkeleton} role="status" />}>
+          {tab === 'setup' && (
+            <CourseSetupWizard course={course} courseId={courseId} onChange={store.updateCourse} />
+          )}
+          {tab === 'curriculum' && (
+            <CurriculumBuilder course={course} courseId={courseId} onChange={store.updateCourse} />
+          )}
+          {tab === 'assessments' && (
+            <AssessmentBuilder course={course} courseId={courseId} onChange={store.updateCourse} />
+          )}
+          {tab === 'preview' && <CoursePreview course={course} />}
+        </Suspense>
       </div>
     </div>
   )

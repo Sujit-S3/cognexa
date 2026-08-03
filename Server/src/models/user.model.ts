@@ -23,6 +23,7 @@ export interface UserAttrs {
   invalidatedTokens: string[]
   role: UserRole
   enrollments: Types.ObjectId[]
+  organizations: Types.ObjectId[]
   isEmailRegistered: boolean
 }
 
@@ -78,10 +79,12 @@ const userSchema = new Schema<UserAttrs, UserModel, UserMethods>({
   invalidatedTokens: [String],
   role: { type: String, enum: ['admin', 'student', 'instructor'], default: 'student' },
   enrollments: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
+  organizations: [{ type: Schema.Types.ObjectId, ref: 'Organization' }],
   isEmailRegistered: { type: Boolean, default: false },
 })
 
 userSchema.index({ name: 1, username: 1 })
+userSchema.index({ organizations: 1 })
 
 userSchema.set('toJSON', {
   virtuals: true,

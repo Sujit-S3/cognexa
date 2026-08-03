@@ -1,3 +1,8 @@
+// Quarantined: superseded by models/assessmentSubmission.model.ts (AssessmentSubmission), which
+// keys learner attempts against course.model.ts's Course.assessments[] instead of this file's
+// disconnected Assessment/Question chain. This file has no live call sites — it is retained,
+// unmodified, only because the shipped, checksummed migration 202607270001-index-operational-
+// queries still references it. Do not import from this file in new code.
 import mongoose, { HydratedDocument, Schema, Types } from 'mongoose'
 import { Duration } from 'luxon'
 import { GradesSummary } from './gradesSummary.model'

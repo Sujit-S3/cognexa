@@ -1,0 +1,212 @@
+.container {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  padding: 30px clamp(16px, 3vw, 42px) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.headerBanner {
+  padding: clamp(24px, 4vw, 42px) !important;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.85), rgba(8, 47, 73, 0.5)) !important;
+}
+.headerBanner h1 {
+  margin: 12px 0 7px;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+}
+.headerBanner p {
+  color: var(--nx-fg-muted);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--nx-glass-bg);
+  border: 1px solid var(--nx-border);
+  width: fit-content;
+}
+.tabs button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--nx-fg-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.tabActive {
+  background: var(--nx-glass-bg-strong);
+  color: var(--nx-fg) !important;
+}
+
+.panel {
+  padding: 22px !important;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: var(--nx-fg-subtle);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--nx-border);
+}
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--nx-border);
+  vertical-align: middle;
+}
+.table select {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--nx-border);
+  background: var(--nx-glass-bg);
+  color: var(--nx-fg);
+}
+
+.rowAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid var(--nx-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--nx-fg-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.rowAction:disabled {
+  opacity: 0.5;
+}
+
+.inviteForm,
+.assignForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--nx-border);
+}
+.inviteForm input,
+.inviteForm select,
+.assignForm select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--nx-border);
+  background: var(--nx-glass-bg);
+  color: var(--nx-fg);
+}
+.inviteForm input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.successNote {
+  color: var(--nx-success);
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+.errorNote {
+  color: var(--nx-danger);
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.progressGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 15px;
+}
+.progressCard {
+  padding: 18px !important;
+}
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.progressCard ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.progressCard li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--nx-fg-muted);
+}
+
+.auditList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.auditList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--nx-border);
+}
+.auditList li > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.auditList li strong {
+  font-size: 0.85rem;
+}
+.auditList li span {
+  color: var(--nx-fg-subtle);
+  font-size: 0.75rem;
+}
+.auditList li small {
+  color: var(--nx-fg-subtle);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.panelLoading {
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--nx-fg-muted);
+}
+.errorState {
+  padding: 48px 24px !important;
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  text-align: center;
+  color: var(--nx-fg-muted);
+}
+.muted {
+  color: var(--nx-fg-subtle);
+  font-size: 0.85rem;
+}

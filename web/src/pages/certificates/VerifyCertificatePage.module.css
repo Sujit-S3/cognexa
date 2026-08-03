@@ -1,0 +1,65 @@
+.container {
+  min-height: 100vh;
+  padding: 60px 24px;
+  background: var(--nx-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.logoLink {
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #fff;
+  margin-top: 12px;
+}
+
+.description {
+  color: var(--nx-fg-muted);
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+.form {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+  font-family: monospace;
+}
+
+.result {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.detailList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.detailList dt {
+  color: var(--nx-fg-muted);
+  font-size: 0.8rem;
+}
+
+.detailList dd {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}

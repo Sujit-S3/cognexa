@@ -20,6 +20,9 @@ const achievementSchema = new Schema<AchievementAttrs>({
 })
 
 achievementSchema.index({ course: 1, user: 1 })
+// `certificate` holds the public verification code (e.g. CGX-...), generated once at issuance —
+// unique so the public verify-by-code lookup is always unambiguous.
+achievementSchema.index({ certificate: 1 }, { unique: true, sparse: true })
 
 achievementSchema.set('toJSON', { virtuals: true, transform: stripInternalTransform })
 achievementSchema.set('toObject', { virtuals: true, transform: stripInternalTransform })

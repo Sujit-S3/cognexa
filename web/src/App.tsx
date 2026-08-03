@@ -52,8 +52,47 @@ const CourseCatalogPage = lazy(() =>
 const CourseDetailPage = lazy(() =>
   import('./pages/courses/CourseDetailPage').then((module) => ({ default: module.CourseDetailPage }))
 )
+const CourseLearnPage = lazy(() =>
+  import('./pages/learn/CourseLearnPage').then((module) => ({ default: module.CourseLearnPage }))
+)
+const QuizTakingPage = lazy(() =>
+  import('./pages/assessments/QuizTakingPage').then((module) => ({ default: module.QuizTakingPage }))
+)
+const AssignmentSubmissionPage = lazy(() =>
+  import('./pages/assessments/AssignmentSubmissionPage').then((module) => ({
+    default: module.AssignmentSubmissionPage,
+  }))
+)
+const SubmissionGradingPage = lazy(() =>
+  import('./pages/instructor/SubmissionGradingPage').then((module) => ({
+    default: module.SubmissionGradingPage,
+  }))
+)
+const VerifyCertificatePage = lazy(() =>
+  import('./pages/certificates/VerifyCertificatePage').then((module) => ({
+    default: module.VerifyCertificatePage,
+  }))
+)
 const AITutorPage = lazy(() =>
   import('./pages/ai/AITutorPage').then((module) => ({ default: module.AITutorPage }))
+)
+const AdminConsolePage = lazy(() =>
+  import('./pages/admin/AdminConsolePage').then((module) => ({ default: module.AdminConsolePage }))
+)
+const OrganizationsListPage = lazy(() =>
+  import('./pages/organizations/OrganizationsListPage').then((module) => ({
+    default: module.OrganizationsListPage,
+  }))
+)
+const OrganizationDetailPage = lazy(() =>
+  import('./pages/organizations/OrganizationDetailPage').then((module) => ({
+    default: module.OrganizationDetailPage,
+  }))
+)
+const InvitationAcceptPage = lazy(() =>
+  import('./pages/organizations/InvitationAcceptPage').then((module) => ({
+    default: module.InvitationAcceptPage,
+  }))
 )
 
 function LandingShell() {
@@ -121,49 +160,6 @@ function NotFoundPage() {
   )
 }
 
-function UnavailableFeaturePage({
-  title,
-  description,
-  returnTo,
-  returnLabel,
-}: {
-  title: string
-  description: string
-  returnTo: string
-  returnLabel: string
-}) {
-  return (
-    <section
-      aria-labelledby="unavailable-feature-title"
-      style={{
-        maxWidth: '720px',
-        margin: '48px auto',
-        padding: '40px',
-        border: '1px solid var(--nx-border)',
-        borderRadius: 'var(--nx-radius-xl)',
-        background: 'var(--nx-surface)',
-      }}
-    >
-      <p style={{ color: 'var(--nx-brand-400)', fontWeight: 700 }}>Not available in this release</p>
-      <h1 id="unavailable-feature-title" style={{ margin: '8px 0 12px' }}>
-        {title}
-      </h1>
-      <p style={{ color: 'var(--nx-fg-muted)', lineHeight: 1.6 }}>{description}</p>
-      <Link
-        to={returnTo}
-        style={{
-          display: 'inline-block',
-          marginTop: '24px',
-          color: 'var(--nx-accent-cyan)',
-          fontWeight: 700,
-        }}
-      >
-        {returnLabel}
-      </Link>
-    </section>
-  )
-}
-
 function DocumentTitle() {
   const { pathname } = useLocation()
 
@@ -179,23 +175,33 @@ function DocumentTitle() {
               ? 'Course Details'
               : pathname === '/dashboard'
                 ? 'Dashboard'
-                : pathname.startsWith('/instructor/courses/')
-                  ? 'Course Builder'
-                  : pathname === '/instructor'
-                    ? 'Instructor Workspace'
-                    : pathname === '/admin'
-                      ? 'Admin Control Center'
-                      : pathname === '/ai'
-                        ? 'AI Tutor'
-                        : pathname === '/auth/login'
-                          ? 'Sign In'
-                          : pathname === '/auth/register'
-                            ? 'Create Account'
-                            : pathname.startsWith('/auth/')
-                              ? 'Account Access'
-                              : pathname.startsWith('/assessments/')
-                                ? 'Assessment'
-                                : 'Page Not Found'
+                : pathname.includes('/submissions')
+                  ? 'Submission Grading'
+                  : pathname.startsWith('/instructor/courses/')
+                    ? 'Course Builder'
+                    : pathname === '/instructor'
+                      ? 'Instructor Workspace'
+                      : pathname === '/admin'
+                        ? 'Admin Control Center'
+                        : pathname === '/organizations'
+                          ? 'Organizations'
+                          : pathname.startsWith('/organizations/')
+                            ? 'Organization Workspace'
+                            : pathname.startsWith('/invitations/')
+                              ? 'Accept Invitation'
+                              : pathname === '/ai'
+                                ? 'AI Tutor'
+                                : pathname === '/auth/login'
+                                  ? 'Sign In'
+                                  : pathname === '/auth/register'
+                                    ? 'Create Account'
+                                    : pathname.startsWith('/auth/')
+                                      ? 'Account Access'
+                                      : pathname.startsWith('/assessments/')
+                                        ? 'Assessment'
+                                        : pathname.startsWith('/certificates/')
+                                          ? 'Certificate'
+                                          : 'Page Not Found'
 
     document.title = page ? `${page} | Cognexa` : 'Cognexa — Connecting Knowledge, Empowering Minds.'
   }, [pathname])
@@ -232,6 +238,8 @@ function AppRoutes() {
             </PublicLayout>
           }
         />
+        <Route path="/certificates/verify/:code" element={<VerifyCertificatePage />} />
+        <Route path="/invitations/:token" element={<InvitationAcceptPage />} />
 
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
@@ -246,39 +254,12 @@ function AppRoutes() {
           }
         >
           <Route path="/dashboard" element={<StudentDashboard />} />
+          <Route path="/courses/:courseId/learn/:itemId" element={<CourseLearnPage />} />
           <Route
-            path="/courses/:courseId/learn/:itemId"
-            element={
-              <UnavailableFeaturePage
-                title="Learner content delivery"
-                description="Course playback and learner progress persistence are not part of the v1.0 supported surface. Course content remains available to instructors in the course workspace."
-                returnTo="/catalog"
-                returnLabel="Return to the course catalog"
-              />
-            }
+            path="/assessments/assignments/:courseId/:assessmentId"
+            element={<AssignmentSubmissionPage />}
           />
-          <Route
-            path="/assessments/assignments/:assessmentId"
-            element={
-              <UnavailableFeaturePage
-                title="Assignment submission"
-                description="Learner submission and grading workflows are not part of the v1.0 supported surface. No submission has been recorded."
-                returnTo="/dashboard"
-                returnLabel="Return to the dashboard"
-              />
-            }
-          />
-          <Route
-            path="/assessments/quizzes/:assessmentId"
-            element={
-              <UnavailableFeaturePage
-                title="Quiz delivery"
-                description="Learner quiz delivery and server-side grading are not part of the v1.0 supported surface. No attempt has been recorded."
-                returnTo="/dashboard"
-                returnLabel="Return to the dashboard"
-              />
-            }
-          />
+          <Route path="/assessments/quizzes/:courseId/:assessmentId" element={<QuizTakingPage />} />
           <Route
             path="/instructor"
             element={
@@ -295,17 +276,22 @@ function AppRoutes() {
               </RequireAuth>
             }
           />
+          <Route
+            path="/instructor/courses/:courseId/submissions"
+            element={
+              <RequireAuth allowedRoles={['instructor', 'admin']}>
+                <SubmissionGradingPage />
+              </RequireAuth>
+            }
+          />
           <Route path="/ai" element={<AITutorPage />} />
+          <Route path="/organizations" element={<OrganizationsListPage />} />
+          <Route path="/organizations/:orgId" element={<OrganizationDetailPage />} />
           <Route
             path="/admin"
             element={
               <RequireAuth allowedRoles={['admin']}>
-                <UnavailableFeaturePage
-                  title="Administration console"
-                  description="The administration console is not part of the v1.0 supported surface. Administrative actions must be performed through approved operational procedures."
-                  returnTo="/instructor"
-                  returnLabel="Open the instructor workspace"
-                />
+                <AdminConsolePage />
               </RequireAuth>
             }
           />

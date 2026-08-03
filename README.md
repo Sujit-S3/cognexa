@@ -88,7 +88,7 @@ This starts MongoDB, the API on port 4000, and the web application on port 8080.
 
 The delivery backlog and release gates are intentionally explicit in the engineering specification; unimplemented roadmap items are not represented as shipped features.
 
-Learner content playback/progress, assessment delivery/submission/grading, certificates, general notifications, the administration console, commerce, and organization tenancy are not supported in this release candidate. Their historical demo-only screens were removed from production routing; retained URLs show an explicit unavailable state. See the [capability matrix](docs/CAPABILITIES.md) before planning a deployment.
+Learner content playback/progress, assessment delivery/submission/grading, automatic certificate issuance, an in-app notification center, a global-admin console (user directory, role/status management, platform audit log), and organization tenancy (invitations, member roles, assign-learning, per-member progress, org audit log) are supported in this release candidate on real, persisted data — see the [capability matrix](docs/CAPABILITIES.md) for exact scope. Commerce remains unsupported.
 
 ## Instructor workspace
 

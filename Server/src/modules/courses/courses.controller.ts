@@ -1,17 +1,24 @@
 import { Request, Response } from 'express'
 import { Course, type CourseDocument } from '../../models/course.model'
 import { User } from '../../models/user.model'
-import { Achievement } from '../../models/achievement.model'
-import { GradesSummary } from '../../models/gradesSummary.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
 import { AppError } from '../../utils/AppError'
 import { assertCourseRole, assertSelfEnrollmentOpen, getEnrollment } from '../../utils/courseAccess'
-import { requireParam } from '../../utils/httpParams'
+
+// Quiz questions are the assessment's sensitive content — anyone browsing the course (enrolled
+// or not) can see that a quiz exists and how many questions it has, but the actual prompts stay
+// behind the attempt-start endpoint, which applies pool selection and randomization before
+// presenting them. An assignment's rubric/instructions are meant to be seen upfront, so those
+// stay visible here.
+function serializeAssessmentMetadata(assessment: Record<string, unknown> & { questions?: unknown[] }) {
+  const { questions, ...rest } = assessment
+  return { ...rest, questionCount: questions?.length ?? 0 }
+}
 
 function serializePublicCourse(course: CourseDocument): Record<string, unknown> {
   const result = course.toJSON() as unknown as Record<string, unknown> & {
     modules?: Array<{ moduleItems?: Array<Record<string, unknown>> }>
-    assessments?: Array<Record<string, unknown>>
+    assessments?: Array<Record<string, unknown> & { questions?: unknown[]; visibility?: string }>
   }
   delete result.enrollments
   delete result.files
@@ -20,7 +27,9 @@ function serializePublicCourse(course: CourseDocument): Record<string, unknown> 
     ...module,
     moduleItems: module.moduleItems?.map(({ url: _url, content: _content, asset: _asset, ...item }) => item),
   }))
-  delete result.assessments
+  result.assessments = result.assessments
+    ?.filter((assessment) => assessment.visibility === 'published')
+    .map(serializeAssessmentMetadata)
   return result
 }
 
@@ -57,7 +66,10 @@ export const getOneCourse = asyncHandler(async (req: Request, res: Response) => 
     return
   }
   if (course.status !== 'published') throw new AppError(404, 'Course not found')
-  res.json(serializePublicCourse(course))
+  res.json({
+    ...serializePublicCourse(course),
+    progress: enrollment ? course.computeProgress(req.user._id) : null,
+  })
 })
 
 export const createCourse = asyncHandler(async (req: Request, res: Response) => {
@@ -122,24 +134,13 @@ export const deleteCourse = asyncHandler(async (req: Request, res: Response) => 
   res.status(204).end()
 })
 
+// Certificates are issued automatically and per-learner as they complete required work (see
+// achievement.service.ts), not bulk-created here — this just retires the course.
 export const endCourse = asyncHandler(async (req: Request, res: Response) => {
   const course = await Course.findById(req.params.courseId).orFail(
     () => new AppError(404, 'Course not found')
   )
   assertCourseRole(course, req.user!._id, req.user!.role, ['instructor', 'admin'])
-
-  const gradeRecords = await GradesSummary.getGradesByUser(requireParam(req, 'courseId'))
-
-  await Promise.all(
-    gradeRecords.map((studentGrade) =>
-      Achievement.create({
-        user: studentGrade.user,
-        course: studentGrade.course,
-        score: studentGrade.score,
-        gradeLetter: studentGrade.gradeLetter,
-      })
-    )
-  )
 
   course.status = 'archived'
   await course.save()
@@ -197,21 +198,26 @@ export const unEnroll = asyncHandler(async (req: Request, res: Response) => {
 })
 
 export const getEnrollments = asyncHandler(async (req: Request, res: Response) => {
-  const course = await Course.findById(req.params.courseId)
-    .populate('enrollments.user')
-    .orFail(() => new AppError(404, 'Course not found'))
+  const course = await Course.findById(req.params.courseId).orFail(
+    () => new AppError(404, 'Course not found')
+  )
 
+  // Checked before populate() — assertCourseRole/getEnrollment compares enrollments.user as a
+  // raw ObjectId string, which breaks once populate() replaces it with a full User document.
   assertCourseRole(course, req.user!._id, req.user!.role, ['instructor', 'admin'])
+  await course.populate('enrollments.user')
 
   res.json(course.enrollments)
 })
 
 export const updateEnrollment = asyncHandler(async (req: Request, res: Response) => {
-  const course = await Course.findById(req.params.courseId)
-    .populate('enrollments.user')
-    .orFail(() => new AppError(404, 'Course not found'))
+  const course = await Course.findById(req.params.courseId).orFail(
+    () => new AppError(404, 'Course not found')
+  )
 
+  // Checked before populate() — see getEnrollments above for why the order matters.
   assertCourseRole(course, req.user!._id, req.user!.role, ['instructor', 'admin'])
+  await course.populate('enrollments.user')
 
   const enrollmentToUpdate = course.enrollments.id(req.body.enrollmentId)
   if (!enrollmentToUpdate) throw new AppError(404, 'Enrollment not found')

@@ -672,7 +672,13 @@ export const certificatesApi = {
     const res = await api.get<AchievementView[]>('/certificates/mine')
     return res.data
   },
-  downloadUrl: (achievementId: string) => `${API_BASE_URL}/certificates/${achievementId}/pdf`,
+  // Not a plain URL for an <a href> — the PDF endpoint requires the Bearer access token, which a
+  // raw browser navigation can't attach (only axios's request interceptor does). Fetch it as a
+  // blob through the authenticated client instead; the caller triggers the actual download.
+  downloadPdf: async (achievementId: string) => {
+    const res = await api.get(`/certificates/${achievementId}/pdf`, { responseType: 'blob' })
+    return res.data as Blob
+  },
   verify: async (code: string) => {
     const res = await api.get<CertificateVerificationView>(`/certificates/verify/${encodeURIComponent(code)}`)
     return res.data

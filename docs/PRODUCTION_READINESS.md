@@ -30,7 +30,7 @@
 - No live cloud, DNS, TLS, container, Kubernetes, Lighthouse, load, backup-tool, or restore test can be claimed from a workstation without those providers and CLIs.
 - Multi-region failover is intentionally deferred until business-approved RTO/RPO and data-consistency requirements justify it.
 - Automated preview hosting is provider-dependent; staging promotion is automated after protected workflow dispatch.
-- Automated coverage is 10.8% for the web application and 36.04% for the API. Database-backed integration, critical learner-flow, accessibility, load, penetration, and restore suites are not release-complete.
-- Learner playback/progress, learner assessment delivery/submission/grading, certificates, general notifications, administration, commerce, and organization tenancy are not supported product surfaces.
+- Automated coverage is 23.1% statements for the web application and 66.9% statements for the API (unit/integration only — the web number does not include the separate Playwright E2E suite, which exercises the learner/instructor/admin/organization critical paths end-to-end against a mocked network). Accessibility, load, penetration, and restore suites are not release-complete.
+- Commerce (billing/entitlements) is not implemented. Learner playback/progress, assessment delivery/submission/grading, certificates, notifications, an administration console, and organization tenancy (invitations, roles, assign-learning, audit logs) are implemented and covered by integration and E2E tests, but have not been exercised against a live production deployment — see the manual cloud work above.
 
-These gaps block a public production v1.0.0 release and any claim of completed production deployment. The repository is a release candidate for its narrower supported surface, not an approved production launch.
+These gaps block a public production v1.0.0 release and any claim of completed production deployment. The repository is a release candidate for its narrower supported surface (everything except commerce), not an approved production launch — the code is deploy-ready, the infrastructure/operational surface it deploys into is not yet provisioned.

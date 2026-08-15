@@ -185,11 +185,36 @@ describe('getOneCourse', () => {
       })
     )
     const body = (res.json as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![0] as {
+      enrolled: boolean
       progress: unknown
       enrollments?: unknown
     }
     expect(body.progress).not.toBeNull()
     expect(body).not.toHaveProperty('enrollments')
+    // serializePublicCourse hardcodes enrolled: false for the anonymous/public shape it's shared
+    // with — the enrolled-student branch must override it, or the frontend's course.enrolled-
+    // gated lesson/assessment links (CourseDetailPage.tsx) never become clickable for a real
+    // enrolled learner. Caught live in a manual smoke test; this pins the fix.
+    expect(body.enrolled).toBe(true)
+  })
+
+  it('reports enrolled:false for a published course a logged-in user is not enrolled in', async () => {
+    const outsider = await createUser('student')
+    const course = await createCourse({ status: 'published' })
+
+    const { res } = await invokeMiddleware(
+      courses.getOneCourse,
+      mockReq({
+        params: { courseId: course._id.toString() },
+        user: { _id: outsider._id, role: outsider.role },
+      })
+    )
+    const body = (res.json as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![0] as {
+      enrolled: boolean
+      progress: unknown
+    }
+    expect(body.enrolled).toBe(false)
+    expect(body.progress).toBeNull()
   })
 
   it('shows the full document (including the enrollment roster) to the owning instructor', async () => {

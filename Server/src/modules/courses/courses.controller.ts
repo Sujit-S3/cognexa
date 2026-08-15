@@ -68,6 +68,11 @@ export const getOneCourse = asyncHandler(async (req: Request, res: Response) => 
   if (course.status !== 'published') throw new AppError(404, 'Course not found')
   res.json({
     ...serializePublicCourse(course),
+    // serializePublicCourse hardcodes enrolled: false (correct for the anonymous/non-manager
+    // public shape it's shared with) — override it here for an actual enrolled viewer, or the
+    // frontend's course.enrolled-gated lesson/assessment links (CourseDetailPage.tsx) never
+    // become clickable even though the learner really is enrolled.
+    enrolled: Boolean(enrollment),
     progress: enrollment ? course.computeProgress(req.user._id) : null,
   })
 })

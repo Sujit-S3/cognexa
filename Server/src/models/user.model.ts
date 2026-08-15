@@ -114,6 +114,11 @@ userSchema.statics.findByCredentials = async function (email: string, password: 
   const isMatch = await bcrypt.compare(password, user.password)
   if (!isMatch) throw new Error('Unable to login')
 
+  // Same generic failure as a bad password — a deactivated account shouldn't be a distinguishable
+  // oracle for account enumeration. authenticate() also re-checks isActive on every request, but
+  // rejecting here avoids issuing a session/refresh cookie for an account that can't use it.
+  if (!user.isActive) throw new Error('Unable to login')
+
   return user
 }
 

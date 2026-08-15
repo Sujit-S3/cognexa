@@ -12,7 +12,7 @@ import { AppError } from '../../utils/AppError'
 import { assertOrgRole, assertOrgRoleHierarchy, getMembership } from '../../utils/organizationAccess'
 import { getEnrollment } from '../../utils/courseAccess'
 import { recordAuditEvent } from '../../services/auditLog.service'
-import { sendEmail } from '../../services/email.service'
+import { escapeEmailHtml, sendEmail } from '../../services/email.service'
 import { env } from '../../config/env'
 
 const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -75,6 +75,10 @@ function effectiveInvitationStatus(invitation: Pick<InvitationAttrs, 'status' | 
 
 function serializeInvitation(invitation: InvitationDocument) {
   const value = invitation.toJSON() as Record<string, unknown>
+  // The schema's `select: false` on `token` only governs query projection — a document that was
+  // just `.create()`d or explicitly `.select('+token')`ed still carries it in memory, and toJSON()
+  // doesn't know to drop it. Strip it here so the stored hash is never round-tripped to a client.
+  delete value.token
   return { ...value, status: effectiveInvitationStatus(invitation) }
 }
 
@@ -145,10 +149,13 @@ export const inviteMember = asyncHandler(async (req: Request, res: Response) => 
   })
 
   const inviteUrl = `${env.CLIENT_URL.replace(/\/$/, '')}/invitations/${encodeURIComponent(plainToken)}`
+  // org.name is a free-form, user-supplied string (createOrganizationSchema places no character
+  // restrictions on it) — escape it before embedding in HTML, same as sendWelcomeEmail already
+  // does for a user's display name, so an org name can't inject markup/links into the invite email.
   sendEmail({
     to: email,
     subject: `You're invited to join ${org.name} on Cognexa`,
-    html: `<p>You've been invited to join <strong>${org.name}</strong> on Cognexa.</p><p><a href="${inviteUrl}">${inviteUrl}</a></p>`,
+    html: `<p>You've been invited to join <strong>${escapeEmailHtml(org.name)}</strong> on Cognexa.</p><p><a href="${inviteUrl}">${inviteUrl}</a></p>`,
   }).catch(() => undefined)
 
   await recordAuditEvent({

@@ -6,7 +6,14 @@ packages:
 injectWorkspacePackages: true
 
 overrides:
-  brace-expansion: 5.0.8
+  # 5.0.8 was actually the GHSA-v6h2-p8h4-qcjw-vulnerable version (unbounded intermediate DoS,
+  # fixed >=5.0.9) — this override was pinning the codebase to the vulnerable release instead of
+  # away from it.
+  brace-expansion: '>=5.0.9'
+  # ip-address <=10.3.0 misclassifies IPv4-mapped/NAT64 IPv6 addresses and leading-zero octets,
+  # which can bypass SSRF/trust-boundary checks in consumers (express-rate-limit's IP handling,
+  # here) — pin past every patched advisory range.
+  ip-address: '>=10.3.1'
 
 allowBuilds:
   esbuild: true

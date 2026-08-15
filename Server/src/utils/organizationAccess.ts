@@ -51,4 +51,15 @@ export function assertOrgRoleHierarchy(
   if (check.targetCurrentRole !== undefined && orgRoleRank(check.targetCurrentRole) > actorRank) {
     throw new AppError(403, 'You cannot change or remove a member whose role is higher than your own')
   }
+
+  // Without this, the sole owner could demote or remove themselves (or another owner could demote
+  // the last one), leaving the organization with zero owners — no remaining member could invite,
+  // assign learning, or manage roles, since every mutation requires 'owner'/'admin'. A global admin
+  // still bypasses this (early return above) for legitimate platform-level cleanup.
+  if (check.targetCurrentRole === 'owner' && check.grantedRole !== 'owner') {
+    const ownerCount = org.members.filter((member) => member.role === 'owner').length
+    if (ownerCount <= 1) {
+      throw new AppError(409, 'An organization must have at least one owner')
+    }
+  }
 }

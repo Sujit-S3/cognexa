@@ -4,6 +4,7 @@ import rateLimit from 'express-rate-limit'
 import { RedisStore, type RedisReply } from 'rate-limit-redis'
 import { env } from '../config/env'
 import { redisClient } from '../config/redis'
+import { AppError } from '../utils/AppError'
 
 function distributedStore(scope: string): RedisStore | undefined {
   const client = redisClient
@@ -22,7 +23,12 @@ export const corsMiddleware = cors({
       callback(null, true)
       return
     }
-    callback(new Error(`Origin ${origin} is not allowed by CORS policy`))
+    // A plain Error here falls through the error handler's catch-all branch (500 + error-level
+    // log) — noisy given how routinely bots/scanners probe with arbitrary Origin headers. An
+    // AppError gets the same clean rejection but as a controlled 403 that isn't logged as an
+    // unhandled failure. CORS enforcement itself is unaffected either way — the browser blocks
+    // the response based on the missing Access-Control-Allow-Origin header, not the status code.
+    callback(new AppError(403, `Origin ${origin} is not allowed by CORS policy`))
   },
   credentials: true,
 })

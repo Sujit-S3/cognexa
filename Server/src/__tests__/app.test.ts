@@ -151,6 +151,39 @@ describe('app wiring', () => {
     expect(res.status).toBe(401)
   })
 
+  it('rejects a disallowed CORS origin with a controlled 403, not an unhandled 500', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/config`, {
+      headers: { origin: 'https://evil-attacker.example' },
+    })
+    expect(res.status).toBe(403)
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toContain('not allowed by CORS policy')
+    expect(res.headers.get('access-control-allow-origin')).toBeNull()
+  })
+
+  it('rejects an oversized request body with a controlled 413, not an unhandled 500', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: 'a@b.com', password: 'x'.repeat(2_000_000) }),
+    })
+    expect(res.status).toBe(413)
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toBe('Request payload is too large')
+  })
+
+  it('rejects malformed JSON with a controlled 400 that does not echo the raw body back', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{"email": not valid json',
+    })
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toBe('Request body is not valid JSON')
+    expect(body.error).not.toContain('not valid json')
+  })
+
   it('marks legacy unversioned routes as deprecated', async () => {
     const res = await fetch(`${baseUrl}/config`)
     expect(res.headers.get('deprecation')).toBe('true')

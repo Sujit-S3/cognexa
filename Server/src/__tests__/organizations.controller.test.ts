@@ -13,7 +13,11 @@ process.env.NODE_ENV = 'test'
 const emailMocks = vi.hoisted(() => ({
   sendEmail: vi.fn(async (_options: { to: string; subject: string; html: string }) => undefined),
 }))
-vi.mock('../services/email.service', () => ({ sendEmail: emailMocks.sendEmail }))
+vi.mock('../services/email.service', async () => {
+  const actual =
+    await vi.importActual<typeof import('../services/email.service')>('../services/email.service')
+  return { ...actual, sendEmail: emailMocks.sendEmail }
+})
 
 let User: typeof import('../models/user.model').User
 let Organization: typeof import('../models/organization.model').Organization
@@ -160,6 +164,43 @@ describe('invitation lifecycle', () => {
     const crypto = await import('crypto')
     expect(storedHash).toBe(crypto.createHash('sha256').update(plainToken).digest('hex'))
     expect(storedHash).not.toBe(plainToken)
+  })
+
+  it('never includes the token (plaintext or hash) in the invite API response body', async () => {
+    const owner = await createUser('instructor')
+    const org = await createOrgWithOwner(owner)
+    const invitee = await createUser('student')
+
+    const { body } = await invokeMiddleware(
+      organizations.inviteMember,
+      mockReq({
+        params: { orgId: org._id.toString() },
+        user: asReqUser(owner),
+        body: { email: invitee.email, role: 'member' },
+      })
+    )
+
+    expect(body).not.toHaveProperty('token')
+  })
+
+  it('escapes an HTML-injecting organization name before embedding it in the invite email', async () => {
+    const owner = await createUser('instructor')
+    const org = await createOrgWithOwner(owner, '<img src=x onerror=alert(1)>Acme & Co')
+    const invitee = await createUser('student')
+    emailMocks.sendEmail.mockClear()
+
+    await invokeMiddleware(
+      organizations.inviteMember,
+      mockReq({
+        params: { orgId: org._id.toString() },
+        user: asReqUser(owner),
+        body: { email: invitee.email, role: 'member' },
+      })
+    )
+
+    const { html } = emailMocks.sendEmail.mock.calls[0]![0] as { html: string }
+    expect(html).not.toContain('<img src=x onerror=alert(1)>')
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;Acme &amp; Co')
   })
 
   it('rejects an org admin inviting a new member as owner', async () => {

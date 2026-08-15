@@ -34,6 +34,23 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     return
   }
 
+  // express.json()'s body-size limit throws a raw-body PayloadTooLargeError (status 413, no
+  // AppError/ZodError wrapping) — without this branch it fell through to the generic 500 below,
+  // logging every oversized request (routine client/bot behavior, not a server failure) as an
+  // "Unhandled error" and returning the wrong status code.
+  if (err && typeof err === 'object' && (err as { type?: string }).type === 'entity.too.large') {
+    res.status(413).json({ error: 'Request payload is too large', requestId: req.id })
+    return
+  }
+
+  // Malformed JSON throws body-parser's SyntaxError, which also fell through to the generic 500
+  // below — and that branch's `message` also echoes a snippet of the raw request body back to the
+  // client outside production, an unnecessary reflection of attacker-controlled input.
+  if (err && typeof err === 'object' && (err as { type?: string }).type === 'entity.parse.failed') {
+    res.status(400).json({ error: 'Request body is not valid JSON', requestId: req.id })
+    return
+  }
+
   if (isDuplicateKeyError(err)) {
     res
       .status(409)

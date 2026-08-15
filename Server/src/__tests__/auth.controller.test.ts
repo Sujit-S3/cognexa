@@ -131,6 +131,16 @@ describe('login', () => {
     )
     expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 401, message: 'Invalid email or password' })
   })
+
+  it('rejects a login for a deactivated account with the same generic message, without issuing a session', async () => {
+    const user = await createActiveUser({ isActive: false })
+    const { next } = await invokeMiddleware(
+      auth.login,
+      mockReq({ body: { email: user.email, password: 'correct horse battery staple' } })
+    )
+    expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 401, message: 'Invalid email or password' })
+    expect(await Session.countDocuments({ user: user._id })).toBe(0)
+  })
 })
 
 describe('logout / logoutAll / listSessions / revokeSession', () => {

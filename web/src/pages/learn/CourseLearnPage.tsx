@@ -4,19 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import DOMPurify from 'dompurify'
 import { coursesApi, lecturesApi, type CourseView, type ModuleItemDetailView } from '../../services/api'
 import { renderSafeMarkdown } from '../../lib/safeMarkdown'
+import { isSafeContentUrl } from '../../lib/safeUrl'
 import { GlassCard, Badge, Button } from '../../design'
 import styles from './CourseLearnPage.module.css'
-
-// Instructor-authored url/content reaches this page directly from the API, not only through the
-// authoring editor — treat both as untrusted input rather than assuming the editor sanitized them.
-function isSafeContentUrl(url: string | undefined): url is string {
-  if (!url) return false
-  try {
-    return ['http:', 'https:'].includes(new URL(url, window.location.origin).protocol)
-  } catch {
-    return false
-  }
-}
 
 function itemIdOf(item: { _id?: string; id?: string }): string | undefined {
   return item._id ?? item.id

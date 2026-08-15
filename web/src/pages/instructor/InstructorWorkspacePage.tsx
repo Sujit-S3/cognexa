@@ -62,7 +62,10 @@ export function InstructorWorkspacePage() {
   const { courseId = '' } = useParams()
   const [tab, setTab] = useState<WorkspaceTab>('setup')
   const [workflowError, setWorkflowError] = useState<string[]>([])
-  const savingRef = useRef(false)
+  // Holds the in-flight save's promise (not just a boolean) so a caller that needs the result —
+  // like transition below — can await whatever save is already running instead of either
+  // silently no-oping or firing a second concurrent PUT with a stale draftVersion.
+  const savingRef = useRef<Promise<CourseWorkspace | null> | null>(null)
   const queryClient = useQueryClient()
   const store = useCourseBuilderStore()
 
@@ -83,21 +86,28 @@ export function InstructorWorkspacePage() {
   useEffect(() => () => useCourseBuilderStore.getState().reset(), [])
 
   const saveNow = useCallback(
-    async (course: CourseWorkspace, revision: number) => {
-      if (savingRef.current) return null
-      savingRef.current = true
-      store.markSaving()
-      try {
-        const saved = await instructorApi.saveWorkspace(courseId, course)
-        store.acceptSaved(saved, revision)
-        await queryClient.invalidateQueries({ queryKey: ['instructor', 'dashboard'] })
-        return saved
-      } catch (error) {
-        store.markError(error instanceof Error ? error.message : 'Autosave failed')
-        return null
-      } finally {
-        savingRef.current = false
-      }
+    (course: CourseWorkspace, revision: number): Promise<CourseWorkspace | null> => {
+      if (savingRef.current) return savingRef.current
+      const promise = (async () => {
+        store.markSaving()
+        try {
+          const saved = await instructorApi.saveWorkspace(courseId, course)
+          store.acceptSaved(saved, revision)
+          // Keep the course-editor cache in sync with what was just persisted — without this,
+          // reopening this course (or the grading page, which reads the same query key) within
+          // the default 5-minute staleTime served the pre-edit rubric/status.
+          queryClient.setQueryData(['instructor', 'course', courseId], saved)
+          await queryClient.invalidateQueries({ queryKey: ['instructor', 'dashboard'] })
+          return saved
+        } catch (error) {
+          store.markError(error instanceof Error ? error.message : 'Autosave failed')
+          return null
+        } finally {
+          savingRef.current = null
+        }
+      })()
+      savingRef.current = promise
+      return promise
     },
     [courseId, queryClient, store]
   )
@@ -121,15 +131,22 @@ export function InstructorWorkspacePage() {
   const transition = useMutation({
     mutationFn: async (status: CourseStatus) => {
       if (!store.course) throw new Error('Course is still loading')
-      const saved =
-        store.saveStatus === 'dirty' || store.saveStatus === 'error'
-          ? await instructorApi.saveWorkspace(courseId, store.course)
-          : store.course
+      // Routes through saveNow (not a direct saveWorkspace call) so this shares the same
+      // in-flight guard as the debounced autosave — calling saveWorkspace directly here used to
+      // let a status-change click race a pending autosave and both PUT concurrently, one of them
+      // failing on a stale draftVersion right after a successful publish/status change.
+      let saved = store.course
+      if (store.saveStatus === 'dirty' || store.saveStatus === 'error' || savingRef.current) {
+        const result = await saveNow(store.course, store.localRevision)
+        if (!result) throw new Error('Could not save your changes before updating the status')
+        saved = result
+      }
       return instructorApi.transitionStatus(courseId, status, saved.reviewNotes)
     },
     onSuccess: (saved) => {
       setWorkflowError([])
       store.initialize(saved)
+      queryClient.setQueryData(['instructor', 'course', courseId], saved)
       void queryClient.invalidateQueries({ queryKey: ['instructor', 'dashboard'] })
     },
     onError: (error) => {

@@ -4,6 +4,7 @@ import { LectureComments } from '../../models/lectureComments.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
 import { AppError } from '../../utils/AppError'
 import { assertCourseRole, canModerateCourse, getEnrollment } from '../../utils/courseAccess'
+import { isDuplicateKeyError } from '../../utils/mongoErrors'
 import { evaluateCourseCompletion } from '../../services/achievement.service'
 
 async function requireCourseMember(req: Request) {
@@ -84,11 +85,28 @@ export const createComment = asyncHandler(async (req: Request, res: Response) =>
   const { comment } = req.body
   if (!comment) throw new AppError(400, 'missing comment')
 
-  let lectureComments = await LectureComments.findOne({ moduleItemId })
-  if (!lectureComments) lectureComments = new LectureComments({ courseId, moduleItemId, comments: [] })
+  const newComment = { user: req.user!._id, comment }
+  // findOne-then-conditionally-create was a check-then-act race: two concurrent first-comments
+  // on the same lesson could both find nothing and both create a separate thread document,
+  // silently losing whichever comment landed on the document that didn't win. upsert + the
+  // unique index on moduleItemId (lectureComments.model.ts) make this atomic instead.
+  let lectureComments
+  try {
+    lectureComments = await LectureComments.findOneAndUpdate(
+      { moduleItemId },
+      { $setOnInsert: { courseId, moduleItemId }, $push: { comments: newComment } },
+      { upsert: true, new: true }
+    )
+  } catch (error) {
+    if (!isDuplicateKeyError(error)) throw error
+    // A concurrent request won the upsert race and created the thread first — push onto it.
+    lectureComments = await LectureComments.findOneAndUpdate(
+      { moduleItemId },
+      { $push: { comments: newComment } },
+      { new: true }
+    ).orFail(() => new AppError(404, 'Lecture comments not found'))
+  }
 
-  lectureComments.comments.push({ user: req.user!._id, comment } as never)
-  await lectureComments.save()
   await lectureComments.populate('comments.user', '_id name username photo')
 
   res.json(lectureComments)

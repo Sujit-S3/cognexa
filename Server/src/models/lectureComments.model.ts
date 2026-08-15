@@ -23,10 +23,13 @@ export interface LectureCommentsAttrs {
 
 const lectureCommentsSchema = new Schema<LectureCommentsAttrs>({
   courseId: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
-  moduleItemId: { type: Schema.Types.ObjectId, ref: 'CourseModuleItem', required: true, index: true },
+  moduleItemId: { type: Schema.Types.ObjectId, ref: 'CourseModuleItem', required: true },
   comments: [commentSchema],
 })
-lectureCommentsSchema.index({ courseId: 1, moduleItemId: 1 })
+// Unique (not just indexed) — there is exactly one comment thread per module item, and
+// lectures.controller.ts#createComment relies on this to make its upsert race-safe: two
+// concurrent first-comments on the same lesson must not create two separate documents.
+lectureCommentsSchema.index({ moduleItemId: 1 }, { unique: true })
 lectureCommentsSchema.set('toJSON', { transform: stripInternalTransform })
 
 export const LectureComments = mongoose.model('LectureComments', lectureCommentsSchema)

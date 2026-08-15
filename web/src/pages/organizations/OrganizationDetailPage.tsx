@@ -128,6 +128,11 @@ function MembersTab({ orgId, canManage }: { orgId: string; canManage: boolean })
 
   return (
     <GlassCard className={styles.panel}>
+      {(roleMutation.isError || removeMutation.isError) && (
+        <p role="alert" className={styles.muted} style={{ color: 'var(--nx-danger)', marginBottom: '12px' }}>
+          Could not update that member. Please try again.
+        </p>
+      )}
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -244,6 +249,16 @@ function InvitationsTab({ orgId, canManage }: { orgId: string; canManage: boolea
         </form>
       )}
 
+      {(inviteMutation.isError || revokeMutation.isError) && (
+        <p role="alert" className={styles.muted} style={{ color: 'var(--nx-danger)', marginBottom: '12px' }}>
+          {inviteMutation.error instanceof Error
+            ? inviteMutation.error.message
+            : revokeMutation.error instanceof Error
+              ? revokeMutation.error.message
+              : 'Could not complete that action. Please try again.'}
+        </p>
+      )}
+
       {invitationsQuery.data && invitationsQuery.data.length === 0 && (
         <p className={styles.muted}>No invitations yet.</p>
       )}
@@ -306,6 +321,7 @@ function InvitationsTab({ orgId, canManage }: { orgId: string; canManage: boolea
 function AssignLearningTab({ orgId, canManage }: { orgId: string; canManage: boolean }) {
   const [userId, setUserId] = useState('')
   const [courseId, setCourseId] = useState('')
+  const queryClient = useQueryClient()
 
   const orgQuery = useQuery({
     queryKey: ['organizations', orgId],
@@ -321,6 +337,9 @@ function AssignLearningTab({ orgId, canManage }: { orgId: string; canManage: boo
     onSuccess: () => {
       setUserId('')
       setCourseId('')
+      // Without this, the Progress tab kept serving its stale cached list — missing the
+      // just-assigned course — until the default staleTime elapsed.
+      void queryClient.invalidateQueries({ queryKey: ['organizations', orgId, 'progress'] })
     },
   })
 

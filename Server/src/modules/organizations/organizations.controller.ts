@@ -9,7 +9,7 @@ import { Course } from '../../models/course.model'
 import { User, type UserDocument } from '../../models/user.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
 import { AppError } from '../../utils/AppError'
-import { assertOrgRole, getMembership } from '../../utils/organizationAccess'
+import { assertOrgRole, assertOrgRoleHierarchy, getMembership } from '../../utils/organizationAccess'
 import { getEnrollment } from '../../utils/courseAccess'
 import { recordAuditEvent } from '../../services/auditLog.service'
 import { sendEmail } from '../../services/email.service'
@@ -124,6 +124,9 @@ export const inviteMember = asyncHandler(async (req: Request, res: Response) => 
   assertOrgRole(org, req.user!._id, req.user!.role, ['owner', 'admin'])
 
   const { email, role } = req.body as { email: string; role: 'owner' | 'admin' | 'member' }
+  // Without this, an 'admin' member (allowed to invite at all) could invite a brand-new user
+  // directly as 'owner', a de facto self-serve path to organization takeover.
+  assertOrgRoleHierarchy(org, req.user!._id, req.user!.role, { grantedRole: role })
 
   const existingUser = await User.findOne({ email })
   if (existingUser && getMembership(org, existingUser._id)) {
@@ -203,6 +206,14 @@ export const updateMemberRole = asyncHandler(async (req: Request, res: Response)
   const membership = getMembership(org, userId!)
   if (!membership) throw new AppError(404, 'This user is not a member of the organization')
 
+  // Without this, an 'admin' member could grant themselves (or anyone) 'owner', or demote a
+  // current 'owner' to 'member' — both closing off with assertOrgRole alone since 'owner' and
+  // 'admin' are equally privileged for *reaching* this endpoint.
+  assertOrgRoleHierarchy(org, req.user!._id, req.user!.role, {
+    grantedRole: role,
+    targetCurrentRole: membership.role,
+  })
+
   const previousRole = membership.role
   membership.role = role
   await org.save()
@@ -226,6 +237,9 @@ export const removeMember = asyncHandler(async (req: Request, res: Response) => 
   const { userId } = req.params
   const membership = getMembership(org, userId!)
   if (!membership) throw new AppError(404, 'This user is not a member of the organization')
+
+  // Without this, an 'admin' member could remove the 'owner' outright.
+  assertOrgRoleHierarchy(org, req.user!._id, req.user!.role, { targetCurrentRole: membership.role })
 
   org.members = org.members.filter((member) => member.user.toString() !== userId) as typeof org.members
   await org.save()
@@ -252,12 +266,13 @@ export const assignLearning = asyncHandler(async (req: Request, res: Response) =
   const targetUser = await User.findById(userId).orFail(() => new AppError(404, 'User not found'))
   const course = await Course.findById(courseId).orFail(() => new AppError(404, 'Course not found'))
   if (course.status !== 'published') throw new AppError(409, 'Only published courses can be assigned')
-  if (getEnrollment(course, targetUser._id)) {
-    throw new AppError(409, 'Member is already enrolled in this course')
-  }
 
-  course.enroll(targetUser._id, targetUser.role)
-  await course.save()
+  // Atomic conditional update — see courses.controller.ts#enroll for why enroll()+save() is
+  // unsafe against concurrent requests (e.g. a double-clicked "Assign" button).
+  const privilege = course.resolveEnrollmentPrivilege(targetUser._id, targetUser.role)
+  const updated = await Course.enrollAtomic(course._id, targetUser._id, privilege)
+  if (!updated) throw new AppError(409, 'Member is already enrolled in this course')
+
   targetUser.enrollments.push(course._id)
   await targetUser.save()
 
@@ -313,12 +328,16 @@ export const getOrganizationAuditLog = asyncHandler(async (req: Request, res: Re
   const entries = await AuditLog.find({ organization: org._id })
     .sort({ createdAt: -1 })
     .limit(200)
-    .populate<{ actor: UserDocument }>('actor', 'name email')
+    .populate<{ actor: UserDocument | null }>('actor', 'name email')
 
+  // populate() resolves to null (not a throw) if the actor's account was since self-deleted —
+  // see admin.controller.ts#getAuditLog for the same guard and rationale.
   res.json(
     entries.map((entry) => ({
       ...entry.toJSON(),
-      actor: { id: entry.actor._id.toString(), name: entry.actor.name, email: entry.actor.email },
+      actor: entry.actor
+        ? { id: entry.actor._id.toString(), name: entry.actor.name, email: entry.actor.email }
+        : { id: null, name: 'Deleted user', email: '' },
     }))
   )
 })

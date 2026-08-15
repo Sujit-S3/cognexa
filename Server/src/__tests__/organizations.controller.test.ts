@@ -162,6 +162,25 @@ describe('invitation lifecycle', () => {
     expect(storedHash).not.toBe(plainToken)
   })
 
+  it('rejects an org admin inviting a new member as owner', async () => {
+    const owner = await createUser('instructor')
+    const org = await createOrgWithOwner(owner)
+    const orgAdmin = await createUser('student')
+    org.members.push({ user: orgAdmin._id, role: 'admin', joinedAt: new Date() })
+    await org.save()
+
+    const { next } = await invokeMiddleware(
+      organizations.inviteMember,
+      mockReq({
+        params: { orgId: org._id.toString() },
+        user: asReqUser(orgAdmin),
+        body: { email: 'new-owner@example.com', role: 'owner' },
+      })
+    )
+    expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 403 })
+    expect(await Invitation.countDocuments({ organization: org._id })).toBe(0)
+  })
+
   it('404s for a token that does not match any stored invitation', async () => {
     const { next } = await invokeMiddleware(
       organizations.getInvitationByToken,
@@ -346,6 +365,97 @@ describe('member management', () => {
     const refreshedMember = await User.findById(member._id)
     expect(refreshedMember!.organizations.map((id) => id.toString())).not.toContain(org._id.toString())
   })
+
+  it('rejects an org admin promoting themselves (or anyone) to owner', async () => {
+    const owner = await createUser('instructor')
+    const org = await createOrgWithOwner(owner)
+    const orgAdmin = await createUser('student')
+    org.members.push({ user: orgAdmin._id, role: 'admin', joinedAt: new Date() })
+    await org.save()
+
+    const { next } = await invokeMiddleware(
+      organizations.updateMemberRole,
+      mockReq({
+        params: { orgId: org._id.toString(), userId: orgAdmin._id.toString() },
+        user: asReqUser(orgAdmin),
+        body: { role: 'owner' },
+      })
+    )
+    expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 403 })
+
+    const unchanged = await Organization.findById(org._id).orFail()
+    expect(unchanged.members.find((m) => m.user.toString() === orgAdmin._id.toString())!.role).toBe('admin')
+  })
+
+  it('rejects an org admin removing (or demoting) the owner', async () => {
+    const owner = await createUser('instructor')
+    const org = await createOrgWithOwner(owner)
+    const orgAdmin = await createUser('student')
+    org.members.push({ user: orgAdmin._id, role: 'admin', joinedAt: new Date() })
+    await org.save()
+
+    const removeAttempt = await invokeMiddleware(
+      organizations.removeMember,
+      mockReq({
+        params: { orgId: org._id.toString(), userId: owner._id.toString() },
+        user: asReqUser(orgAdmin),
+      })
+    )
+    expect(removeAttempt.next.mock.calls[0]![0]).toMatchObject({ statusCode: 403 })
+
+    const demoteAttempt = await invokeMiddleware(
+      organizations.updateMemberRole,
+      mockReq({
+        params: { orgId: org._id.toString(), userId: owner._id.toString() },
+        user: asReqUser(orgAdmin),
+        body: { role: 'member' },
+      })
+    )
+    expect(demoteAttempt.next.mock.calls[0]![0]).toMatchObject({ statusCode: 403 })
+
+    const unchanged = await Organization.findById(org._id).orFail()
+    expect(
+      unchanged.members.some((m) => m.user.toString() === owner._id.toString() && m.role === 'owner')
+    ).toBe(true)
+  })
+
+  it('allows the owner (rank above admin) to demote an admin, and allows an admin to promote a member to admin', async () => {
+    const owner = await createUser('instructor')
+    const org = await createOrgWithOwner(owner)
+    const orgAdmin = await createUser('instructor')
+    const member = await createUser('student')
+    org.members.push(
+      { user: orgAdmin._id, role: 'admin', joinedAt: new Date() },
+      { user: member._id, role: 'member', joinedAt: new Date() }
+    )
+    await org.save()
+
+    await invokeMiddleware(
+      organizations.updateMemberRole,
+      mockReq({
+        params: { orgId: org._id.toString(), userId: orgAdmin._id.toString() },
+        user: asReqUser(owner),
+        body: { role: 'member' },
+      })
+    )
+    const afterOwnerDemotesAdmin = await Organization.findById(org._id).orFail()
+    expect(
+      afterOwnerDemotesAdmin.members.find((m) => m.user.toString() === orgAdmin._id.toString())!.role
+    ).toBe('member')
+
+    await invokeMiddleware(
+      organizations.updateMemberRole,
+      mockReq({
+        params: { orgId: org._id.toString(), userId: member._id.toString() },
+        user: asReqUser(owner),
+        body: { role: 'admin' },
+      })
+    )
+    const afterPromotion = await Organization.findById(org._id).orFail()
+    expect(afterPromotion.members.find((m) => m.user.toString() === member._id.toString())!.role).toBe(
+      'admin'
+    )
+  })
 })
 
 describe('assignLearning', () => {
@@ -489,5 +599,28 @@ describe('getMembersProgress and getOrganizationAuditLog', () => {
     expect(body.every((entry) => entry.action.startsWith('organization.'))).toBe(true)
     expect(body.length).toBeGreaterThan(0)
     void otherOrg
+  })
+
+  it('renders a fallback actor instead of crashing when the actor account was since deleted', async () => {
+    const owner = await createUser('instructor')
+    const org = await createOrgWithOwner(owner)
+    const deletedActorId = new Types.ObjectId()
+
+    await AuditLog.create({
+      actor: deletedActorId,
+      action: 'organization.invite',
+      targetType: 'Invitation',
+      targetId: new Types.ObjectId(),
+      organization: org._id,
+    })
+
+    const { res } = await invokeMiddleware<Array<{ actor: { id: string | null; name: string } }>>(
+      organizations.getOrganizationAuditLog,
+      mockReq({ params: { orgId: org._id.toString() }, user: asReqUser(owner) })
+    )
+    const body = (res.json as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![0] as Array<{
+      actor: { id: string | null; name: string }
+    }>
+    expect(body[0]!.actor).toEqual({ id: null, name: 'Deleted user', email: '' })
   })
 })

@@ -86,6 +86,78 @@ describe('getAllCourses', () => {
     }>
     expect(body.some((c) => c.name === 'My draft')).toBe(true)
   })
+
+  it('strips lesson content/urls from a published course for an authenticated user with no enrollment', async () => {
+    const outsider = await createUser('student')
+    await createCourse({
+      status: 'published',
+      name: 'Paid course',
+      modules: [
+        {
+          title: 'Module 1',
+          order: 0,
+          moduleItems: [
+            {
+              title: 'Intro video',
+              type: 'youtube',
+              order: 0,
+              url: 'https://youtube.com/watch?v=secret',
+              isPreview: false,
+            },
+          ],
+        },
+      ],
+    })
+
+    const { res } = await invokeMiddleware(
+      courses.getAllCourses,
+      mockReq({ user: { _id: outsider._id, role: outsider.role } })
+    )
+    const body = (res.json as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![0] as Array<{
+      name: string
+      modules: Array<{ moduleItems: Array<Record<string, unknown>> }>
+    }>
+    const paidCourse = body.find((c) => c.name === 'Paid course')!
+    expect(paidCourse.modules[0]!.moduleItems[0]).not.toHaveProperty('url')
+    expect(paidCourse.modules[0]!.moduleItems[0]).toMatchObject({ title: 'Intro video', type: 'youtube' })
+  })
+
+  it('keeps full lesson content/urls for a user actually enrolled in the course', async () => {
+    const student = await createUser('student')
+    await createCourse({
+      status: 'published',
+      name: 'Enrolled course',
+      modules: [
+        {
+          title: 'Module 1',
+          order: 0,
+          moduleItems: [
+            {
+              title: 'Intro video',
+              type: 'youtube',
+              order: 0,
+              url: 'https://youtube.com/watch?v=secret',
+              isPreview: false,
+            },
+          ],
+        },
+      ],
+      enrollments: [{ user: student._id, enrolledAs: 'student', completedItems: [] }],
+    })
+
+    const { res } = await invokeMiddleware(
+      courses.getAllCourses,
+      mockReq({ user: { _id: student._id, role: student.role } })
+    )
+    const body = (res.json as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![0] as Array<{
+      name: string
+      modules: Array<{ moduleItems: Array<Record<string, unknown>> }>
+    }>
+    const enrolledCourse = body.find((c) => c.name === 'Enrolled course')!
+    expect(enrolledCourse.modules[0]!.moduleItems[0]).toMatchObject({
+      url: 'https://youtube.com/watch?v=secret',
+    })
+  })
 })
 
 describe('getOneCourse', () => {
@@ -271,6 +343,37 @@ describe('enroll / unEnroll / getEnrollments / updateEnrollment', () => {
     expect(refreshedStudent!.enrollments.map((id) => id.toString())).toContain(course._id.toString())
   })
 
+  it('never creates two enrollment entries for the same user under concurrent enroll requests', async () => {
+    const student = await createUser('student')
+    const course = await createCourse({ status: 'published' })
+    const buildReq = () =>
+      mockReq({
+        params: { courseId: course._id.toString() },
+        user: { _id: student._id, role: student.role },
+        body: {},
+      })
+
+    // Two "concurrent" requests racing the same read-check-write path — before the atomic fix,
+    // both could read the course before either wrote, and both would then succeed.
+    const results = await Promise.all([
+      invokeMiddleware(courses.enroll, buildReq()),
+      invokeMiddleware(courses.enroll, buildReq()),
+    ])
+
+    const statusCodes = results.map(
+      ({ next }) => next.mock.calls[0]?.[0] as { statusCode?: number } | undefined
+    )
+    const failures = statusCodes.filter(Boolean)
+    expect(failures).toHaveLength(1)
+    expect(failures[0]).toMatchObject({ statusCode: 409 })
+
+    const updated = await Course.findById(course._id)
+    const matchingEnrollments = updated!.enrollments.filter(
+      (e) => e.user.toString() === student._id.toString()
+    )
+    expect(matchingEnrollments).toHaveLength(1)
+  })
+
   it('rejects self-enrollment in an unpublished course', async () => {
     const student = await createUser('student')
     const course = await createCourse({ status: 'draft' })
@@ -362,6 +465,21 @@ describe('enroll / unEnroll / getEnrollments / updateEnrollment', () => {
     expect(updated!.enrollments).toHaveLength(0)
     const refreshedStudent = await User.findById(student._id)
     expect(refreshedStudent!.enrollments).toHaveLength(0)
+  })
+
+  it('unEnroll rejects a user who is not enrolled with a structured 409, not a generic 500', async () => {
+    const student = await createUser('student')
+    const course = await createCourse({ status: 'published' })
+
+    const { next } = await invokeMiddleware(
+      courses.unEnroll,
+      mockReq({
+        params: { courseId: course._id.toString() },
+        user: { _id: student._id, role: student.role },
+        body: {},
+      })
+    )
+    expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 409 })
   })
 
   it('getEnrollments is restricted to course managers', async () => {

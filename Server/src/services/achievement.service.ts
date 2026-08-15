@@ -55,9 +55,21 @@ export async function evaluateCourseCompletion(
     if (!allPassed) return
   }
 
-  const percentages = submissions
-    .filter((submission) => (submission.maxScore ?? 0) > 0)
-    .map((submission) => ((submission.score ?? 0) / (submission.maxScore ?? 1)) * 100)
+  // One percent per ASSESSMENT (its best graded attempt), not one per submission — an assessment
+  // that allows retries (submissionLimit > 1) can have multiple graded attempts for the same
+  // learner, and averaging every attempt (including earlier failed ones) understated the
+  // certificate's score/grade relative to what the learner actually demonstrated.
+  const bestPercentByAssessment = new Map<string, number>()
+  for (const submission of submissions) {
+    if ((submission.maxScore ?? 0) <= 0) continue
+    const key = submission.courseAssessmentId.toString()
+    const percent = ((submission.score ?? 0) / (submission.maxScore ?? 1)) * 100
+    const existingBest = bestPercentByAssessment.get(key)
+    if (existingBest === undefined || percent > existingBest) {
+      bestPercentByAssessment.set(key, percent)
+    }
+  }
+  const percentages = Array.from(bestPercentByAssessment.values())
   const averagePercent = percentages.length
     ? Math.round(percentages.reduce((sum, value) => sum + value, 0) / percentages.length)
     : 100

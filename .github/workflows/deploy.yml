@@ -82,9 +82,6 @@ jobs:
             "${RUNNER_TEMP}/k8s/base/configmap.yaml"
           kubectl kustomize . > "${RUNNER_TEMP}/release.yaml"
           kubectl apply --dry-run=client --validate=false -f "${RUNNER_TEMP}/release.yaml"
-      - name: Apply digest-pinned release
-        run: |
-          kubectl apply -f "${RUNNER_TEMP}/release.yaml"
       - name: Run additive database migrations
         env:
           SERVER_DIGEST: ${{ inputs.server_digest }}
@@ -93,6 +90,9 @@ jobs:
           sed "s|SERVER_IMAGE|ghcr.io/${{ github.repository_owner }}/cognexa-server@${SERVER_DIGEST}|" \
             deploy/k8s/jobs/migration-job.yaml | kubectl apply -f -
           kubectl wait --for=condition=complete job/cognexa-migrate -n cognexa --timeout=5m
+      - name: Apply digest-pinned release
+        run: |
+          kubectl apply -f "${RUNNER_TEMP}/release.yaml"
       - name: Complete zero-downtime rollout
         run: |
           kubectl rollout status deployment/cognexa-server -n cognexa --timeout=8m

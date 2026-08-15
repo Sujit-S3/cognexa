@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod/v3'
 import { useMutation } from '@tanstack/react-query'
-import { useNavigate, Link } from 'react-router-dom'
+import { useLocation, useNavigate, Link, type Location } from 'react-router-dom'
 import { authApi } from '../../services/api'
 import { useAuthStore } from '../../stores/authStore'
 import { AuthLayout } from './AuthLayout'
@@ -18,7 +18,12 @@ type FormValues = z.infer<typeof schema>
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const login = useAuthStore((s) => s.login)
+  // RequireAuth (and InvitationAcceptPage) redirect here with state:{from: location} when an
+  // unauthenticated visit is bounced off a protected route — honor it so signing in returns the
+  // user to what they were trying to reach instead of always dropping them on a role default.
+  const from = (location.state as { from?: Location } | null)?.from
 
   const {
     register,
@@ -30,6 +35,10 @@ export function LoginPage() {
     mutationFn: (values: FormValues) => authApi.login(values),
     onSuccess: (data) => {
       login(data.user, data.token)
+      if (from) {
+        navigate(`${from.pathname}${from.search}${from.hash}`, { replace: true })
+        return
+      }
       const role = data.user.role
       navigate(role === 'admin' || role === 'instructor' ? '/instructor' : '/dashboard', {
         replace: true,

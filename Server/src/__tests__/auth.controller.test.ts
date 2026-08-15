@@ -9,6 +9,7 @@ process.env.NODE_ENV = 'test'
 
 let User: typeof import('../models/user.model').User
 let Session: typeof import('../models/session.model').Session
+let Course: typeof import('../models/course.model').Course
 let auth: typeof import('../modules/auth/auth.controller')
 let invokeMiddleware: typeof import('./testHttp').invokeMiddleware
 let mockReq: typeof import('./testHttp').mockReq
@@ -19,6 +20,7 @@ let clearTestDb: typeof import('./testDb').clearTestDb
 beforeAll(async () => {
   ;({ User } = await import('../models/user.model'))
   ;({ Session } = await import('../models/session.model'))
+  ;({ Course } = await import('../models/course.model'))
   auth = await import('../modules/auth/auth.controller')
   ;({ invokeMiddleware, mockReq } = await import('./testHttp'))
   ;({ connectTestDb, disconnectTestDb, clearTestDb } = await import('./testDb'))
@@ -326,5 +328,21 @@ describe('profile', () => {
     expect(res.json).toHaveBeenCalledWith({ message: 'Account deleted' })
     expect(await User.findById(user._id)).toBeNull()
     expect(await Session.countDocuments({ user: user._id })).toBe(0)
+  })
+
+  it('deleteMe pulls the deleted user out of every course they were still enrolled in', async () => {
+    const user = await createActiveUser()
+    const course = await Course.create({
+      name: 'Systems Thinking',
+      createdBy: new Types.ObjectId(),
+      status: 'published',
+      modules: [],
+      enrollments: [{ user: user._id, enrolledAs: 'student', completedItems: [] }],
+    })
+
+    await invokeMiddleware(auth.deleteMe, mockReq({ user }))
+
+    const updated = await Course.findById(course._id).orFail()
+    expect(updated.enrollments).toHaveLength(0)
   })
 })

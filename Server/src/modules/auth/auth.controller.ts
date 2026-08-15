@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { Request, Response } from 'express'
 import { User } from '../../models/user.model'
 import { Session } from '../../models/session.model'
+import { Course } from '../../models/course.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
 import { AppError } from '../../utils/AppError'
 import { sendPasswordResetEmail, sendWelcomeEmail } from '../../services/email.service'
@@ -153,6 +154,14 @@ export const updateMe = asyncHandler(async (req: Request, res: Response) => {
 export const deleteMe = asyncHandler(async (req: Request, res: Response) => {
   // .remove() was deprecated/removed upstream in modern Mongoose — use deleteOne() on the document.
   await Session.deleteMany({ user: req.user!._id })
+  // Mirrors courses.controller.ts#deleteCourse's reverse-direction cleanup: a course's live
+  // enrollment roster must not keep a dangling reference to a deleted account (unlike Achievement/
+  // AuditLog historical records, which are deliberately left intact — see certificates.controller.ts
+  // and admin.controller.ts#getAuditLog).
+  await Course.updateMany(
+    { 'enrollments.user': req.user!._id },
+    { $pull: { enrollments: { user: req.user!._id } } }
+  )
   await req.user!.deleteOne()
   clearRefreshCookie(res)
   res.json({ message: 'Account deleted' })

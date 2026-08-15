@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events'
 import { vi } from 'vitest'
 import type { NextFunction, Request, Response } from 'express'
 
@@ -17,7 +18,11 @@ export function invokeMiddleware<T = unknown>(
   return new Promise((resolve) => {
     let body: T
     const next = vi.fn((): void => resolve({ req, res, next, body }))
-    const res = {
+    // Extends EventEmitter (not a plain object) so a real Node Writable-stream consumer piped
+    // into this mock — e.g. certificates.controller.ts's PDFDocument.pipe(res) — can call the
+    // .on('drain'/'close'/'error', ...) listeners real stream.pipe() registers, instead of
+    // throwing "res.on is not a function".
+    const res = Object.assign(new EventEmitter(), {
       status: vi.fn(function status(this: Response): Response {
         return this
       }),
@@ -29,6 +34,7 @@ export function invokeMiddleware<T = unknown>(
         body = payload as T
         resolve({ req, res, next, body })
       }),
+      write: vi.fn((): boolean => true),
       end: vi.fn((): void => {
         resolve({ req, res, next, body })
       }),
@@ -38,7 +44,7 @@ export function invokeMiddleware<T = unknown>(
       append: vi.fn(function append(this: Response): Response {
         return this
       }),
-    } as unknown as Response
+    }) as unknown as Response
 
     middleware(req, res, next as unknown as NextFunction)
   })

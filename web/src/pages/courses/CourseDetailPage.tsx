@@ -27,6 +27,9 @@ export function CourseDetailPage() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['course', courseId] }),
       queryClient.invalidateQueries({ queryKey: ['courses'] }),
+      // Enrolling/unenrolling changes which deadlines apply to this learner — without this, the
+      // dashboard's "Upcoming deadlines" list stayed stale for up to the default staleTime.
+      queryClient.invalidateQueries({ queryKey: ['deadlines'] }),
     ])
   }
 

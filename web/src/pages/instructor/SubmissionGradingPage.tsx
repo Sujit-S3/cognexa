@@ -8,6 +8,7 @@ import {
   type RubricScoreView,
   type SubmissionView,
 } from '../../services/api'
+import { isSafeContentUrl } from '../../lib/safeUrl'
 import { GlassCard, Badge, Button } from '../../design'
 import styles from './SubmissionGradingPage.module.css'
 
@@ -166,11 +167,15 @@ function GradingPanel({
       {(submission.attachments ?? []).length > 0 && (
         <div className={styles.responseBlock}>
           <h3>Attachments</h3>
-          {submission.attachments!.map((asset) => (
-            <a key={asset.publicId ?? asset.url} href={asset.url} target="_blank" rel="noopener noreferrer">
-              {asset.originalName ?? asset.url}
-            </a>
-          ))}
+          {submission.attachments!.map((asset) =>
+            isSafeContentUrl(asset.url) ? (
+              <a key={asset.publicId ?? asset.url} href={asset.url} target="_blank" rel="noopener noreferrer">
+                {asset.originalName ?? asset.url}
+              </a>
+            ) : (
+              <span key={asset.publicId ?? asset.url}>{asset.originalName ?? 'Attachment unavailable'}</span>
+            )
+          )}
         </div>
       )}
 

@@ -144,15 +144,22 @@ export function AssignmentSubmissionPage() {
               You have used all allowed attempts for this assignment.
             </p>
           ) : (
-            <Button
-              magnetic
-              glow
-              disabled={startMutation.isPending}
-              onClick={() => startMutation.mutate()}
-              style={{ marginTop: '20px' }}
-            >
-              {startMutation.isPending ? 'Starting...' : 'Start assignment'}
-            </Button>
+            <>
+              <Button
+                magnetic
+                glow
+                disabled={startMutation.isPending}
+                onClick={() => startMutation.mutate()}
+                style={{ marginTop: '20px' }}
+              >
+                {startMutation.isPending ? 'Starting...' : 'Start assignment'}
+              </Button>
+              {startMutation.isError && (
+                <p role="alert" style={{ color: 'var(--nx-danger)', marginTop: '10px' }}>
+                  Could not start the assignment. Please try again.
+                </p>
+              )}
+            </>
           )
         ) : editable ? (
           <form className={styles.form} onSubmit={handleSubmit((values) => submitMutation.mutate(values))}>

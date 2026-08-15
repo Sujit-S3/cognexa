@@ -220,7 +220,10 @@ export const getDashboard = asyncHandler(async (req: Request, res: Response) => 
   )
   const students = courses.flatMap((course) =>
     course.enrollments
-      .filter((entry) => entry.enrolledAs === 'student')
+      // entry.user populates to null when that account was since self-deleted (deleteMe removes
+      // the User but doesn't $pull the stale enrollment) — skip it rather than crash the whole
+      // dashboard on one orphaned enrollment.
+      .filter((entry) => entry.enrolledAs === 'student' && entry.user != null)
       .map((entry) => {
         const user = entry.user as unknown as {
           _id: Types.ObjectId
@@ -439,11 +442,31 @@ export const gradeSubmission = asyncHandler(async (req: Request, res: Response) 
   const assessment = course.assessments.id(submission.courseAssessmentId)
   const maxScore = assessment?.rubric.reduce((sum, criterion) => sum + criterion.points, 0)
 
-  if (req.body.rubricScores) submission.rubricScores = req.body.rubricScores
+  if (req.body.rubricScores) {
+    if (assessment) {
+      const criteriaById = new Map(
+        assessment.rubric.map((criterion) => [criterion._id.toString(), criterion])
+      )
+      for (const entry of req.body.rubricScores as Array<{ criterionId: string; points: number }>) {
+        const criterion = criteriaById.get(entry.criterionId)
+        if (criterion && entry.points > criterion.points) {
+          throw new AppError(400, `Score for "${criterion.title}" cannot exceed ${criterion.points} points`)
+        }
+      }
+    }
+    submission.rubricScores = req.body.rubricScores
+  }
   const score: number =
     req.body.score !== undefined
       ? req.body.score
       : submission.rubricScores.reduce((sum, entry) => sum + entry.points, 0)
+
+  // Neither the direct `score` override nor a rubricScores total is otherwise bounded by the
+  // assessment's own maxScore — an instructor-submitted grade could exceed 100%, which then feeds
+  // achievement.service.ts's certificate percent computation with a nonsensical value.
+  if (maxScore !== undefined && score > maxScore) {
+    throw new AppError(400, `Score cannot exceed the assessment's maximum of ${maxScore} points`)
+  }
 
   submission.score = score
   submission.maxScore = maxScore

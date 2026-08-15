@@ -121,6 +121,54 @@ describe('evaluateCourseCompletion', () => {
     expect(notifications).toHaveLength(1)
   })
 
+  it('scores the certificate from the best graded attempt per assessment, not an average of every attempt', async () => {
+    const { AssessmentSubmission } = await import('../models/assessmentSubmission.model')
+    const student = new Types.ObjectId()
+    const course = await createCourse(student)
+    course.modules[0]!.moduleItems.forEach((item) => {
+      course.enrollments[0]!.completedItems.push(item._id)
+    })
+    await course.save()
+
+    // Attempt 1: failed (20%). Attempt 2: passed (95%). Only the best attempt should count
+    // toward the certificate's score/grade — averaging both would understate it (58% -> 'F')
+    // even though the learner's actual (and only passing) result was 95% (-> 'A').
+    await AssessmentSubmission.create({
+      course: course._id,
+      courseAssessmentId: course.assessments[0]!._id,
+      kind: 'quiz',
+      student,
+      status: 'graded',
+      attemptNumber: 1,
+      score: 20,
+      maxScore: 100,
+      passed: false,
+      startedAt: new Date(),
+      submittedAt: new Date(),
+      assessmentTitleSnapshot: 'Checkpoint',
+    })
+    await AssessmentSubmission.create({
+      course: course._id,
+      courseAssessmentId: course.assessments[0]!._id,
+      kind: 'quiz',
+      student,
+      status: 'graded',
+      attemptNumber: 2,
+      score: 95,
+      maxScore: 100,
+      passed: true,
+      startedAt: new Date(),
+      submittedAt: new Date(),
+      assessmentTitleSnapshot: 'Checkpoint',
+    })
+
+    await evaluateCourseCompletion(course, student)
+
+    const achievement = await Achievement.findOne({ course: course._id, user: student }).orFail()
+    expect(achievement.score).toBe('95%')
+    expect(achievement.gradeLetter).toBe('A')
+  })
+
   it('is idempotent — re-evaluating an already-achieved course does not create a second record', async () => {
     const { AssessmentSubmission } = await import('../models/assessmentSubmission.model')
     const student = new Types.ObjectId()

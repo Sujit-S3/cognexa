@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { Types } from 'mongoose'
 import { User, type UserDocument } from '../../models/user.model'
 import { Session } from '../../models/session.model'
 import { AuditLog } from '../../models/auditLog.model'
@@ -48,7 +49,10 @@ export const listUsers = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateUserStatus = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params
-  if (userId === req.user!._id.toString()) {
+  // Compare as ObjectIds, not raw strings — userIdParamsSchema accepts mixed-case hex, and a
+  // case-sensitive string comparison here let an admin bypass this guard by uppercasing their
+  // own id, even though User.findById below resolves it to the same document either way.
+  if (new Types.ObjectId(userId).equals(req.user!._id)) {
     throw new AppError(400, 'You cannot change your own account status')
   }
 
@@ -74,7 +78,8 @@ export const updateUserStatus = asyncHandler(async (req: Request, res: Response)
 
 export const updateUserRole = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params
-  if (userId === req.user!._id.toString()) {
+  // See the same case-sensitivity note in updateUserStatus above.
+  if (new Types.ObjectId(userId).equals(req.user!._id)) {
     throw new AppError(400, 'You cannot change your own account role')
   }
 
@@ -113,15 +118,20 @@ export const getAuditLog = asyncHandler(async (req: Request, res: Response) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate<{ actor: UserDocument }>('actor', 'name email'),
+      .populate<{ actor: UserDocument | null }>('actor', 'name email'),
     AuditLog.countDocuments(filter),
   ])
 
   // actor is populated with a full User document, whose toJSON transform (unlike AuditLog's)
-  // does not map _id -> id — rebuild it explicitly so the response is consistent.
+  // does not map _id -> id — rebuild it explicitly so the response is consistent. populate()
+  // resolves to null (not a throw) when the referenced user was since deleted — the account
+  // deletion flow (auth.controller.ts#deleteMe) has no reason to remove that user's historical
+  // audit trail, so old entries must keep rendering instead of 500ing the whole listing.
   const view = entries.map((entry) => ({
     ...entry.toJSON(),
-    actor: { id: entry.actor._id.toString(), name: entry.actor.name, email: entry.actor.email },
+    actor: entry.actor
+      ? { id: entry.actor._id.toString(), name: entry.actor.name, email: entry.actor.email }
+      : { id: null, name: 'Deleted user', email: '' },
   }))
 
   res.json({ entries: view, total, page, limit })

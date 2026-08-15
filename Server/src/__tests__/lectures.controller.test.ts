@@ -8,6 +8,7 @@ process.env.SECRET_KEY ??= 'test-secret-key-that-is-at-least-32-characters-long'
 process.env.NODE_ENV = 'test'
 
 let Course: typeof import('../models/course.model').Course
+let LectureComments: typeof import('../models/lectureComments.model').LectureComments
 let lectures: typeof import('../modules/lectures/lectures.controller')
 let invokeMiddleware: typeof import('./testHttp').invokeMiddleware
 let mockReq: typeof import('./testHttp').mockReq
@@ -17,6 +18,7 @@ let clearTestDb: typeof import('./testDb').clearTestDb
 
 beforeAll(async () => {
   ;({ Course } = await import('../models/course.model'))
+  ;({ LectureComments } = await import('../models/lectureComments.model'))
   lectures = await import('../modules/lectures/lectures.controller')
   ;({ invokeMiddleware, mockReq } = await import('./testHttp'))
   ;({ connectTestDb, disconnectTestDb, clearTestDb } = await import('./testDb'))
@@ -175,5 +177,41 @@ describe('POST /courses/:courseId/lectures/:moduleItemId/complete', () => {
     )
 
     expect(await Achievement.countDocuments({ course: course._id, user: student._id })).toBe(1)
+  })
+})
+
+describe('POST /courses/:courseId/lectures/:moduleItemId/comments', () => {
+  it('never creates two comment threads for the same lesson under concurrent first-comments', async () => {
+    const studentA = fakeUser()
+    const studentB = fakeUser()
+    const course = await createCourseWithEnrollment(studentA._id)
+    course.enrollments.push({ user: studentB._id, enrolledAs: 'student', completedItems: [] } as never)
+    await course.save()
+    const itemId = course.modules[0]!.moduleItems[0]!._id.toString()
+
+    // Two "concurrent" first-comments on the same lesson — before the atomic upsert fix, both
+    // could find no existing thread and both create a separate document, silently losing one.
+    await Promise.all([
+      invokeMiddleware(
+        lectures.createComment,
+        mockReq({
+          params: { courseId: course._id.toString(), moduleItemId: itemId },
+          user: studentA,
+          body: { comment: 'First!' },
+        })
+      ),
+      invokeMiddleware(
+        lectures.createComment,
+        mockReq({
+          params: { courseId: course._id.toString(), moduleItemId: itemId },
+          user: studentB,
+          body: { comment: 'Also first!' },
+        })
+      ),
+    ])
+
+    const threads = await LectureComments.find({ moduleItemId: itemId })
+    expect(threads).toHaveLength(1)
+    expect(threads[0]!.comments).toHaveLength(2)
   })
 })

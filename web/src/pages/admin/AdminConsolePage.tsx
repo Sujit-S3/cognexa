@@ -138,6 +138,16 @@ function UsersTab() {
         <span>{total} total</span>
       </div>
 
+      {(statusMutation.isError || roleMutation.isError) && (
+        <p role="alert" className={styles.muted} style={{ color: 'var(--nx-danger)', marginBottom: '12px' }}>
+          {statusMutation.error instanceof Error
+            ? statusMutation.error.message
+            : roleMutation.error instanceof Error
+              ? roleMutation.error.message
+              : 'Could not update that user. Please try again.'}
+        </p>
+      )}
+
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -259,6 +269,11 @@ function CoursesTab() {
       <div className={styles.panelToolbar}>
         <span>{dashboard.data.courses.length} courses across the platform</span>
       </div>
+      {transition.isError && (
+        <p role="alert" className={styles.muted} style={{ color: 'var(--nx-danger)', marginBottom: '12px' }}>
+          Could not update that course's status. Please try again.
+        </p>
+      )}
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>

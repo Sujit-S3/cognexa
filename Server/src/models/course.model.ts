@@ -247,6 +247,7 @@ export interface CourseMethods {
   getVideos(): Array<CourseVideo | null>
   enroll(userId: Types.ObjectId | string, role: string): CourseDocument
   unEnroll(userId: Types.ObjectId | string): CourseDocument
+  resolveEnrollmentPrivilege(userId: Types.ObjectId | string, role: string): EnrollmentRole
   getInstructors(): EnrollmentAttrs[]
   getModuleItem(itemId: Types.ObjectId | string): ModuleItemDocument | null
   computeProgress(userId: Types.ObjectId | string): CourseProgress | null
@@ -261,6 +262,15 @@ export interface CourseModelType extends Model<CourseAttrs, unknown, CourseMetho
   formatCalendar(
     deadlines: Array<{ deadline: Date; [key: string]: unknown }>
   ): Record<string, Record<string, Record<string, unknown[]>>>
+  // Atomic enroll: the filter's 'enrollments.user': { $ne: userId } makes the whole read-guard-
+  // write a single conditional update, closing the race where two concurrent enroll requests
+  // for the same user both pass a separate in-memory duplicate check and both succeed. Resolves
+  // to null (not a throw) if the user was already enrolled, so the caller can 409 cleanly.
+  enrollAtomic(
+    courseId: Types.ObjectId | string,
+    userId: Types.ObjectId | string,
+    privilege: EnrollmentRole
+  ): Promise<CourseDocument | null>
 }
 
 const courseSchema = new Schema<CourseAttrs, CourseModelType, CourseMethods>(
@@ -367,6 +377,7 @@ courseSchema.statics.getCoursesWithPrivilege = async function (
         questions?: Array<Record<string, unknown>>
         visibility?: string
       }>
+      modules?: Array<{ moduleItems?: Array<Record<string, unknown>> }>
       status: string
     }
 
@@ -399,10 +410,34 @@ courseSchema.statics.getCoursesWithPrivilege = async function (
           ...assessment,
           questionCount: questions?.length ?? 0,
         }))
+
+      if (!privilege) {
+        // Not enrolled and not the creator — being authenticated must not grant any more access
+        // to gated curriculum content than an anonymous visitor gets. Strip full lesson content
+        // the same way courses.controller.ts#serializePublicCourse does for anonymous reads;
+        // without this, every published course's video/PDF URLs and full lesson bodies were
+        // returned verbatim to any logged-in user browsing the course list, bypassing enrollment.
+        result.modules = coursePOJO.modules?.map((courseModule) => ({
+          ...courseModule,
+          moduleItems: courseModule.moduleItems?.map(
+            ({ url: _url, content: _content, asset: _asset, ...item }) => item
+          ),
+        }))
+      }
     }
 
     return result
   })
+}
+
+courseSchema.methods.resolveEnrollmentPrivilege = function (
+  this: CourseDocument,
+  userId: Types.ObjectId | string,
+  role: string
+): EnrollmentRole {
+  if (role === 'admin') return 'admin'
+  if (this.createdBy && this.createdBy.toString() === userId.toString()) return 'instructor'
+  return 'student'
 }
 
 courseSchema.methods.enroll = function (this: CourseDocument, userId: Types.ObjectId | string, role: string) {
@@ -410,12 +445,25 @@ courseSchema.methods.enroll = function (this: CourseDocument, userId: Types.Obje
     throw new Error('already enrolled')
   }
 
-  let privilege: EnrollmentRole = 'student'
-  if (role === 'admin') privilege = 'admin'
-  if (this.createdBy && this.createdBy.toString() === userId.toString()) privilege = 'instructor'
-
+  const privilege = this.resolveEnrollmentPrivilege(userId, role)
   this.enrollments.push({ user: new Types.ObjectId(userId), enrolledAs: privilege } as EnrollmentAttrs)
   return this
+}
+
+// See the CourseModelType interface for why this exists alongside the enroll() instance method:
+// enroll() is a convenient synchronous fixture builder for tests and non-concurrent call sites,
+// while enrollAtomic is what any endpoint reachable by concurrent live HTTP requests must use.
+courseSchema.statics.enrollAtomic = async function (
+  this: CourseModelType,
+  courseId: Types.ObjectId | string,
+  userId: Types.ObjectId | string,
+  privilege: EnrollmentRole
+) {
+  return this.findOneAndUpdate(
+    { _id: courseId, 'enrollments.user': { $ne: userId } },
+    { $push: { enrollments: { user: new Types.ObjectId(userId), enrolledAs: privilege } } },
+    { new: true }
+  )
 }
 
 courseSchema.methods.unEnroll = function (this: CourseDocument, userId: Types.ObjectId | string) {

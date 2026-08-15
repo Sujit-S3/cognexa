@@ -6,9 +6,11 @@ process.env.SECRET_KEY ??= 'test-secret-key-that-is-at-least-32-characters-long'
 process.env.NODE_ENV = 'test'
 
 let Course: typeof import('../models/course.model').Course
+let User: typeof import('../models/user.model').User
 let AssessmentSubmission: typeof import('../models/assessmentSubmission.model').AssessmentSubmission
 let getSubmissionsQueue: typeof import('../modules/instructor/instructor.controller').getSubmissionsQueue
 let gradeSubmission: typeof import('../modules/instructor/instructor.controller').gradeSubmission
+let getDashboard: typeof import('../modules/instructor/instructor.controller').getDashboard
 let invokeMiddleware: typeof import('./testHttp').invokeMiddleware
 let mockReq: typeof import('./testHttp').mockReq
 let connectTestDb: typeof import('./testDb').connectTestDb
@@ -17,8 +19,10 @@ let clearTestDb: typeof import('./testDb').clearTestDb
 
 beforeAll(async () => {
   ;({ Course } = await import('../models/course.model'))
+  ;({ User } = await import('../models/user.model'))
   ;({ AssessmentSubmission } = await import('../models/assessmentSubmission.model'))
-  ;({ getSubmissionsQueue, gradeSubmission } = await import('../modules/instructor/instructor.controller'))
+  ;({ getSubmissionsQueue, gradeSubmission, getDashboard } =
+    await import('../modules/instructor/instructor.controller'))
   ;({ invokeMiddleware, mockReq } = await import('./testHttp'))
   ;({ connectTestDb, disconnectTestDb, clearTestDb } = await import('./testDb'))
   await connectTestDb()
@@ -180,5 +184,107 @@ describe('instructor submission grading', () => {
       })
     )
     expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 403 })
+  })
+
+  it('rejects a direct score override that exceeds the assessment maxScore', async () => {
+    const instructor = fakeUser()
+    const student = fakeUser('student')
+    const course = await createCourseWithAssignment(instructor._id, student._id)
+    const assignment = course.assessments[0]! // rubric totals 10 points
+
+    const submission = await AssessmentSubmission.create({
+      course: course._id,
+      courseAssessmentId: assignment._id,
+      kind: 'assignment',
+      student: student._id,
+      status: 'submitted',
+      attemptNumber: 1,
+      assessmentTitleSnapshot: assignment.title,
+      startedAt: new Date(),
+      submittedAt: new Date(),
+    })
+
+    const { next } = await invokeMiddleware(
+      gradeSubmission,
+      mockReq({
+        params: { courseId: course._id.toString(), submissionId: submission._id.toString() },
+        user: instructor,
+        body: { score: 500 },
+      })
+    )
+    expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 400 })
+    expect((await AssessmentSubmission.findById(submission._id))!.status).toBe('submitted')
+  })
+
+  it('rejects a rubric entry that exceeds its own criterion maximum', async () => {
+    const instructor = fakeUser()
+    const student = fakeUser('student')
+    const course = await createCourseWithAssignment(instructor._id, student._id)
+    const assignment = course.assessments[0]!
+    const criteria = assignment.rubric // Clarity: 6, Depth: 4
+
+    const submission = await AssessmentSubmission.create({
+      course: course._id,
+      courseAssessmentId: assignment._id,
+      kind: 'assignment',
+      student: student._id,
+      status: 'submitted',
+      attemptNumber: 1,
+      assessmentTitleSnapshot: assignment.title,
+      startedAt: new Date(),
+      submittedAt: new Date(),
+    })
+
+    const { next } = await invokeMiddleware(
+      gradeSubmission,
+      mockReq({
+        params: { courseId: course._id.toString(), submissionId: submission._id.toString() },
+        user: instructor,
+        body: {
+          rubricScores: [
+            { criterionId: criteria[0]!._id!.toString(), points: 60 },
+            { criterionId: criteria[1]!._id!.toString(), points: 4 },
+          ],
+        },
+      })
+    )
+    expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 400 })
+  })
+})
+
+describe('getDashboard', () => {
+  it('omits (rather than crashes on) an enrolled student whose account was since deleted', async () => {
+    const instructor = fakeUser()
+    const activeStudent = await User.create({
+      username: `active-${new Types.ObjectId().toString()}`,
+      name: 'Active Student',
+      email: `active-${new Types.ObjectId().toString()}@example.com`,
+      password: 'correct horse battery staple',
+      mobile: '555-010-1234',
+      role: 'student',
+    })
+    const deletedStudentId = new Types.ObjectId()
+
+    const course = await Course.create({
+      name: 'Systems Thinking',
+      createdBy: instructor._id,
+      modules: [],
+      enrollments: [
+        { user: instructor._id, enrolledAs: 'instructor', completedItems: [] },
+        // Simulates auth.controller.ts#deleteMe having removed the User document — the
+        // enrollment itself is cleaned up on deletion now, but a dashboard read must still be
+        // resilient to any other path that could leave a stale reference (defense in depth).
+        { user: deletedStudentId, enrolledAs: 'student', completedItems: [] },
+        { user: activeStudent._id, enrolledAs: 'student', completedItems: [] },
+      ],
+    })
+
+    const { body } = await invokeMiddleware<{ students: Array<{ id: string }> }>(
+      getDashboard,
+      mockReq({ user: instructor })
+    )
+
+    expect(body.students.map((s) => s.id)).toEqual([activeStudent._id.toString()])
+    void course
   })
 })

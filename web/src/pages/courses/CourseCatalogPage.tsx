@@ -25,7 +25,15 @@ export function CourseCatalogPage() {
 
   const enrollMutation = useMutation({
     mutationFn: (courseId: string) => coursesApi.enroll(courseId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['courses'] }),
+    onSuccess: (_data, courseId) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['courses'] }),
+        // A learner who previously viewed this course's detail page (before enrolling from the
+        // catalog card here) would otherwise keep seeing the pre-enrollment "Enroll" state there
+        // until that cached query went stale on its own.
+        queryClient.invalidateQueries({ queryKey: ['course', courseId] }),
+        queryClient.invalidateQueries({ queryKey: ['deadlines'] }),
+      ]),
   })
 
   const categories = useMemo(

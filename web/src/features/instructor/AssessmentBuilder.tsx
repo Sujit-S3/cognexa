@@ -7,6 +7,7 @@ import type {
   CourseWorkspace,
 } from '../../services/api'
 import { Badge, Button, GlassCard } from '../../design'
+import { isSafeContentUrl } from '../../lib/safeUrl'
 import { UploadField } from './UploadField'
 import { RichTextEditor } from './RichTextEditor'
 import { createObjectId } from './builder.utils'
@@ -500,9 +501,13 @@ export function AssessmentBuilder({ course, courseId, onChange }: AssessmentBuil
                   <ul className={styles.attachmentList}>
                     {assessment.attachments.map((attachment, index) => (
                       <li key={`${attachment.url}-${index}`}>
-                        <a href={attachment.url} target="_blank" rel="noreferrer">
-                          {attachment.originalName ?? `Attachment ${index + 1}`}
-                        </a>
+                        {isSafeContentUrl(attachment.url) ? (
+                          <a href={attachment.url} target="_blank" rel="noreferrer">
+                            {attachment.originalName ?? `Attachment ${index + 1}`}
+                          </a>
+                        ) : (
+                          <span>{attachment.originalName ?? `Attachment ${index + 1}`} (unavailable)</span>
+                        )}
                         <button
                           type="button"
                           aria-label={`Remove ${attachment.originalName ?? 'attachment'}`}

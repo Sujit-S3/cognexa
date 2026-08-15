@@ -80,4 +80,12 @@ export const migrations: Migration[] = [
       await Promise.all([Organization.createIndexes(), Invitation.createIndexes(), User.createIndexes()])
     },
   },
+  {
+    id: '202608030001-lecture-comments-unique-thread',
+    description:
+      'Create the unique index on LectureComments.moduleItemId (replacing the old non-unique compound index), so concurrent first-comments on the same lesson cannot create two separate comment threads.',
+    async up() {
+      await LectureComments.createIndexes()
+    },
+  },
 ]

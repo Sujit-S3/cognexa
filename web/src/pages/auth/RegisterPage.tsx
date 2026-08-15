@@ -64,7 +64,12 @@ export function RegisterPage() {
     mutationFn: (values: FormValues) => authApi.register(values),
     onSuccess: (data) => {
       login(data.user, data.token)
-      navigate('/dashboard', { replace: true })
+      // Route by the role the user just selected, matching LoginPage — an instructor signup
+      // landing on the student dashboard has no obvious path to the instructor workspace.
+      const role = data.user.role
+      navigate(role === 'admin' || role === 'instructor' ? '/instructor' : '/dashboard', {
+        replace: true,
+      })
     },
   })
 

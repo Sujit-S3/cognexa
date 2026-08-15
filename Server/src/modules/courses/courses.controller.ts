@@ -166,8 +166,13 @@ export const enroll = asyncHandler(async (req: Request, res: Response) => {
 
   const targetUser = await User.findById(targetUserId).orFail(() => new AppError(404, 'User not found'))
 
-  course.enroll(targetUser._id, targetUser.role)
-  await course.save()
+  // Atomic conditional update, not enroll()+save() — two concurrent enroll requests for the
+  // same user (e.g. a double-clicked button) must not both pass an in-memory duplicate check
+  // and both succeed. enrollAtomic's filter makes "already enrolled" and "push" a single
+  // database operation instead of a read-then-write race.
+  const privilege = course.resolveEnrollmentPrivilege(targetUser._id, targetUser.role)
+  const updated = await Course.enrollAtomic(course._id, targetUser._id, privilege)
+  if (!updated) throw new AppError(409, 'You are already enrolled in this course')
 
   targetUser.enrollments.push(course._id)
   await targetUser.save()
@@ -188,6 +193,11 @@ export const unEnroll = asyncHandler(async (req: Request, res: Response) => {
 
   const targetUser = await User.findById(targetUserId).orFail(() => new AppError(404, 'User not found'))
 
+  // Pre-check with a structured 409 instead of letting course.unEnroll()'s plain Error('not
+  // enrolled') fall through asyncHandler to a generic, message-hidden 500.
+  if (!getEnrollment(course, targetUser._id)) {
+    throw new AppError(409, 'This user is not enrolled in this course')
+  }
   course.unEnroll(targetUser._id)
   await course.save()
 

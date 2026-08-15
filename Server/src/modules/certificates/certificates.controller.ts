@@ -21,13 +21,17 @@ export const downloadCertificatePdf = asyncHandler(async (req: Request, res: Res
     .populate('course', 'name')
     .orFail(() => new AppError(404, 'Certificate not found'))
 
-  const learner = achievement.user as unknown as { _id: Types.ObjectId; name: string }
-  const isOwner = learner._id.toString() === req.user!._id.toString()
+  // populate() resolves to null (not a throw) if the learner or course was since deleted — a
+  // certificate must stay downloadable indefinitely (see verifyCertificate's rationale), so a
+  // deleted referenced document degrades to a fallback label instead of a 500. A deleted-user
+  // certificate can only still be downloaded by an admin, since there's no learner left to own it.
+  const learner = achievement.user as unknown as { _id: Types.ObjectId; name: string } | null
+  const isOwner = learner != null && learner._id.toString() === req.user!._id.toString()
   if (!isOwner && req.user!.role !== 'admin') {
     throw new AppError(403, 'You cannot download this certificate')
   }
 
-  const course = achievement.course as unknown as { name: string }
+  const course = achievement.course as unknown as { name: string } | null
 
   res.set({
     'content-type': 'application/pdf',
@@ -36,8 +40,8 @@ export const downloadCertificatePdf = asyncHandler(async (req: Request, res: Res
   })
 
   renderCertificatePdf({
-    learnerName: learner.name,
-    courseName: course.name,
+    learnerName: learner?.name ?? 'Former learner',
+    courseName: course?.name ?? 'Deleted course',
     gradeLetter: achievement.gradeLetter,
     finishedAt: achievement.finishedAt,
     verificationCode: achievement.certificate ?? '',
@@ -56,13 +60,16 @@ export const verifyCertificate = asyncHandler(async (req: Request, res: Response
     return
   }
 
-  const learner = achievement.user as unknown as { name: string }
-  const course = achievement.course as unknown as { name: string }
+  // populate() resolves to null (not a throw) if the learner or course was since deleted — this
+  // endpoint's whole point is staying verifiable indefinitely, so degrade to a fallback label
+  // instead of a 500 for the same reason as downloadCertificatePdf above.
+  const learner = achievement.user as unknown as { name: string } | null
+  const course = achievement.course as unknown as { name: string } | null
 
   res.json({
     valid: true,
-    learnerName: learner.name,
-    courseName: course.name,
+    learnerName: learner?.name ?? 'Former learner',
+    courseName: course?.name ?? 'Deleted course',
     gradeLetter: achievement.gradeLetter,
     score: achievement.score,
     finishedAt: achievement.finishedAt,

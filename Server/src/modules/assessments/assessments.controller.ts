@@ -5,6 +5,7 @@ import { AssessmentSubmission } from '../../models/assessmentSubmission.model'
 import { asyncHandler } from '../../middleware/asyncHandler'
 import { AppError } from '../../utils/AppError'
 import { assertCourseRole } from '../../utils/courseAccess'
+import { isDuplicateKeyError } from '../../utils/mongoErrors'
 import { evaluateCourseCompletion } from '../../services/achievement.service'
 import { gradeQuizAttempt, maybeShuffleOptions, selectAttemptQuestions } from './assessments.grading'
 
@@ -18,12 +19,6 @@ function buildAnswerKey(course: CourseDocument, courseAssessmentId: Types.Object
     correctAnswers: question.correctAnswers,
     explanation: question.explanation,
   }))
-}
-
-function isDuplicateKeyError(error: unknown): boolean {
-  return Boolean(
-    error && typeof error === 'object' && 'code' in error && (error as { code: number }).code === 11000
-  )
 }
 
 async function requireOwnedSubmission(req: Request) {

@@ -122,6 +122,20 @@ describe('updateUserStatus', () => {
     expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 400 })
     expect((await User.findById(caller._id))!.isActive).toBe(true)
   })
+
+  it('rejects self-deactivation even when the route param id is a different letter case than the canonical id', async () => {
+    const caller = await createUser('admin')
+    const { next } = await invokeMiddleware(
+      admin.updateUserStatus,
+      mockReq({
+        params: { userId: caller._id.toString().toUpperCase() },
+        user: asReqUser(caller),
+        body: { isActive: false },
+      })
+    )
+    expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 400 })
+    expect((await User.findById(caller._id))!.isActive).toBe(true)
+  })
 })
 
 describe('updateUserRole', () => {
@@ -150,6 +164,20 @@ describe('updateUserRole', () => {
       admin.updateUserRole,
       mockReq({
         params: { userId: caller._id.toString() },
+        user: asReqUser(caller),
+        body: { role: 'student' },
+      })
+    )
+    expect(next.mock.calls[0]![0]).toMatchObject({ statusCode: 400 })
+    expect((await User.findById(caller._id))!.role).toBe('admin')
+  })
+
+  it('rejects self-role-change even when the route param id is a different letter case than the canonical id', async () => {
+    const caller = await createUser('admin')
+    const { next } = await invokeMiddleware(
+      admin.updateUserRole,
+      mockReq({
+        params: { userId: caller._id.toString().toUpperCase() },
         user: asReqUser(caller),
         body: { role: 'student' },
       })
@@ -220,5 +248,25 @@ describe('getAuditLog', () => {
       total: number
     }
     expect(body.total).toBe(1)
+  })
+
+  it('renders a fallback actor instead of crashing when the actor account was since deleted', async () => {
+    const caller = await createUser('admin')
+    const deletedActorId = new Types.ObjectId()
+    await AuditLog.create({
+      actor: deletedActorId,
+      action: 'user.deactivate',
+      targetType: 'User',
+      targetId: new Types.ObjectId(),
+    })
+
+    const { res } = await invokeMiddleware<{
+      entries: Array<{ actor: { id: string | null; name: string } }>
+    }>(admin.getAuditLog, mockReq({ user: asReqUser(caller), query: { page: 1, limit: 50 } }))
+
+    const body = (res.json as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![0] as {
+      entries: Array<{ actor: { id: string | null; name: string } }>
+    }
+    expect(body.entries[0]!.actor).toEqual({ id: null, name: 'Deleted user', email: '' })
   })
 })

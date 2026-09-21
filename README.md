@@ -1,39 +1,113 @@
 # Cognexa
 
-**Connecting Knowledge, Empowering Minds.**
+AI-assisted learning platform for educational institutions and enterprises.
 
-Cognexa is an AI-assisted learning platform for modern educational institutions, instructors, enterprises, and learners. The supported v1.0 release-candidate surface includes identity and device sessions, the public catalog, enrollment, instructor course authoring, and an authenticated AI gateway.
+## Overview
 
-Our mission is to make high-quality knowledge easier to teach, discover, and master. Our vision is a world where every mind can reach the right knowledge at the right moment.
+Cognexa is a next-generation Learning Management System (LMS) designed for modern educational institutions, instructors, and learners. It combines an intelligent AI gateway with an intuitive instructor workspace, supporting comprehensive course authoring, enrollments, assessments, and analytics in a scalable, decoupled architecture.
 
-This repository is in an incremental modernization: `web/` and `Server/src/` are the supported production path; `Client/` and the JavaScript files outside `Server/src/` are retained only as migration references and must not receive new features.
+## Key Features
 
-## Product surfaces
+- **AI-Assisted Learning:** Authenticated AI gateway for intelligent tutoring without exposing provider credentials to the client.
+- **Instructor Workspace:** Complete authoring workflow with debounced autosave, optimistic concurrency, and direct Cloudinary uploads.
+- **Advanced Curriculum Builder:** Nested drag-and-drop ordering, seven lesson types, quizzes, and assignment rubrics.
+- **Durable Sessions:** Rotating opaque refresh tokens with robust device session management.
+- **Enterprise Capabilities:** Global admin console, organization tenancy, role management, and audit logging.
+- **Performance Optimized:** Route-split frontend with a strict bundle budget and isolated cinematic 3D assets.
 
-| Surface       | Purpose                                        | Stack                                                             |
-| ------------- | ---------------------------------------------- | ----------------------------------------------------------------- |
-| `web/`        | Public site and authenticated application      | React 19, TypeScript, Vite, React Router, TanStack Query, Zustand |
-| `Server/src/` | Versioned API and background integrations      | Express, TypeScript, MongoDB/Mongoose, Zod, Pino                  |
-| `Client/`     | Frozen legacy client                           | React/Redux/Ant Design                                            |
-| `docs/`       | Engineering specification and operating guides | Markdown, OpenAPI, ADRs                                           |
+## Architecture
 
-## Local development
+Cognexa uses a modular monolith backend and an incremental migration architecture. The `web/` and `Server/src/` directories represent the modern, supported production path, communicating via a versioned REST API.
 
-Prerequisites: Node.js 22+, Corepack, and MongoDB 7+ (or Docker).
+```mermaid
+graph TD
+    Client[Client Browser (Vite/React)] -->|REST| API[Node.js / Express API]
+    API --> DB[(MongoDB Replica Set)]
+    API --> Cache[(Redis)]
+    API --> AIProvider[AI Model Provider]
+    API --> CDN[Cloudinary CDN]
+```
+
+## Tech Stack
+
+### Frontend (`web/`)
+- **Framework:** React 19 + Vite + TypeScript
+- **Routing & Data:** React Router, TanStack Query
+- **State Management:** Zustand
+- **Styling:** Tailwind CSS
+
+### Backend (`Server/src/`)
+- **Server:** Node.js, Express, TypeScript
+- **Database:** MongoDB, Mongoose
+- **Validation:** Zod
+- **Logging:** Pino
+- **Tooling:** Turborepo, pnpm
+
+## Project Structure
+
+```
+cognexa/
+├── web/             # Modern React 19 / Vite Frontend
+├── Server/          # Node/Express Backend API
+├── Client/          # Frozen legacy client (migration reference)
+├── docs/            # Engineering specs and ADRs
+└── config/          # Environment configuration examples
+```
+
+## Screenshots / Demo
+
+*Demo environments are documented internally per deployment.*
+
+## Installation
+
+### Prerequisites
+- Node.js (v22+)
+- Corepack enabled (`corepack enable`)
+- MongoDB (v7+) or Docker
+
+### Clone the Repository
+```bash
+git clone https://github.com/Sujit-S3/cognexa.git
+cd cognexa
+pnpm install
+```
+
+## Environment Variables
+
+Copy the example environment files and configure them:
 
 ```bash
-corepack enable
-pnpm install
 copy Server\.env.example Server\.env
 copy web\.env.example web\.env
+```
+
+Ensure `SECRET_KEY` in `Server/.env` is a random string of at least 32 characters. Do not use placeholder values in production.
+
+## Running Locally
+
+You can run the entire Turborepo stack simultaneously:
+
+```bash
 pnpm dev
 ```
 
-The web app runs on `http://localhost:5173`; the API runs on `http://localhost:4000`, with canonical endpoints under `/api/v1`.
+Alternatively, use Docker Compose:
+```bash
+$env:SECRET_KEY="your-32-character-secret"
+docker compose up --build
+```
+The web app runs on `http://localhost:5173` and the API runs on `http://localhost:4000`.
 
-Generate a real development secret before starting the API. Never commit `.env` files or use a `VITE_` variable for an AI, database, email, or signing credential.
+## API / Backend
 
-## Quality gates
+The backend exposes a versioned REST API under `/api/v1`. 
+- `/api/v1/ai/complete` - Authenticated AI gateway
+- `/health/live` - Process health
+- `/health/ready` - MongoDB/Redis readiness
+
+## Testing
+
+Quality gates are managed via Turborepo:
 
 ```bash
 pnpm lint
@@ -42,56 +116,32 @@ pnpm test
 pnpm build
 pnpm --filter web test:e2e
 ```
-
-`pnpm quality` runs the complete gate through Turborepo. The frontend is route-split; the main bundle budget is 250 KB gzipped. The cinematic 3D hero is intentionally isolated in an idle-loaded optional chunk and is skipped for reduced-motion or data-saving users.
-
-## Containers
-
+Or run the complete quality gate:
 ```bash
-$env:SECRET_KEY = "replace-with-a-random-secret-at-least-32-characters"
-docker compose up --build
+pnpm quality
 ```
 
-This starts MongoDB, the API on port 4000, and the web application on port 8080. Production deployments should use a managed MongoDB replica set, managed object storage, a CDN/WAF, and a secret manager rather than Compose.
+## Deployment
 
-## Documentation
+Production deployments require:
+- A managed MongoDB replica set.
+- Managed object storage / CDN (e.g. Cloudinary).
+- A secret manager for environment variables.
+- Execution via `node dist/server.js` (not Docker Compose).
 
-- [Engineering specification](docs/ENGINEERING_SPECIFICATION.md)
-- [Brand guide](docs/BRAND_GUIDE.md)
-- [Rebrand verification report](docs/REBRAND_REPORT.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [API contract](docs/openapi.yaml)
-- [Testing strategy](docs/TESTING.md)
-- [Deployment guide](docs/DEPLOYMENT.md)
-- [Environment setup](docs/ENVIRONMENTS.md)
-- [Infrastructure guide](docs/INFRASTRUCTURE.md)
-- [Operations manual](docs/OPERATIONS.md)
-- [Backup and recovery](docs/RECOVERY.md)
-- [Monitoring and alerting](docs/MONITORING.md)
-- [Release guide](docs/RELEASES.md)
-- [Production readiness](docs/PRODUCTION_READINESS.md)
-- [Supported capability matrix](docs/CAPABILITIES.md)
-- [Final release audit](docs/FINAL_RELEASE_AUDIT.md)
-- [v1.0.0 release notes](RELEASE_NOTES.md)
-- [Security policy](SECURITY.md)
-- [Contributing guide](CONTRIBUTING.md)
-- [Architecture decisions](docs/adr/0001-modular-monolith-and-incremental-migration.md)
+## Security
 
-## Current production boundaries
+- Access tokens are memory-only.
+- Refresh tokens are stored in `HttpOnly`, `SameSite=Lax` secure cookies.
+- AI credentials remain server-side.
+- Structured logs automatically redact authorization and cookie values.
+- Dependency auditing is built into the CI pipeline.
 
-- Access tokens are short-lived and memory-only. Durable sessions use rotating opaque refresh tokens in `HttpOnly`, `SameSite=Lax`, production-secure cookies.
-- AI provider credentials remain on the server. The browser calls the authenticated `/api/v1/ai/complete` gateway.
-- API responses include `x-request-id`; structured logs redact authorization, cookie, and set-cookie values.
-- `/health/live` reports process health and `/health/ready` reports required MongoDB/Redis readiness.
-- `/health/dependencies` reports provider-neutral dependency state; `/metrics` is bearer-protected in deployed environments.
-- Root API routes are compatibility aliases and carry deprecation/sunset headers. New integrations must use `/api/v1`.
+## Future Improvements
 
-The delivery backlog and release gates are intentionally explicit in the engineering specification; unimplemented roadmap items are not represented as shipped features.
+- E-Commerce domain implementation for paid enrollments.
+- Additional assessment integrations and automated grading pipelines.
 
-Learner content playback/progress, assessment delivery/submission/grading, automatic certificate issuance, an in-app notification center, a global-admin console (user directory, role/status management, platform audit log), and organization tenancy (invitations, member roles, assign-learning, per-member progress, org audit log) are supported in this release candidate on real, persisted data — see the [capability matrix](docs/CAPABILITIES.md) for exact scope. Commerce remains unsupported.
+## License
 
-## Instructor workspace
-
-Instructors and administrators can open `/instructor` to create a MongoDB-backed draft and complete the entire authoring workflow in the application. The workspace includes a validated setup wizard, 900 ms debounced autosave with optimistic concurrency, direct signed Cloudinary uploads, nested drag-and-drop curriculum ordering, seven lesson types, quizzes, assignments with rubrics, learner/course analytics, preview, and the `draft → review → published → archived` lifecycle.
-
-Configure `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in `Server/.env` to enable course media. Provider secrets remain server-side; the browser receives only a short-lived, course-scoped upload signature after ownership authorization. Revenue remains visibly marked as unavailable until the commerce domain is implemented.
+This project is licensed under the MIT License (or as specified in the repository root).

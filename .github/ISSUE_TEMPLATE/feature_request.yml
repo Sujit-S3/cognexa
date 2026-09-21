@@ -1,11 +1,11 @@
 name: Feature Request
 description: Suggest a feature
-title: "[FEATURE] "
-labels: ["enhancement"]
+title: '[FEATURE] '
+labels: ['enhancement']
 body:
   - type: markdown
     attributes:
-      value: "Thanks for taking the time to fill out this feature request!"
+      value: 'Thanks for taking the time to fill out this feature request!'
   - type: textarea
     id: description
     attributes:

@@ -39,5 +39,8 @@
     "web/src/**/*.{ts,tsx,css}": "prettier --write",
     "Server/src/**/*.ts": "prettier --write",
     "docs/**/*.{md,yml,yaml}": "prettier --write"
+  },
+  "dependencies": {
+    "nodemailer": "^10.0.10"
   }
 }

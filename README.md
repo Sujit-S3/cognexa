@@ -1,147 +1,89 @@
 # Cognexa
 
-AI-assisted learning platform for educational institutions and enterprises.
+**Computer Science & Systems Engineering Student | Full-Stack & AI Developer**
 
-## Overview
+## 1. What the project is
+Cognexa is a modern, scalable Learning Management System (LMS) designed for educational institutions, instructors, and learners. It features an AI-assisted learning gateway and an intuitive workspace that supports comprehensive course authoring, enrollments, and interactive assessments.
 
-Cognexa is a next-generation Learning Management System (LMS) designed for modern educational institutions, instructors, and learners. It combines an intelligent AI gateway with an intuitive instructor workspace, supporting comprehensive course authoring, enrollments, assessments, and analytics in a scalable, decoupled architecture.
+## 2. What problem it solves
+Legacy LMS platforms often suffer from clunky course-building experiences and lack integrated AI capabilities for students. Cognexa solves this by providing a highly interactive, drag-and-drop curriculum builder with optimistic concurrency and debounced autosaves. It also safely integrates an AI tutor that assists learners in real-time, keeping API credentials secure on the backend.
 
-## Key Features
+## 3. What I personally built
+I engineered the entire platform using a modern Turborepo stack, including:
+- A responsive React 19 frontend utilizing TanStack Query for state management and caching.
+- An advanced curriculum builder with drag-and-drop lesson reordering, supporting seven different lesson types and dynamic quiz rubrics.
+- A secure Node.js/Express backend that proxies AI requests and manages user state through a robust MongoDB schema.
+- An authentication system utilizing rotating, opaque refresh tokens stored in secure `HttpOnly` cookies.
 
-- **AI-Assisted Learning:** Authenticated AI gateway for intelligent tutoring without exposing provider credentials to the client.
-- **Instructor Workspace:** Complete authoring workflow with debounced autosave, optimistic concurrency, and direct Cloudinary uploads.
-- **Advanced Curriculum Builder:** Nested drag-and-drop ordering, seven lesson types, quizzes, and assignment rubrics.
+## 4. Main features
+- **Instructor Workspace:** Complete authoring workflow with debounced autosave, optimistic concurrency, and direct Cloudinary media uploads.
+- **Advanced Curriculum Builder:** Nested drag-and-drop ordering, rich-text lesson types, quizzes, and assignment rubrics.
+- **AI-Assisted Learning:** Authenticated AI gateway for intelligent tutoring without exposing provider credentials to the client browser.
 - **Durable Sessions:** Rotating opaque refresh tokens with robust device session management.
-- **Enterprise Capabilities:** Global admin console, organization tenancy, role management, and audit logging.
-- **Performance Optimized:** Route-split frontend with a strict bundle budget and isolated cinematic 3D assets.
+- **Role-Based Access Control:** Differentiated capabilities for Admins, Instructors, and Students.
+- **Performance Optimized:** Route-split frontend designed with a strict bundle budget.
 
-## Architecture
-
-Cognexa uses a modular monolith backend and an incremental migration architecture. The `web/` and `Server/src/` directories represent the modern, supported production path, communicating via a versioned REST API.
-
+## 5. Architecture
+Cognexa uses a modular monolith backend and a modern React frontend, communicating via a versioned REST API. The codebase is managed within a Turborepo monorepo.
 ```mermaid
 graph TD
     Client[Client Browser (Vite/React)] -->|REST| API[Node.js / Express API]
     API --> DB[(MongoDB Replica Set)]
-    API --> Cache[(Redis)]
     API --> AIProvider[AI Model Provider]
     API --> CDN[Cloudinary CDN]
 ```
 
-## Tech Stack
-
-### Frontend (`web/`)
-- **Framework:** React 19 + Vite + TypeScript
-- **Routing & Data:** React Router, TanStack Query
-- **State Management:** Zustand
-- **Styling:** Tailwind CSS
-
-### Backend (`Server/src/`)
-- **Server:** Node.js, Express, TypeScript
-- **Database:** MongoDB, Mongoose
-- **Validation:** Zod
-- **Logging:** Pino
+## 6. Technology stack
+- **Frontend (`web/`):** React 19, Vite, TypeScript, React Router, TanStack Query, Zustand, Tailwind CSS
+- **Backend (`Server/src/`):** Node.js, Express, TypeScript, Zod, Pino
+- **Database:** MongoDB (Mongoose)
 - **Tooling:** Turborepo, pnpm
+- **Security:** Helmet, `HttpOnly` cookies, bcrypt
 
-## Project Structure
+## 7. Demo
+*(Add Live Demo link here if available)*
 
-```
-cognexa/
-├── web/             # Modern React 19 / Vite Frontend
-├── Server/          # Node/Express Backend API
-├── Client/          # Frozen legacy client (migration reference)
-├── docs/            # Engineering specs and ADRs
-└── config/          # Environment configuration examples
-```
+## 8. Screenshots
+*(Add screenshots of the Instructor Workspace, Curriculum Builder, and Course Player here)*
 
-## Screenshots / Demo
-
-*Demo environments are documented internally per deployment.*
-
-## Installation
-
-### Prerequisites
-- Node.js (v22+)
-- Corepack enabled (`corepack enable`)
-- MongoDB (v7+) or Docker
-
-### Clone the Repository
+## 9. Installation
 ```bash
 git clone https://github.com/Sujit-S3/cognexa.git
 cd cognexa
+
+# Enable corepack and install dependencies
+corepack enable
 pnpm install
 ```
 
-## Environment Variables
-
+## 10. Environment variables
 Copy the example environment files and configure them:
-
 ```bash
 copy Server\.env.example Server\.env
 copy web\.env.example web\.env
 ```
-
 Ensure `SECRET_KEY` in `Server/.env` is a random string of at least 32 characters. Do not use placeholder values in production.
 
-## Running Locally
+## 11. Testing
+Quality gates and tests are managed via Turborepo:
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm --filter web test:e2e
 
-You can run the entire Turborepo stack simultaneously:
+# Run the complete CI quality gate locally
+pnpm quality
+```
 
+## 12. Deployment
+You can run the entire Turborepo stack simultaneously for local development:
 ```bash
 pnpm dev
 ```
-
 Alternatively, use Docker Compose:
 ```bash
 $env:SECRET_KEY="your-32-character-secret"
 docker compose up --build
 ```
 The web app runs on `http://localhost:5173` and the API runs on `http://localhost:4000`.
-
-## API / Backend
-
-The backend exposes a versioned REST API under `/api/v1`. 
-- `/api/v1/ai/complete` - Authenticated AI gateway
-- `/health/live` - Process health
-- `/health/ready` - MongoDB/Redis readiness
-
-## Testing
-
-Quality gates are managed via Turborepo:
-
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-pnpm --filter web test:e2e
-```
-Or run the complete quality gate:
-```bash
-pnpm quality
-```
-
-## Deployment
-
-Production deployments require:
-- A managed MongoDB replica set.
-- Managed object storage / CDN (e.g. Cloudinary).
-- A secret manager for environment variables.
-- Execution via `node dist/server.js` (not Docker Compose).
-
-## Security
-
-- Access tokens are memory-only.
-- Refresh tokens are stored in `HttpOnly`, `SameSite=Lax` secure cookies.
-- AI credentials remain server-side.
-- Structured logs automatically redact authorization and cookie values.
-- Dependency auditing is built into the CI pipeline.
-
-## Future Improvements
-
-- E-Commerce domain implementation for paid enrollments.
-- Additional assessment integrations and automated grading pipelines.
-
-## License
-
-This project is licensed under the MIT License (or as specified in the repository root).

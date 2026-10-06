@@ -41,6 +41,6 @@
     "docs/**/*.{md,yml,yaml}": "prettier --write"
   },
   "dependencies": {
-    "nodemailer": "^10.0.10"
+    "nodemailer": "^10.0.13"
   }
 }
